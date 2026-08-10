@@ -20,6 +20,7 @@ const MAPPING = {
   'pencil': 'edit',
   'trash': 'delete',
   'magnifyingglass': 'search',
+  'line.3.horizontal': 'drag-handle',
 } as IconMapping;
 
 /**

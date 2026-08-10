@@ -218,12 +218,12 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      swap_plan_day_order: {
-        Args: { day_id_a: string; day_id_b: string }
+      reorder_plan_exercises: {
+        Args: { p_exercise_ids: string[]; p_plan_day_id: string }
         Returns: undefined
       }
-      swap_plan_exercise_order: {
-        Args: { exercise_id_a: string; exercise_id_b: string }
+      swap_plan_day_order: {
+        Args: { day_id_a: string; day_id_b: string }
         Returns: undefined
       }
     }

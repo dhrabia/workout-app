@@ -96,25 +96,29 @@ export function useDeletePlanExercise(dayId: string) {
   });
 }
 
-export function useReorderPlanExercise(dayId: string) {
+export function useReorderPlanExercises(dayId: string) {
   const queryClient = useQueryClient();
+  const queryKey = queryKeys.planExercises.list(dayId);
 
   return useMutation({
-    mutationFn: async ({
-      exerciseIdA,
-      exerciseIdB,
-    }: {
-      exerciseIdA: string;
-      exerciseIdB: string;
-    }) => {
-      const { error } = await supabase.rpc("swap_plan_exercise_order", {
-        exercise_id_a: exerciseIdA,
-        exercise_id_b: exerciseIdB,
+    mutationFn: async (reordered: PlanExerciseWithExercise[]) => {
+      const { error } = await supabase.rpc("reorder_plan_exercises", {
+        p_plan_day_id: dayId,
+        p_exercise_ids: reordered.map((exercise) => exercise.id),
       });
       if (error) throw error;
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.planExercises.list(dayId) });
+    onMutate: async (reordered) => {
+      await queryClient.cancelQueries({ queryKey });
+      const previous = queryClient.getQueryData<PlanExerciseWithExercise[]>(queryKey);
+      queryClient.setQueryData(queryKey, reordered);
+      return { previous };
+    },
+    onError: (_error, _reordered, context) => {
+      if (context?.previous) queryClient.setQueryData(queryKey, context.previous);
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey });
     },
   });
 }
