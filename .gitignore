@@ -1,0 +1,20 @@
+# dependencies
+node_modules/
+
+# Turborepo cache
+.turbo/
+
+# build output from packages/shared (if we add a build step later)
+packages/*/dist/
+
+# environment files (in case one ever gets created in the root)
+.env
+.env.local
+
+# local Supabase CLI cache
+supabase/.temp/
+
+# system and editor junk
+.DS_Store
+.vscode/
+.idea/
