@@ -1,7 +1,11 @@
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import { Pressable, StyleSheet, View } from 'react-native';
 import Swipeable from 'react-native-gesture-handler/ReanimatedSwipeable';
-import ReorderableList, { reorderItems, useReorderableDrag } from 'react-native-reorderable-list';
+import ReorderableList, {
+  reorderItems,
+  useIsActive,
+  useReorderableDrag,
+} from 'react-native-reorderable-list';
 
 import { HeaderActions, HeaderIconButton } from '@/components/header-icon-button';
 import { ThemedText } from '@/components/themed-text';
@@ -119,9 +123,11 @@ function ExerciseRow({
   onDelete: () => void;
 }) {
   const drag = useReorderableDrag();
+  const isDragging = useIsActive();
 
   return (
     <Swipeable
+      enabled={!isDragging}
       overshootRight={false}
       renderRightActions={() => (
         <Pressable onPress={onDelete} style={styles.deleteAction}>
