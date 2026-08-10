@@ -35,6 +35,7 @@ export default function NewExerciseScreen() {
 
   const tint = useThemeColor({}, 'tint');
   const borderColor = useThemeColor({}, 'icon');
+  const chipTextSelectedColor = useThemeColor({}, 'buttonText');
 
   function handleSubmit() {
     if (!name.trim()) {
@@ -88,7 +89,8 @@ export default function NewExerciseScreen() {
                     { borderColor: selected ? tint : borderColor },
                     selected && { backgroundColor: tint },
                   ]}>
-                  <ThemedText style={selected ? styles.chipTextSelected : undefined}>
+                  <ThemedText
+                    style={selected ? [styles.chipTextSelected, { color: chipTextSelectedColor }] : undefined}>
                     {group.replace('_', ' ')}
                   </ThemedText>
                 </Pressable>
@@ -114,5 +116,5 @@ const styles = StyleSheet.create({
   chipsSection: { gap: 8 },
   chips: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
   chip: { paddingHorizontal: 12, paddingVertical: 8, borderRadius: 20, borderWidth: 1 },
-  chipTextSelected: { color: '#fff' },
+  chipTextSelected: { fontWeight: '600' },
 });
