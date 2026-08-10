@@ -1,10 +1,9 @@
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { ScrollView, StyleSheet } from 'react-native';
 
 import { FormField } from '@/components/form-field';
+import { FormScreen } from '@/components/form-screen';
 import { SubmitButton } from '@/components/submit-button';
-import { ThemedView } from '@/components/themed-view';
 import {
   usePlanDay,
   useCreatePlanDay,
@@ -38,23 +37,16 @@ export default function DayFormScreen() {
   }
 
   return (
-    <ThemedView style={styles.container}>
+    <FormScreen>
       <Stack.Screen options={{ title: isEditing ? 'Edit Day' : 'New Day' }} />
-      <ScrollView contentContainerStyle={styles.form}>
-        <FormField
-          label="Name"
-          value={name}
-          onChangeText={setName}
-          placeholder="e.g. Day A, Push, Legs"
-          error={error}
-        />
-        <SubmitButton label="Save" pending={mutation.isPending} onPress={handleSubmit} />
-      </ScrollView>
-    </ThemedView>
+      <FormField
+        label="Name"
+        value={name}
+        onChangeText={setName}
+        placeholder="e.g. Day A, Push, Legs"
+        error={error}
+      />
+      <SubmitButton label="Save" pending={mutation.isPending} onPress={handleSubmit} />
+    </FormScreen>
   );
 }
-
-const styles = StyleSheet.create({
-  container: { flex: 1 },
-  form: { padding: 16, gap: 16 },
-});

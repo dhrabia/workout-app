@@ -1,10 +1,9 @@
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { ScrollView, StyleSheet } from 'react-native';
 
 import { FormField } from '@/components/form-field';
+import { FormScreen } from '@/components/form-screen';
 import { SubmitButton } from '@/components/submit-button';
-import { ThemedView } from '@/components/themed-view';
 import { usePlan, useCreatePlan, useUpdatePlan } from '@/hooks/queries/use-plans';
 
 export default function PlanFormScreen() {
@@ -41,30 +40,23 @@ export default function PlanFormScreen() {
   }
 
   return (
-    <ThemedView style={styles.container}>
+    <FormScreen>
       <Stack.Screen options={{ title: isEditing ? 'Edit Plan' : 'New Plan' }} />
-      <ScrollView contentContainerStyle={styles.form}>
-        <FormField
-          label="Name"
-          value={name}
-          onChangeText={setName}
-          placeholder="e.g. Push Pull Legs"
-          error={error}
-        />
-        <FormField
-          label="Description"
-          value={description}
-          onChangeText={setDescription}
-          placeholder="Optional"
-          multiline
-        />
-        <SubmitButton label="Save" pending={mutation.isPending} onPress={handleSubmit} />
-      </ScrollView>
-    </ThemedView>
+      <FormField
+        label="Name"
+        value={name}
+        onChangeText={setName}
+        placeholder="e.g. Push Pull Legs"
+        error={error}
+      />
+      <FormField
+        label="Description"
+        value={description}
+        onChangeText={setDescription}
+        placeholder="Optional"
+        multiline
+      />
+      <SubmitButton label="Save" pending={mutation.isPending} onPress={handleSubmit} />
+    </FormScreen>
   );
 }
-
-const styles = StyleSheet.create({
-  container: { flex: 1 },
-  form: { padding: 16, gap: 16 },
-});

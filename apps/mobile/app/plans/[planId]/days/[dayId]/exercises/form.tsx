@@ -1,11 +1,11 @@
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { Pressable, ScrollView, StyleSheet } from 'react-native';
+import { Pressable, StyleSheet } from 'react-native';
 
 import { FormField } from '@/components/form-field';
+import { FormScreen } from '@/components/form-screen';
 import { SubmitButton } from '@/components/submit-button';
 import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
 import {
   usePlanExercise,
   useCreatePlanExercise,
@@ -81,53 +81,49 @@ export default function PlanExerciseFormScreen() {
   }
 
   return (
-    <ThemedView style={styles.container}>
+    <FormScreen>
       <Stack.Screen options={{ title: isEditing ? 'Edit Exercise' : 'Add to Day' }} />
-      <ScrollView contentContainerStyle={styles.form}>
-        <ThemedText type="subtitle">{displayName}</ThemedText>
-        <FormField
-          label="Sets"
-          value={sets}
-          onChangeText={setSets}
-          keyboardType="number-pad"
-          error={error}
-        />
-        <FormField label="Reps" value={reps} onChangeText={setReps} placeholder="e.g. 8-12" />
-        <FormField
-          label="Weight (kg)"
-          value={weight}
-          onChangeText={setWeight}
-          keyboardType="decimal-pad"
-          placeholder="Optional"
-        />
-        <FormField
-          label="Rest (seconds)"
-          value={rest}
-          onChangeText={setRest}
-          keyboardType="number-pad"
-          placeholder="Optional"
-        />
-        <FormField
-          label="Notes"
-          value={notes}
-          onChangeText={setNotes}
-          placeholder="Optional"
-          multiline
-        />
-        <SubmitButton label="Save" pending={mutation.isPending} onPress={handleSubmit} />
-        {isEditing ? (
-          <Pressable onPress={handleDelete} style={styles.deleteButton}>
-            <ThemedText style={styles.deleteText}>Remove exercise</ThemedText>
-          </Pressable>
-        ) : null}
-      </ScrollView>
-    </ThemedView>
+      <ThemedText type="subtitle">{displayName}</ThemedText>
+      <FormField
+        label="Sets"
+        value={sets}
+        onChangeText={setSets}
+        keyboardType="number-pad"
+        error={error}
+      />
+      <FormField label="Reps" value={reps} onChangeText={setReps} placeholder="e.g. 8-12" />
+      <FormField
+        label="Weight (kg)"
+        value={weight}
+        onChangeText={setWeight}
+        keyboardType="decimal-pad"
+        placeholder="Optional"
+      />
+      <FormField
+        label="Rest (seconds)"
+        value={rest}
+        onChangeText={setRest}
+        keyboardType="number-pad"
+        placeholder="Optional"
+      />
+      <FormField
+        label="Notes"
+        value={notes}
+        onChangeText={setNotes}
+        placeholder="Optional"
+        multiline
+      />
+      <SubmitButton label="Save" pending={mutation.isPending} onPress={handleSubmit} />
+      {isEditing ? (
+        <Pressable onPress={handleDelete} style={styles.deleteButton}>
+          <ThemedText style={styles.deleteText}>Remove exercise</ThemedText>
+        </Pressable>
+      ) : null}
+    </FormScreen>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1 },
-  form: { padding: 16, gap: 16 },
   deleteButton: { padding: 14, alignItems: 'center' },
   deleteText: { color: '#e53935' },
 });

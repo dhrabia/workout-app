@@ -1,6 +1,7 @@
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import { useMemo, useState } from 'react';
 import { FlatList, Pressable, StyleSheet, TextInput, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
@@ -13,6 +14,7 @@ export default function ExercisePickerScreen() {
   const router = useRouter();
   const { data: exercises, isLoading } = useExerciseCatalog();
   const [query, setQuery] = useState('');
+  const insets = useSafeAreaInsets();
 
   const borderColor = useThemeColor({}, 'icon');
   const tint = useThemeColor({}, 'tint');
@@ -49,6 +51,7 @@ export default function ExercisePickerScreen() {
         <ThemedText style={styles.centerText}>Loading…</ThemedText>
       ) : (
         <FlatList
+          style={styles.flatList}
           data={filtered}
           keyExtractor={(item) => item.id}
           contentContainerStyle={styles.list}
@@ -69,7 +72,7 @@ export default function ExercisePickerScreen() {
             params: { returnPlanId: planId, returnDayId: dayId },
           })
         }
-        style={[styles.addButton, { borderColor: tint }]}>
+        style={[styles.addButton, { borderColor: tint, marginBottom: insets.bottom + 16 }]}>
         <ThemedText style={{ color: tint }}>+ Create custom exercise</ThemedText>
       </Pressable>
     </ThemedView>
@@ -90,6 +93,7 @@ const styles = StyleSheet.create({
     borderRadius: 10,
   },
   searchInput: { flex: 1, fontSize: 16 },
+  flatList: { flex: 1 },
   list: { padding: 16, gap: 12 },
   row: { padding: 16, borderWidth: 1, borderRadius: 12, gap: 4 },
   centerText: { textAlign: 'center', marginTop: 32 },
