@@ -104,7 +104,7 @@ export type Database = {
           created_at?: string
           id?: string
           name: string
-          order_index: number
+          order_index?: number
           plan_id: string
         }
         Update: {
@@ -142,7 +142,7 @@ export type Database = {
           exercise_id: string
           id?: string
           notes?: string | null
-          order_index: number
+          order_index?: number
           plan_day_id: string
           rest_seconds?: number | null
           target_reps: string
@@ -193,7 +193,7 @@ export type Database = {
           id?: string
           name: string
           updated_at?: string
-          user_id: string
+          user_id?: string
         }
         Update: {
           created_at?: string
@@ -218,7 +218,14 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      swap_plan_day_order: {
+        Args: { day_id_a: string; day_id_b: string }
+        Returns: undefined
+      }
+      swap_plan_exercise_order: {
+        Args: { exercise_id_a: string; exercise_id_b: string }
+        Returns: undefined
+      }
     }
     Enums: {
       muscle_group:
