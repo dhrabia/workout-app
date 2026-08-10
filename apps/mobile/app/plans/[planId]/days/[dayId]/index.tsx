@@ -6,7 +6,6 @@ import ReorderableList, { reorderItems, useReorderableDrag } from 'react-native-
 import { HeaderActions, HeaderIconButton } from '@/components/header-icon-button';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
-import { IconSymbol } from '@/components/ui/icon-symbol';
 import { usePlanDay, useDeletePlanDay } from '@/hooks/queries/use-plan-days';
 import {
   usePlanExercises,
@@ -85,7 +84,6 @@ export default function DayDetailScreen() {
           renderItem={({ item }) => (
             <ExerciseRow
               item={item}
-              borderColor={borderColor}
               onEdit={() =>
                 router.push({
                   pathname: '/plans/[planId]/days/[dayId]/exercises/form',
@@ -113,12 +111,10 @@ export default function DayDetailScreen() {
 
 function ExerciseRow({
   item,
-  borderColor,
   onEdit,
   onDelete,
 }: {
   item: PlanExerciseWithExercise;
-  borderColor: string;
   onEdit: () => void;
   onDelete: () => void;
 }) {
@@ -132,19 +128,14 @@ function ExerciseRow({
           <ThemedText style={styles.deleteActionText}>Delete</ThemedText>
         </Pressable>
       )}>
-      <View style={styles.row}>
-        <Pressable onLongPress={drag} hitSlop={8}>
-          <IconSymbol name="line.3.horizontal" size={20} color={borderColor} />
-        </Pressable>
-        <Pressable style={styles.rowContent} onPress={onEdit}>
-          <ThemedText type="defaultSemiBold">{item.exercise.name}</ThemedText>
-          <ThemedText>
-            {item.target_sets} × {item.target_reps}
-            {item.target_weight_kg ? ` @ ${item.target_weight_kg}kg` : ''}
-            {item.rest_seconds ? ` · ${item.rest_seconds}s rest` : ''}
-          </ThemedText>
-        </Pressable>
-      </View>
+      <Pressable style={styles.row} onPress={onEdit} onLongPress={drag}>
+        <ThemedText type="defaultSemiBold">{item.exercise.name}</ThemedText>
+        <ThemedText>
+          {item.target_sets} × {item.target_reps}
+          {item.target_weight_kg ? ` @ ${item.target_weight_kg}kg` : ''}
+          {item.rest_seconds ? ` · ${item.rest_seconds}s rest` : ''}
+        </ThemedText>
+      </Pressable>
     </Swipeable>
   );
 }
@@ -153,13 +144,7 @@ const styles = StyleSheet.create({
   container: { flex: 1 },
   list: { paddingHorizontal: 16, paddingVertical: 8 },
   separator: { height: StyleSheet.hairlineWidth },
-  row: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-    paddingVertical: 16,
-  },
-  rowContent: { flex: 1, gap: 2 },
+  row: { paddingVertical: 16, gap: 2 },
   deleteAction: {
     backgroundColor: '#e53935',
     justifyContent: 'center',
