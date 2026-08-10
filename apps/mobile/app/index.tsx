@@ -1,9 +1,9 @@
 import { Stack, useRouter } from 'expo-router';
 import { FlatList, Pressable, StyleSheet } from 'react-native';
 
+import { HeaderIconButton } from '@/components/header-icon-button';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
-import { IconSymbol } from '@/components/ui/icon-symbol';
 import { usePlans } from '@/hooks/queries/use-plans';
 import { useThemeColor } from '@/hooks/use-theme-color';
 
@@ -19,9 +19,12 @@ export default function PlansScreen() {
         options={{
           title: 'Plans',
           headerRight: () => (
-            <Pressable onPress={() => router.push('/plans/form')} hitSlop={8}>
-              <IconSymbol name="plus" size={24} color={tint} />
-            </Pressable>
+            <HeaderIconButton
+              name="plus"
+              size={24}
+              color={tint}
+              onPress={() => router.push('/plans/form')}
+            />
           ),
         }}
       />

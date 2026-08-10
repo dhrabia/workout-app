@@ -3,6 +3,7 @@ import { Pressable, StyleSheet, View } from 'react-native';
 import Swipeable from 'react-native-gesture-handler/ReanimatedSwipeable';
 import ReorderableList, { reorderItems, useReorderableDrag } from 'react-native-reorderable-list';
 
+import { HeaderActions, HeaderIconButton } from '@/components/header-icon-button';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { IconSymbol } from '@/components/ui/icon-symbol';
@@ -48,18 +49,17 @@ export default function DayDetailScreen() {
         options={{
           title: day?.name ?? 'Day',
           headerRight: () => (
-            <View style={styles.headerActions}>
-              <Pressable
+            <HeaderActions>
+              <HeaderIconButton
+                name="pencil"
+                size={22}
+                color={tint}
                 onPress={() =>
                   router.push({ pathname: '/plans/[planId]/days/form', params: { planId, dayId } })
                 }
-                hitSlop={8}>
-                <IconSymbol name="pencil" size={22} color={tint} />
-              </Pressable>
-              <Pressable onPress={handleDeleteDay} hitSlop={8}>
-                <IconSymbol name="trash" size={22} color={tint} />
-              </Pressable>
-            </View>
+              />
+              <HeaderIconButton name="trash" size={22} color={tint} onPress={handleDeleteDay} />
+            </HeaderActions>
           ),
         }}
       />
@@ -151,7 +151,6 @@ function ExerciseRow({
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
-  headerActions: { flexDirection: 'row', gap: 16 },
   list: { paddingHorizontal: 16, paddingVertical: 8 },
   separator: { height: StyleSheet.hairlineWidth },
   row: {

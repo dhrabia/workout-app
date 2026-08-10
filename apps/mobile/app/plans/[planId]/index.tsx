@@ -1,6 +1,7 @@
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import { FlatList, Pressable, StyleSheet, View } from 'react-native';
 
+import { HeaderActions, HeaderIconButton } from '@/components/header-icon-button';
 import { ReorderButtons } from '@/components/reorder-buttons';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
@@ -42,18 +43,15 @@ export default function PlanDetailScreen() {
         options={{
           title: plan?.name ?? 'Plan',
           headerRight: () => (
-            <View style={styles.headerActions}>
-              <Pressable
-                onPress={() =>
-                  router.push({ pathname: '/plans/form', params: { planId } })
-                }
-                hitSlop={8}>
-                <IconSymbol name="pencil" size={22} color={tint} />
-              </Pressable>
-              <Pressable onPress={handleDeletePlan} hitSlop={8}>
-                <IconSymbol name="trash" size={22} color={tint} />
-              </Pressable>
-            </View>
+            <HeaderActions>
+              <HeaderIconButton
+                name="pencil"
+                size={22}
+                color={tint}
+                onPress={() => router.push({ pathname: '/plans/form', params: { planId } })}
+              />
+              <HeaderIconButton name="trash" size={22} color={tint} onPress={handleDeletePlan} />
+            </HeaderActions>
           ),
         }}
       />
@@ -113,7 +111,6 @@ export default function PlanDetailScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
-  headerActions: { flexDirection: 'row', gap: 16 },
   description: { paddingHorizontal: 16, paddingTop: 8 },
   list: { padding: 16, gap: 12 },
   row: {
