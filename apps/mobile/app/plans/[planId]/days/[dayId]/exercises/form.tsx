@@ -16,7 +16,7 @@ import {
 import { confirmDestructive } from '@/lib/alerts';
 
 export default function PlanExerciseFormScreen() {
-  const { dayId, planExerciseId, exerciseId, exerciseName } = useLocalSearchParams<{
+  const { planId, dayId, planExerciseId, exerciseId, exerciseName } = useLocalSearchParams<{
     planId: string;
     dayId: string;
     planExerciseId?: string;
@@ -73,7 +73,13 @@ export default function PlanExerciseFormScreen() {
         rest_seconds: rest.trim() ? parseInt(rest, 10) : null,
         notes: notes.trim() || null,
       },
-      { onSuccess: () => router.back() }
+      {
+        onSuccess: () =>
+          // Reaching this screen may have gone through the category picker and/or the
+          // custom-exercise form, both stacked on top of the day screen — dismissTo
+          // collapses however many of those are present, rather than just popping one.
+          router.dismissTo({ pathname: '/plans/[planId]/days/[dayId]', params: { planId, dayId } }),
+      }
     );
   }
 

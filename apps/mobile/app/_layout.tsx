@@ -18,6 +18,7 @@ import { queryClient } from '@/lib/query-client';
 const MODAL_ROUTES = [
   'plans/form',
   'plans/[planId]/days/form',
+  'plans/[planId]/days/[dayId]/exercises/categories',
   'plans/[planId]/days/[dayId]/exercises/picker',
   'plans/[planId]/days/[dayId]/exercises/form',
   'exercises/new',

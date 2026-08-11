@@ -102,7 +102,7 @@ export default function DayDetailScreen() {
       <Pressable
         onPress={() =>
           router.push({
-            pathname: '/plans/[planId]/days/[dayId]/exercises/picker',
+            pathname: '/plans/[planId]/days/[dayId]/exercises/categories',
             params: { planId, dayId },
           })
         }

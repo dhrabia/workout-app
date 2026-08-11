@@ -10,7 +10,11 @@ import { useExerciseCatalog } from '@/hooks/queries/use-exercises';
 import { useThemeColor } from '@/hooks/use-theme-color';
 
 export default function ExercisePickerScreen() {
-  const { planId, dayId } = useLocalSearchParams<{ planId: string; dayId: string }>();
+  const { planId, dayId, muscleGroup } = useLocalSearchParams<{
+    planId: string;
+    dayId: string;
+    muscleGroup: string;
+  }>();
   const router = useRouter();
   const { data: exercises, isLoading } = useExerciseCatalog();
   const [query, setQuery] = useState('');
@@ -22,10 +26,11 @@ export default function ExercisePickerScreen() {
 
   const filtered = useMemo(() => {
     if (!exercises) return [];
+    const byGroup = exercises.filter((exercise) => exercise.muscle_group === muscleGroup);
     const q = query.trim().toLowerCase();
-    if (!q) return exercises;
-    return exercises.filter((exercise) => exercise.name.toLowerCase().includes(q));
-  }, [exercises, query]);
+    if (!q) return byGroup;
+    return byGroup.filter((exercise) => exercise.name.toLowerCase().includes(q));
+  }, [exercises, muscleGroup, query]);
 
   function selectExercise(exerciseId: string, exerciseName: string) {
     router.replace({
@@ -36,7 +41,9 @@ export default function ExercisePickerScreen() {
 
   return (
     <ThemedView style={styles.container}>
-      <Stack.Screen options={{ title: 'Add Exercise' }} />
+      <Stack.Screen
+        options={{ title: muscleGroup.replace('_', ' ').replace(/^\w/, (c) => c.toUpperCase()) }}
+      />
       <View style={[styles.searchRow, { borderColor }]}>
         <IconSymbol name="magnifyingglass" size={18} color={borderColor} />
         <TextInput
@@ -60,7 +67,6 @@ export default function ExercisePickerScreen() {
               onPress={() => selectExercise(item.id, item.name)}
               style={[styles.row, { borderColor }]}>
               <ThemedText type="defaultSemiBold">{item.name}</ThemedText>
-              <ThemedText>{item.muscle_group}</ThemedText>
             </Pressable>
           )}
         />
@@ -69,7 +75,7 @@ export default function ExercisePickerScreen() {
         onPress={() =>
           router.push({
             pathname: '/exercises/new',
-            params: { returnPlanId: planId, returnDayId: dayId },
+            params: { returnPlanId: planId, returnDayId: dayId, muscleGroup },
           })
         }
         style={[styles.addButton, { borderColor: tint, marginBottom: insets.bottom + 16 }]}>

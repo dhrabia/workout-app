@@ -8,28 +8,19 @@ import { SubmitButton } from '@/components/submit-button';
 import { ThemedText } from '@/components/themed-text';
 import { useCreateExercise } from '@/hooks/queries/use-exercises';
 import { useThemeColor } from '@/hooks/use-theme-color';
-
-const MUSCLE_GROUPS = [
-  'chest',
-  'back',
-  'shoulders',
-  'arms',
-  'legs',
-  'core',
-  'full_body',
-  'cardio',
-] as const;
+import { MUSCLE_GROUPS, type MuscleGroup } from '@/lib/types';
 
 export default function NewExerciseScreen() {
-  const { returnPlanId, returnDayId } = useLocalSearchParams<{
+  const { returnPlanId, returnDayId, muscleGroup: initialMuscleGroup } = useLocalSearchParams<{
     returnPlanId?: string;
     returnDayId?: string;
+    muscleGroup?: MuscleGroup;
   }>();
   const router = useRouter();
   const createExercise = useCreateExercise();
 
   const [name, setName] = useState('');
-  const [muscleGroup, setMuscleGroup] = useState<(typeof MUSCLE_GROUPS)[number]>('full_body');
+  const [muscleGroup, setMuscleGroup] = useState<MuscleGroup>(initialMuscleGroup ?? 'full_body');
   const [equipment, setEquipment] = useState('');
   const [error, setError] = useState<string | undefined>();
 
