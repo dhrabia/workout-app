@@ -22,7 +22,7 @@ export default function ExerciseCategoriesScreen() {
 
   return (
     <ThemedView style={styles.container}>
-      <Stack.Screen options={{ title: 'Add Exercise' }} />
+      <Stack.Screen options={{ title: 'Select muscle group' }} />
       <View style={styles.grid}>
         {MUSCLE_GROUPS.map((group) => (
           <Pressable
