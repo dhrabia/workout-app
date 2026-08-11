@@ -4,6 +4,7 @@ import { Pressable, StyleSheet } from 'react-native';
 
 import { FormField } from '@/components/form-field';
 import { FormScreen } from '@/components/form-screen';
+import { NumberStepper } from '@/components/number-stepper';
 import { SubmitButton } from '@/components/submit-button';
 import { ThemedText } from '@/components/themed-text';
 import {
@@ -36,7 +37,8 @@ export default function PlanExerciseFormScreen() {
   const [weight, setWeight] = useState('');
   const [rest, setRest] = useState('');
   const [notes, setNotes] = useState('');
-  const [error, setError] = useState<string | undefined>();
+  const [setsError, setSetsError] = useState<string | undefined>();
+  const [repsError, setRepsError] = useState<string | undefined>();
 
   useEffect(() => {
     if (existing) {
@@ -52,10 +54,12 @@ export default function PlanExerciseFormScreen() {
 
   function handleSubmit() {
     const setsNumber = parseInt(sets, 10);
-    if (!reps.trim() || !Number.isFinite(setsNumber) || setsNumber <= 0) {
-      setError('Sets (a positive number) and reps are required');
-      return;
-    }
+    const isSetsInvalid = !Number.isFinite(setsNumber) || setsNumber <= 0;
+    const isRepsInvalid = !reps.trim();
+
+    setSetsError(isSetsInvalid ? 'Sets (a positive number) are required' : undefined);
+    setRepsError(isRepsInvalid ? 'Reps (a positive number) are required' : undefined);
+    if (isSetsInvalid || isRepsInvalid) return;
 
     const resolvedExerciseId = existing?.exercise_id ?? exerciseId;
     if (!resolvedExerciseId) return;
@@ -84,26 +88,42 @@ export default function PlanExerciseFormScreen() {
     <FormScreen>
       <Stack.Screen options={{ title: isEditing ? 'Edit Exercise' : 'Add to Day' }} />
       <ThemedText type="subtitle">{displayName}</ThemedText>
-      <FormField
+      <NumberStepper
         label="Sets"
         value={sets}
         onChangeText={setSets}
-        keyboardType="number-pad"
-        error={error}
+        step={1}
+        min={1}
+        placeholder="e.g. 4"
+        error={setsError}
       />
-      <FormField label="Reps" value={reps} onChangeText={setReps} placeholder="e.g. 8-12" />
-      <FormField
+      <NumberStepper
+        label="Reps"
+        value={reps}
+        onChangeText={setReps}
+        step={1}
+        min={1}
+        keyboardType="default"
+        placeholder="e.g. 8-12"
+        error={repsError}
+      />
+      <NumberStepper
         label="Weight (kg)"
         value={weight}
         onChangeText={setWeight}
-        keyboardType="decimal-pad"
+        step={(current) => (current >= 40 ? 2.5 : 0.5)}
+        min={0}
+        decimals={1}
+        suffix="kg"
         placeholder="Optional"
       />
-      <FormField
-        label="Rest (seconds)"
+      <NumberStepper
+        label="Rest"
         value={rest}
         onChangeText={setRest}
-        keyboardType="number-pad"
+        step={15}
+        min={0}
+        suffix="s"
         placeholder="Optional"
       />
       <FormField
