@@ -237,6 +237,8 @@ export type Database = {
         | "core"
         | "full_body"
         | "cardio"
+        | "biceps"
+        | "triceps"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -376,6 +378,8 @@ export const Constants = {
         "core",
         "full_body",
         "cardio",
+        "biceps",
+        "triceps",
       ],
     },
   },
