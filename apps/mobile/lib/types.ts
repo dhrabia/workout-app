@@ -4,6 +4,10 @@ export type PlanExerciseWithExercise = Tables<"workout_plan_exercises"> & {
   exercise: Tables<"exercises">;
 };
 
+export type PlanDayWithExerciseCount = Tables<"workout_plan_days"> & {
+  exerciseCount: number;
+};
+
 // "arms" stays a valid value in the database enum (see migration
 // 20260811105023) but is intentionally omitted here — the UI now offers
 // "biceps"/"triceps" instead of the combined category.

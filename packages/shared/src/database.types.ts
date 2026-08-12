@@ -184,6 +184,7 @@ export type Database = {
           description: string | null
           id: string
           name: string
+          order_index: number
           updated_at: string
           user_id: string
         }
@@ -192,6 +193,7 @@ export type Database = {
           description?: string | null
           id?: string
           name: string
+          order_index?: number
           updated_at?: string
           user_id?: string
         }
@@ -200,6 +202,7 @@ export type Database = {
           description?: string | null
           id?: string
           name?: string
+          order_index?: number
           updated_at?: string
           user_id?: string
         }
@@ -218,14 +221,15 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      reorder_plan_days: {
+        Args: { p_day_ids: string[]; p_plan_id: string }
+        Returns: undefined
+      }
       reorder_plan_exercises: {
         Args: { p_exercise_ids: string[]; p_plan_day_id: string }
         Returns: undefined
       }
-      swap_plan_day_order: {
-        Args: { day_id_a: string; day_id_b: string }
-        Returns: undefined
-      }
+      reorder_plans: { Args: { p_plan_ids: string[] }; Returns: undefined }
     }
     Enums: {
       muscle_group:

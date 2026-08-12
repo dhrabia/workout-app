@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { Tables, TablesInsert } from "@workout-app/shared";
 
+import { useOptimisticReorder } from "@/hooks/queries/use-optimistic-reorder";
 import { unwrap } from "@/lib/db";
 import { queryKeys } from "@/lib/query-keys";
 import { supabase } from "@/lib/supabase";
@@ -41,7 +42,7 @@ export function usePlanExercise(planExerciseId: string) {
   });
 }
 
-export function useCreatePlanExercise(dayId: string) {
+export function useCreatePlanExercise(dayId: string, planId: string) {
   const queryClient = useQueryClient();
 
   return useMutation({
@@ -55,6 +56,9 @@ export function useCreatePlanExercise(dayId: string) {
       ),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.planExercises.list(dayId) });
+      // exerciseCount on the day list is derived from this table, so adding
+      // a row means that cached list is now stale too.
+      queryClient.invalidateQueries({ queryKey: queryKeys.planDays.list(planId) });
     },
   });
 }
@@ -79,7 +83,7 @@ export function useUpdatePlanExercise(planExerciseId: string, dayId: string) {
   });
 }
 
-export function useDeletePlanExercise(dayId: string) {
+export function useDeletePlanExercise(dayId: string, planId: string) {
   const queryClient = useQueryClient();
 
   return useMutation({
@@ -92,33 +96,20 @@ export function useDeletePlanExercise(dayId: string) {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.planExercises.list(dayId) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.planDays.list(planId) });
     },
   });
 }
 
 export function useReorderPlanExercises(dayId: string) {
-  const queryClient = useQueryClient();
-  const queryKey = queryKeys.planExercises.list(dayId);
-
-  return useMutation({
-    mutationFn: async (reordered: PlanExerciseWithExercise[]) => {
+  return useOptimisticReorder<PlanExerciseWithExercise>(
+    queryKeys.planExercises.list(dayId),
+    async (reordered) => {
       const { error } = await supabase.rpc("reorder_plan_exercises", {
         p_plan_day_id: dayId,
         p_exercise_ids: reordered.map((exercise) => exercise.id),
       });
       if (error) throw error;
-    },
-    onMutate: async (reordered) => {
-      await queryClient.cancelQueries({ queryKey });
-      const previous = queryClient.getQueryData<PlanExerciseWithExercise[]>(queryKey);
-      queryClient.setQueryData(queryKey, reordered);
-      return { previous };
-    },
-    onError: (_error, _reordered, context) => {
-      if (context?.previous) queryClient.setQueryData(queryKey, context.previous);
-    },
-    onSettled: () => {
-      queryClient.invalidateQueries({ queryKey });
-    },
-  });
+    }
+  );
 }

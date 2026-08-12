@@ -27,9 +27,9 @@ export default function PlanExerciseFormScreen() {
   const isEditing = !!planExerciseId;
 
   const { data: existing } = usePlanExercise(planExerciseId ?? '');
-  const createPlanExercise = useCreatePlanExercise(dayId);
+  const createPlanExercise = useCreatePlanExercise(dayId, planId);
   const updatePlanExercise = useUpdatePlanExercise(planExerciseId ?? '', dayId);
-  const deletePlanExercise = useDeletePlanExercise(dayId);
+  const deletePlanExercise = useDeletePlanExercise(dayId, planId);
   const mutation = isEditing ? updatePlanExercise : createPlanExercise;
 
   const [sets, setSets] = useState('');

@@ -17,6 +17,8 @@ export const Colors = {
     icon: '#687076',
     tabIconDefault: '#687076',
     tabIconSelected: tintColorLight,
+    // iOS secondarySystemBackground — the fill used for grouped-list cards.
+    cardBackground: '#F2F2F7',
   },
   dark: {
     text: '#ECEDEE',
@@ -26,6 +28,8 @@ export const Colors = {
     icon: '#9BA1A6',
     tabIconDefault: '#9BA1A6',
     tabIconSelected: tintColorDark,
+    // iOS secondarySystemBackground (dark) — the fill used for grouped-list cards.
+    cardBackground: '#1C1C1E',
   },
 };
 

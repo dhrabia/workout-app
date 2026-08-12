@@ -1,17 +1,21 @@
 import { Stack, useRouter } from 'expo-router';
-import { FlatList, Pressable, StyleSheet } from 'react-native';
+import { StyleSheet, View } from 'react-native';
+import ReorderableList, { reorderItems, useReorderableDrag } from 'react-native-reorderable-list';
 
 import { HeaderIconButton } from '@/components/header-icon-button';
+import { ListCard } from '@/components/list-card';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
-import { usePlans } from '@/hooks/queries/use-plans';
+import { usePlans, useReorderPlans } from '@/hooks/queries/use-plans';
 import { useThemeColor } from '@/hooks/use-theme-color';
+import type { Tables } from '@workout-app/shared';
 
 export default function PlansScreen() {
   const router = useRouter();
-  const { data: plans, isLoading } = usePlans();
+  const { data: plansData, isLoading } = usePlans();
+  const plans = plansData ?? [];
+  const reorderPlans = useReorderPlans();
   const tint = useThemeColor({}, 'tint');
-  const borderColor = useThemeColor({}, 'icon');
 
   return (
     <ThemedView style={styles.container}>
@@ -31,27 +35,24 @@ export default function PlansScreen() {
       {isLoading ? (
         <ThemedText style={styles.centerText}>Loading…</ThemedText>
       ) : (
-        <FlatList
-          data={plans ?? []}
+        <ReorderableList
+          data={plans}
           keyExtractor={(item) => item.id}
           contentContainerStyle={styles.list}
           ListEmptyComponent={
-            <ThemedView style={styles.empty}>
+            <View style={styles.empty}>
               <ThemedText type="subtitle">No plans yet</ThemedText>
               <ThemedText>Tap + to create your first workout plan.</ThemedText>
-            </ThemedView>
+            </View>
           }
+          onReorder={({ from, to }) => reorderPlans.mutate(reorderItems(plans, from, to))}
           renderItem={({ item }) => (
-            <Pressable
+            <PlanCard
+              item={item}
               onPress={() =>
                 router.push({ pathname: '/plans/[planId]', params: { planId: item.id } })
               }
-              style={[styles.row, { borderColor }]}>
-              <ThemedText type="defaultSemiBold">{item.name}</ThemedText>
-              {item.description ? (
-                <ThemedText numberOfLines={1}>{item.description}</ThemedText>
-              ) : null}
-            </Pressable>
+            />
           )}
         />
       )}
@@ -59,10 +60,30 @@ export default function PlansScreen() {
   );
 }
 
+function PlanCard({ item, onPress }: { item: Tables<'workout_plans'>; onPress: () => void }) {
+  const drag = useReorderableDrag();
+  const borderColor = useThemeColor({}, 'icon');
+
+  return (
+    <ListCard
+      title={item.name}
+      onPress={onPress}
+      onLongPress={drag}
+      meta={
+        item.description ? (
+          <ThemedText style={[styles.meta, { color: borderColor }]} numberOfLines={1}>
+            {item.description}
+          </ThemedText>
+        ) : undefined
+      }
+    />
+  );
+}
+
 const styles = StyleSheet.create({
   container: { flex: 1 },
   list: { padding: 16, gap: 12 },
-  row: { padding: 16, borderWidth: 1, borderRadius: 12, gap: 4 },
+  meta: { fontSize: 13 },
   empty: { padding: 32, alignItems: 'center', gap: 8 },
   centerText: { textAlign: 'center', marginTop: 32 },
 });

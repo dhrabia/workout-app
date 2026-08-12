@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { Tables, TablesInsert, TablesUpdate } from "@workout-app/shared";
 
+import { useOptimisticReorder } from "@/hooks/queries/use-optimistic-reorder";
 import { unwrap } from "@/lib/db";
 import { queryKeys } from "@/lib/query-keys";
 import { supabase } from "@/lib/supabase";
@@ -10,10 +11,7 @@ export function usePlans() {
     queryKey: queryKeys.plans.list(),
     queryFn: async () =>
       unwrap<Tables<"workout_plans">[]>(
-        await supabase
-          .from("workout_plans")
-          .select("*")
-          .order("created_at", { ascending: false })
+        await supabase.from("workout_plans").select("*").order("order_index", { ascending: true })
       ),
   });
 }
@@ -69,5 +67,14 @@ export function useDeletePlan() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.plans.list() });
     },
+  });
+}
+
+export function useReorderPlans() {
+  return useOptimisticReorder<Tables<"workout_plans">>(queryKeys.plans.list(), async (reordered) => {
+    const { error } = await supabase.rpc("reorder_plans", {
+      p_plan_ids: reordered.map((plan) => plan.id),
+    });
+    if (error) throw error;
   });
 }

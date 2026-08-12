@@ -1,15 +1,17 @@
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
-import { FlatList, Pressable, StyleSheet, View } from 'react-native';
+import { Pressable, StyleSheet, View } from 'react-native';
+import ReorderableList, { reorderItems, useReorderableDrag } from 'react-native-reorderable-list';
 
 import { HeaderActions, HeaderIconButton } from '@/components/header-icon-button';
-import { ReorderButtons } from '@/components/reorder-buttons';
+import { ListCard } from '@/components/list-card';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { useDeletePlan, usePlan } from '@/hooks/queries/use-plans';
-import { usePlanDays, useDeletePlanDay, useReorderPlanDay } from '@/hooks/queries/use-plan-days';
+import { usePlanDays, useDeletePlanDay, useReorderPlanDays } from '@/hooks/queries/use-plan-days';
 import { useThemeColor } from '@/hooks/use-theme-color';
 import { confirmDestructive } from '@/lib/alerts';
+import type { PlanDayWithExerciseCount } from '@/lib/types';
 
 export default function PlanDetailScreen() {
   const { planId } = useLocalSearchParams<{ planId: string }>();
@@ -20,10 +22,9 @@ export default function PlanDetailScreen() {
   const days = daysData ?? [];
   const deletePlan = useDeletePlan();
   const deletePlanDay = useDeletePlanDay(planId);
-  const reorderPlanDay = useReorderPlanDay(planId);
+  const reorderPlanDays = useReorderPlanDays(planId);
 
   const tint = useThemeColor({}, 'tint');
-  const borderColor = useThemeColor({}, 'icon');
 
   function handleDeletePlan() {
     confirmDestructive('Delete plan?', 'This removes all its days and exercises too.', 'Delete', () =>
@@ -61,42 +62,28 @@ export default function PlanDetailScreen() {
       {isLoading ? (
         <ThemedText style={styles.centerText}>Loading…</ThemedText>
       ) : (
-        <FlatList
+        <ReorderableList
           data={days}
           keyExtractor={(item) => item.id}
           contentContainerStyle={styles.list}
           ListEmptyComponent={
-            <ThemedView style={styles.empty}>
+            <View style={styles.empty}>
               <ThemedText type="subtitle">No days yet</ThemedText>
               <ThemedText>Add a day to start building this plan.</ThemedText>
-            </ThemedView>
-          }
-          renderItem={({ item, index }) => (
-            <View style={[styles.row, { borderColor }]}>
-              <ReorderButtons
-                disableUp={index === 0}
-                disableDown={index === days.length - 1}
-                onMoveUp={() =>
-                  reorderPlanDay.mutate({ dayIdA: item.id, dayIdB: days[index - 1].id })
-                }
-                onMoveDown={() =>
-                  reorderPlanDay.mutate({ dayIdA: item.id, dayIdB: days[index + 1].id })
-                }
-              />
-              <Pressable
-                style={styles.rowContent}
-                onPress={() =>
-                  router.push({
-                    pathname: '/plans/[planId]/days/[dayId]',
-                    params: { planId, dayId: item.id },
-                  })
-                }>
-                <ThemedText type="defaultSemiBold">{item.name}</ThemedText>
-              </Pressable>
-              <Pressable onPress={() => handleDeleteDay(item.id)} hitSlop={8}>
-                <IconSymbol name="trash" size={20} color={borderColor} />
-              </Pressable>
             </View>
+          }
+          onReorder={({ from, to }) => reorderPlanDays.mutate(reorderItems(days, from, to))}
+          renderItem={({ item }) => (
+            <DayCard
+              item={item}
+              onPress={() =>
+                router.push({
+                  pathname: '/plans/[planId]/days/[dayId]',
+                  params: { planId, dayId: item.id },
+                })
+              }
+              onDelete={() => handleDeleteDay(item.id)}
+            />
           )}
         />
       )}
@@ -109,19 +96,49 @@ export default function PlanDetailScreen() {
   );
 }
 
+function DayCard({
+  item,
+  onPress,
+  onDelete,
+}: {
+  item: PlanDayWithExerciseCount;
+  onPress: () => void;
+  onDelete: () => void;
+}) {
+  const drag = useReorderableDrag();
+  const borderColor = useThemeColor({}, 'icon');
+
+  return (
+    <ListCard
+      title={item.name}
+      onPress={onPress}
+      onLongPress={drag}
+      meta={
+        <View style={styles.metaRow}>
+          <ThemedText style={[styles.meta, { color: borderColor }]}>
+            {item.exerciseCount} exercise{item.exerciseCount === 1 ? '' : 's'} ·
+          </ThemedText>
+          <IconSymbol name="clock" size={13} color={borderColor} />
+          <ThemedText style={[styles.meta, { color: borderColor }]}>
+            {item.exerciseCount * 10} min
+          </ThemedText>
+        </View>
+      }
+      trailing={
+        <Pressable onPress={onDelete} hitSlop={8}>
+          <IconSymbol name="trash" size={20} color={borderColor} />
+        </Pressable>
+      }
+    />
+  );
+}
+
 const styles = StyleSheet.create({
   container: { flex: 1 },
   description: { paddingHorizontal: 16, paddingTop: 8 },
   list: { padding: 16, gap: 12 },
-  row: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-    padding: 16,
-    borderWidth: 1,
-    borderRadius: 12,
-  },
-  rowContent: { flex: 1 },
+  metaRow: { flexDirection: 'row', alignItems: 'center', gap: 4 },
+  meta: { fontSize: 13 },
   empty: { padding: 32, alignItems: 'center', gap: 8 },
   centerText: { textAlign: 'center', marginTop: 32 },
   addButton: {

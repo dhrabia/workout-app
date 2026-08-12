@@ -16,11 +16,10 @@ type IconSymbolName = keyof typeof MAPPING;
 const MAPPING = {
   'plus': 'add',
   'minus': 'remove',
-  'chevron.up': 'keyboard-arrow-up',
-  'chevron.down': 'keyboard-arrow-down',
   'pencil': 'edit',
   'trash': 'delete',
   'magnifyingglass': 'search',
+  'clock': 'access-time',
 } as IconMapping;
 
 /**

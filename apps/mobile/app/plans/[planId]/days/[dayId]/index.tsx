@@ -28,7 +28,7 @@ export default function DayDetailScreen() {
   const { data: exercisesData, isLoading } = usePlanExercises(dayId);
   const exercises = exercisesData ?? [];
   const deletePlanDay = useDeletePlanDay(planId);
-  const deletePlanExercise = useDeletePlanExercise(dayId);
+  const deletePlanExercise = useDeletePlanExercise(dayId, planId);
   const reorderPlanExercises = useReorderPlanExercises(dayId);
 
   const tint = useThemeColor({}, 'tint');
