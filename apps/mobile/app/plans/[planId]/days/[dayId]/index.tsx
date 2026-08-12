@@ -1,5 +1,5 @@
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
-import { Pressable, StyleSheet, View } from 'react-native';
+import { Image, Pressable, StyleSheet, View } from 'react-native';
 import Swipeable from 'react-native-gesture-handler/ReanimatedSwipeable';
 import ReorderableList, {
   reorderItems,
@@ -18,6 +18,7 @@ import {
 } from '@/hooks/queries/use-plan-exercises';
 import { useThemeColor } from '@/hooks/use-theme-color';
 import { confirmDestructive } from '@/lib/alerts';
+import { MUSCLE_ICONS } from '@/lib/muscle-icons';
 import type { PlanExerciseWithExercise } from '@/lib/types';
 
 export default function DayDetailScreen() {
@@ -135,12 +136,19 @@ function ExerciseRow({
         </Pressable>
       )}>
       <Pressable style={styles.row} onPress={onEdit} onLongPress={drag}>
-        <ThemedText type="defaultSemiBold">{item.exercise.name}</ThemedText>
-        <ThemedText>
-          {item.target_sets} × {item.target_reps}
-          {item.target_weight_kg ? ` @ ${item.target_weight_kg}kg` : ''}
-          {item.rest_seconds ? ` · ${item.rest_seconds}s rest` : ''}
-        </ThemedText>
+        <Image
+          source={MUSCLE_ICONS[item.exercise.muscle_group]}
+          style={styles.icon}
+          resizeMode="contain"
+        />
+        <View style={styles.rowContent}>
+          <ThemedText type="defaultSemiBold">{item.exercise.name}</ThemedText>
+          <ThemedText>
+            {item.target_sets} × {item.target_reps}
+            {item.target_weight_kg ? ` @ ${item.target_weight_kg}kg` : ''}
+            {item.rest_seconds ? ` · ${item.rest_seconds}s rest` : ''}
+          </ThemedText>
+        </View>
       </Pressable>
     </Swipeable>
   );
@@ -150,7 +158,9 @@ const styles = StyleSheet.create({
   container: { flex: 1 },
   list: { paddingHorizontal: 16, paddingVertical: 8 },
   separator: { height: StyleSheet.hairlineWidth },
-  row: { paddingVertical: 16, gap: 2 },
+  row: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingVertical: 16 },
+  icon: { width: 36, height: 36 },
+  rowContent: { flex: 1, gap: 2 },
   deleteAction: {
     backgroundColor: '#e53935',
     justifyContent: 'center',
