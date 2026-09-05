@@ -2,7 +2,6 @@ import { ComponentProps } from 'react';
 import { Pressable, StyleSheet } from 'react-native';
 
 import { IconSymbol } from '@/components/ui/icon-symbol';
-import { useThemeColor } from '@/hooks/use-theme-color';
 
 export type HeaderIconButtonProps = {
   name: ComponentProps<typeof IconSymbol>['name'];
@@ -11,20 +10,14 @@ export type HeaderIconButtonProps = {
   onPress: () => void;
 };
 
+// Deliberately no visible border/background here: on iOS 26, native-stack wraps a
+// screen's entire headerRight output in one native pill (react-native-screens has no
+// per-item bar-button API to split it), so a per-icon border/background just nests
+// inside that pill instead of separating adjacent icons. The fixed 34x34 box only
+// keeps every icon's tap target a consistent, adequately-sized hit area.
 export function HeaderIconButton({ name, color, size, onPress }: HeaderIconButtonProps) {
-  const backgroundColor = useThemeColor({}, 'cardBackground');
-  const borderColor = useThemeColor({}, 'border');
-  const pressedColor = useThemeColor({}, 'tintDark');
-
   return (
-    <Pressable
-      onPress={onPress}
-      hitSlop={8}
-      style={({ pressed }) => [
-        styles.button,
-        { backgroundColor, borderColor },
-        pressed && { backgroundColor: pressedColor, borderColor: pressedColor },
-      ]}>
+    <Pressable onPress={onPress} hitSlop={8} style={styles.button}>
       <IconSymbol name={name} size={size} color={color} />
     </Pressable>
   );
@@ -34,8 +27,6 @@ const styles = StyleSheet.create({
   button: {
     width: 34,
     height: 34,
-    borderRadius: 17,
-    borderWidth: StyleSheet.hairlineWidth,
     alignItems: 'center',
     justifyContent: 'center',
   },
