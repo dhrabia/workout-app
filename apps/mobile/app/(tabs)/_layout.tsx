@@ -15,6 +15,10 @@ export default function TabsLayout() {
           androidSrc={<VectorIcon family={MaterialIcons} name="fitness-center" />}
         />
       </NativeTabs.Trigger>
+      <NativeTabs.Trigger name="body">
+        <Label>Body</Label>
+        <Icon sf="figure.stand" androidSrc={<VectorIcon family={MaterialIcons} name="accessibility" />} />
+      </NativeTabs.Trigger>
       <NativeTabs.Trigger name="profile">
         <Label>Profile</Label>
         <Icon sf="person.crop.circle" androidSrc={<VectorIcon family={MaterialIcons} name="account-circle" />} />
