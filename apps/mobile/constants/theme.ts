@@ -1,3 +1,5 @@
+import { DarkTheme, DefaultTheme, type Theme } from '@react-navigation/native';
+
 /**
  * Mercedes-AMG Petronas F1-inspired palette. `dark` is the reference values;
  * `light` is a derived counterpart (not part of the original palette) that
@@ -46,5 +48,39 @@ export const Colors = {
     success,
     warning,
     error,
+  },
+};
+
+// React Navigation's native-stack header reads its background/tint/text
+// colors from this theme (colors.card/primary/text), not from our own
+// Colors above, so without this the native header renders React
+// Navigation's default surface — a different shade of dark than our own
+// screen background, producing a visible seam between header and content.
+// Setting `card` to the same value as `background` is what makes the header
+// blend into the screen instead of looking like a separate panel.
+export const NavigationThemes: { light: Theme; dark: Theme } = {
+  light: {
+    ...DefaultTheme,
+    colors: {
+      ...DefaultTheme.colors,
+      primary: Colors.light.tint,
+      background: Colors.light.background,
+      card: Colors.light.background,
+      text: Colors.light.text,
+      border: Colors.light.cardElevated,
+      notification: Colors.light.error,
+    },
+  },
+  dark: {
+    ...DarkTheme,
+    colors: {
+      ...DarkTheme.colors,
+      primary: Colors.dark.tint,
+      background: Colors.dark.background,
+      card: Colors.dark.background,
+      text: Colors.dark.text,
+      border: Colors.dark.cardElevated,
+      notification: Colors.dark.error,
+    },
   },
 };
