@@ -36,6 +36,9 @@ export default function RootLayout() {
             <ContextMenuHostProvider>
               <AuthGate>
                 <Stack>
+                  {/* title backs the header of whatever gets pushed on top (e.g. plan
+                      detail) even though this screen's own header is hidden. */}
+                  <Stack.Screen name="(tabs)" options={{ headerShown: false, title: 'Plans' }} />
                   {MODAL_ROUTES.map((name) => (
                     <Stack.Screen key={name} name={name} options={{ presentation: 'modal' }} />
                   ))}
