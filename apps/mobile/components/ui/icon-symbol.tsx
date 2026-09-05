@@ -22,6 +22,7 @@ const MAPPING = {
   'clock': 'access-time',
   'xmark': 'close',
   'ellipsis': 'more-horiz',
+  'person.fill': 'person',
 } as IconMapping;
 
 /**

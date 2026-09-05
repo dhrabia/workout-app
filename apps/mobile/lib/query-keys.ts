@@ -18,4 +18,8 @@ export const queryKeys = {
   exercises: {
     all: ["exercises"] as const,
   },
+  profile: {
+    all: ["profile"] as const,
+    detail: (userId: string) => [...queryKeys.profile.all, "detail", userId] as const,
+  },
 };
