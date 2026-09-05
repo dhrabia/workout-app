@@ -10,7 +10,9 @@ export type FormFieldProps = TextInputProps & {
 
 export function FormField({ label, error, style, ...rest }: FormFieldProps) {
   const color = useThemeColor({}, 'text');
-  const borderColor = useThemeColor({}, 'icon');
+  const borderColor = useThemeColor({}, 'border');
+  const placeholderColor = useThemeColor({}, 'textDisabled');
+  const errorColor = useThemeColor({}, 'error');
 
   return (
     <View style={styles.container}>
@@ -19,10 +21,10 @@ export function FormField({ label, error, style, ...rest }: FormFieldProps) {
       </ThemedText>
       <TextInput
         style={[styles.input, { color, borderColor }, style]}
-        placeholderTextColor={borderColor}
+        placeholderTextColor={placeholderColor}
         {...rest}
       />
-      {error ? <ThemedText style={styles.error}>{error}</ThemedText> : null}
+      {error ? <ThemedText style={[styles.error, { color: errorColor }]}>{error}</ThemedText> : null}
     </View>
   );
 }
@@ -42,7 +44,6 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
   error: {
-    color: '#e53935',
     fontSize: 13,
   },
 });

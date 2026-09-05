@@ -17,13 +17,17 @@ export function SubmitButton({
   onPress,
 }: SubmitButtonProps) {
   const tint = useThemeColor({}, 'tint');
+  const tintDark = useThemeColor({}, 'tintDark');
   const buttonText = useThemeColor({}, 'buttonText');
 
   return (
     <Pressable
       onPress={onPress}
       disabled={pending}
-      style={[styles.button, { backgroundColor: tint }]}>
+      style={({ pressed }) => [
+        styles.button,
+        { backgroundColor: pressed ? tintDark : tint },
+      ]}>
       <ThemedText style={[styles.buttonText, { color: buttonText }]}>
         {pending ? pendingLabel : label}
       </ThemedText>

@@ -13,10 +13,13 @@ export function OutlineButton({
   style?: StyleProp<ViewStyle>;
 }) {
   const tint = useThemeColor({}, 'tint');
+  const tintDark = useThemeColor({}, 'tintDark');
 
   return (
-    <Pressable onPress={onPress} style={[styles.button, { borderColor: tint }, style]}>
-      <ThemedText style={{ color: tint }}>{label}</ThemedText>
+    <Pressable
+      onPress={onPress}
+      style={({ pressed }) => [styles.button, { borderColor: pressed ? tintDark : tint }, style]}>
+      {({ pressed }) => <ThemedText style={{ color: pressed ? tintDark : tint }}>{label}</ThemedText>}
     </Pressable>
   );
 }

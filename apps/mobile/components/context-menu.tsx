@@ -72,9 +72,10 @@ function ContextMenuOverlay({
   activeMenu: ActiveMenu | null;
   onClose: () => void;
 }) {
-  const cardBackground = useThemeColor({}, 'cardBackground');
-  const borderColor = useThemeColor({}, 'icon');
+  const cardElevated = useThemeColor({}, 'cardElevated');
+  const borderColor = useThemeColor({}, 'border');
   const textColor = useThemeColor({}, 'text');
+  const errorColor = useThemeColor({}, 'error');
   const insets = useSafeAreaInsets();
 
   if (!activeMenu) return null;
@@ -91,7 +92,7 @@ function ContextMenuOverlay({
       <View
         style={[
           styles.menu,
-          { backgroundColor: cardBackground, width: MENU_WIDTH, left },
+          { backgroundColor: cardElevated, width: MENU_WIDTH, left },
           openUpward
             ? { bottom: screenHeight - anchorRect.y + 6 }
             : { top: anchorRect.y + anchorRect.height + 6 },
@@ -108,13 +109,13 @@ function ContextMenuOverlay({
               index > 0 && { borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: borderColor },
               pressed && styles.rowPressed,
             ]}>
-            <ThemedText style={action.destructive ? styles.destructiveText : undefined}>
+            <ThemedText style={action.destructive ? { color: errorColor } : undefined}>
               {action.label}
             </ThemedText>
             <IconSymbol
               name={action.icon}
               size={18}
-              color={action.destructive ? '#e53935' : textColor}
+              color={action.destructive ? errorColor : textColor}
             />
           </Pressable>
         ))}
@@ -142,5 +143,4 @@ const styles = StyleSheet.create({
     paddingVertical: 14,
   },
   rowPressed: { opacity: 0.6 },
-  destructiveText: { color: '#e53935' },
 });

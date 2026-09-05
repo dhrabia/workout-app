@@ -26,7 +26,7 @@ export default function NewExerciseScreen() {
   const [error, setError] = useState<string | undefined>();
 
   const tint = useThemeColor({}, 'tint');
-  const borderColor = useThemeColor({}, 'icon');
+  const borderColor = useThemeColor({}, 'border');
   const chipTextSelectedColor = useThemeColor({}, 'buttonText');
 
   function handleSubmit() {

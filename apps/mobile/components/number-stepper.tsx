@@ -55,7 +55,8 @@ export function NumberStepper({
 
   const tint = useThemeColor({}, 'tint');
   const textColor = useThemeColor({}, 'text');
-  const mutedColor = useThemeColor({}, 'icon');
+  const placeholderColor = useThemeColor({}, 'textDisabled');
+  const errorColor = useThemeColor({}, 'error');
   const backgroundColor = useThemeColor({}, 'background');
   const accessoryId = useId();
 
@@ -153,7 +154,7 @@ export function NumberStepper({
           </>
         ) : (
           <Pressable onPress={startEditing} style={styles.valueDisplay}>
-            <ThemedText style={[styles.valueText, { color: hasValue ? textColor : mutedColor }]}>
+            <ThemedText style={[styles.valueText, { color: hasValue ? textColor : placeholderColor }]}>
               {hasValue ? `${value}${suffix ? ` ${suffix}` : ''}` : placeholder}
             </ThemedText>
           </Pressable>
@@ -162,7 +163,7 @@ export function NumberStepper({
           <IconSymbol name="plus" size={18} color={tint} />
         </Pressable>
       </View>
-      {error ? <ThemedText style={styles.error}>{error}</ThemedText> : null}
+      {error ? <ThemedText style={[styles.error, { color: errorColor }]}>{error}</ThemedText> : null}
     </View>
   );
 }
@@ -178,7 +179,7 @@ const styles = StyleSheet.create({
   valueDisplay: { flex: 1, paddingVertical: 10, alignItems: 'center' },
   valueText: { fontSize: 16 },
   valueInput: { flex: 1, paddingVertical: 10, fontSize: 16, textAlign: 'center' },
-  error: { color: '#e53935', fontSize: 13 },
+  error: { fontSize: 13 },
   accessory: {
     flexDirection: 'row',
     justifyContent: 'flex-end',

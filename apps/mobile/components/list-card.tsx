@@ -34,7 +34,8 @@ export function ListCard({
   style,
 }: ListCardProps) {
   const cardBackground = useThemeColor({}, 'cardBackground');
-  const borderColor = useThemeColor({}, 'icon');
+  const separatorColor = useThemeColor({}, 'border');
+  const iconColor = useThemeColor({}, 'icon');
 
   return (
     <View style={[styles.card, { backgroundColor: cardBackground }, style]}>
@@ -47,7 +48,7 @@ export function ListCard({
         </ThemedText>
         {meta ? (
           <>
-            <View style={[styles.separator, { backgroundColor: borderColor }]} />
+            <View style={[styles.separator, { backgroundColor: separatorColor }]} />
             {meta}
           </>
         ) : null}
@@ -55,7 +56,7 @@ export function ListCard({
       {onMenuPress ? (
         <View ref={menuButtonRef} collapsable={false} style={styles.menuButtonAnchor}>
           <Pressable onPress={onMenuPress} hitSlop={10} style={styles.menuButton}>
-            <IconSymbol name="ellipsis" size={20} color={borderColor} />
+            <IconSymbol name="ellipsis" size={20} color={iconColor} />
           </Pressable>
         </View>
       ) : null}

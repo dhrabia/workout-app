@@ -34,6 +34,7 @@ export default function PlanExerciseFormScreen() {
   const deletePlanExercise = useDeletePlanExercise(dayId, planId);
   const mutation = isEditing ? updatePlanExercise : createPlanExercise;
   const tint = useThemeColor({}, 'tint');
+  const errorColor = useThemeColor({}, 'error');
 
   const [sets, setSets] = useState('');
   const [reps, setReps] = useState('');
@@ -152,7 +153,7 @@ export default function PlanExerciseFormScreen() {
       <SubmitButton label="Save" pending={mutation.isPending} onPress={handleSubmit} />
       {isEditing ? (
         <Pressable onPress={handleDelete} style={styles.deleteButton}>
-          <ThemedText style={styles.deleteText}>Remove exercise</ThemedText>
+          <ThemedText style={{ color: errorColor }}>Remove exercise</ThemedText>
         </Pressable>
       ) : null}
     </FormScreen>
@@ -161,5 +162,4 @@ export default function PlanExerciseFormScreen() {
 
 const styles = StyleSheet.create({
   deleteButton: { padding: 14, alignItems: 'center' },
-  deleteText: { color: '#e53935' },
 });

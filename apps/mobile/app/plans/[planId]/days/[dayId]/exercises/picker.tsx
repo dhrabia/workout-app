@@ -23,7 +23,9 @@ export default function ExercisePickerScreen() {
   const [query, setQuery] = useState('');
   const insets = useSafeAreaInsets();
 
-  const borderColor = useThemeColor({}, 'icon');
+  const borderColor = useThemeColor({}, 'border');
+  const iconColor = useThemeColor({}, 'icon');
+  const placeholderColor = useThemeColor({}, 'textDisabled');
   const tint = useThemeColor({}, 'tint');
   const textColor = useThemeColor({}, 'text');
 
@@ -53,11 +55,11 @@ export default function ExercisePickerScreen() {
         }}
       />
       <View style={[styles.searchRow, { borderColor }]}>
-        <IconSymbol name="magnifyingglass" size={18} color={borderColor} />
+        <IconSymbol name="magnifyingglass" size={18} color={iconColor} />
         <TextInput
           style={[styles.searchInput, { color: textColor }]}
           placeholder="Search exercises"
-          placeholderTextColor={borderColor}
+          placeholderTextColor={placeholderColor}
           value={query}
           onChangeText={setQuery}
         />

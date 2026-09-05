@@ -33,7 +33,7 @@ export default function DayDetailScreen() {
   const deletePlanExercise = useDeletePlanExercise(dayId, planId);
   const reorderPlanExercises = useReorderPlanExercises(dayId);
 
-  const borderColor = useThemeColor({}, 'icon');
+  const borderColor = useThemeColor({}, 'border');
 
   function handleDeleteExercise(planExerciseId: string) {
     confirmDestructive('Remove exercise?', undefined, 'Remove', () =>
@@ -98,13 +98,14 @@ function ExerciseRow({
 }) {
   const drag = useReorderableDrag();
   const isDragging = useIsActive();
+  const errorColor = useThemeColor({}, 'error');
 
   return (
     <Swipeable
       enabled={!isDragging}
       overshootRight={false}
       renderRightActions={() => (
-        <Pressable onPress={onDelete} style={styles.deleteAction}>
+        <Pressable onPress={onDelete} style={[styles.deleteAction, { backgroundColor: errorColor }]}>
           <ThemedText style={styles.deleteActionText}>Delete</ThemedText>
         </Pressable>
       )}>
@@ -135,7 +136,6 @@ const styles = StyleSheet.create({
   icon: { width: 36, height: 36 },
   rowContent: { flex: 1, gap: 2 },
   deleteAction: {
-    backgroundColor: '#e53935',
     justifyContent: 'center',
     alignItems: 'center',
     paddingHorizontal: 24,
