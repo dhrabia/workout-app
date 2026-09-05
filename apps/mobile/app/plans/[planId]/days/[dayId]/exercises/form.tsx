@@ -4,6 +4,7 @@ import { Pressable, StyleSheet } from 'react-native';
 
 import { FormField } from '@/components/form-field';
 import { FormScreen } from '@/components/form-screen';
+import { HeaderIconButton } from '@/components/header-icon-button';
 import { NumberStepper } from '@/components/number-stepper';
 import { SubmitButton } from '@/components/submit-button';
 import { ThemedText } from '@/components/themed-text';
@@ -13,6 +14,7 @@ import {
   useUpdatePlanExercise,
   useDeletePlanExercise,
 } from '@/hooks/queries/use-plan-exercises';
+import { useThemeColor } from '@/hooks/use-theme-color';
 import { confirmDestructive } from '@/lib/alerts';
 
 export default function PlanExerciseFormScreen() {
@@ -31,6 +33,7 @@ export default function PlanExerciseFormScreen() {
   const updatePlanExercise = useUpdatePlanExercise(planExerciseId ?? '', dayId);
   const deletePlanExercise = useDeletePlanExercise(dayId, planId);
   const mutation = isEditing ? updatePlanExercise : createPlanExercise;
+  const tint = useThemeColor({}, 'tint');
 
   const [sets, setSets] = useState('');
   const [reps, setReps] = useState('');
@@ -92,7 +95,14 @@ export default function PlanExerciseFormScreen() {
 
   return (
     <FormScreen>
-      <Stack.Screen options={{ title: isEditing ? 'Edit Exercise' : 'Add to Day' }} />
+      <Stack.Screen
+        options={{
+          title: isEditing ? 'Edit Exercise' : 'Add to Day',
+          headerLeft: () => (
+            <HeaderIconButton name="xmark" size={22} color={tint} onPress={() => router.back()} />
+          ),
+        }}
+      />
       <ThemedText type="subtitle">{displayName}</ThemedText>
       <NumberStepper
         label="Sets"

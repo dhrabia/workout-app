@@ -7,10 +7,9 @@ import ReorderableList, {
   useReorderableDrag,
 } from 'react-native-reorderable-list';
 
-import { HeaderActions, HeaderIconButton } from '@/components/header-icon-button';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
-import { usePlanDay, useDeletePlanDay } from '@/hooks/queries/use-plan-days';
+import { usePlanDay } from '@/hooks/queries/use-plan-days';
 import {
   usePlanExercises,
   useDeletePlanExercise,
@@ -28,18 +27,11 @@ export default function DayDetailScreen() {
   const { data: day } = usePlanDay(dayId);
   const { data: exercisesData, isLoading } = usePlanExercises(dayId);
   const exercises = exercisesData ?? [];
-  const deletePlanDay = useDeletePlanDay(planId);
   const deletePlanExercise = useDeletePlanExercise(dayId, planId);
   const reorderPlanExercises = useReorderPlanExercises(dayId);
 
   const tint = useThemeColor({}, 'tint');
   const borderColor = useThemeColor({}, 'icon');
-
-  function handleDeleteDay() {
-    confirmDestructive('Delete day?', 'This removes all its exercises too.', 'Delete', () =>
-      deletePlanDay.mutate(dayId, { onSuccess: () => router.back() })
-    );
-  }
 
   function handleDeleteExercise(planExerciseId: string) {
     confirmDestructive('Remove exercise?', undefined, 'Remove', () =>
@@ -49,24 +41,7 @@ export default function DayDetailScreen() {
 
   return (
     <ThemedView style={styles.container}>
-      <Stack.Screen
-        options={{
-          title: day?.name ?? 'Day',
-          headerRight: () => (
-            <HeaderActions>
-              <HeaderIconButton
-                name="pencil"
-                size={22}
-                color={tint}
-                onPress={() =>
-                  router.push({ pathname: '/plans/[planId]/days/form', params: { planId, dayId } })
-                }
-              />
-              <HeaderIconButton name="trash" size={22} color={tint} onPress={handleDeleteDay} />
-            </HeaderActions>
-          ),
-        }}
-      />
+      <Stack.Screen options={{ title: day?.name ?? 'Day' }} />
       {isLoading ? (
         <ThemedText style={styles.centerText}>Loading…</ThemedText>
       ) : (

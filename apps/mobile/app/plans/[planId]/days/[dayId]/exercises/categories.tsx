@@ -1,7 +1,9 @@
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import { Image, type ImageSourcePropType, Pressable, StyleSheet, View } from 'react-native';
 
+import { HeaderIconButton } from '@/components/header-icon-button';
 import { ThemedView } from '@/components/themed-view';
+import { useThemeColor } from '@/hooks/use-theme-color';
 import { MUSCLE_GROUPS, type MuscleGroup } from '@/lib/types';
 
 const TILE_IMAGES: Record<MuscleGroup, ImageSourcePropType> = {
@@ -19,10 +21,18 @@ const TILE_IMAGES: Record<MuscleGroup, ImageSourcePropType> = {
 export default function ExerciseCategoriesScreen() {
   const { planId, dayId } = useLocalSearchParams<{ planId: string; dayId: string }>();
   const router = useRouter();
+  const tint = useThemeColor({}, 'tint');
 
   return (
     <ThemedView style={styles.container}>
-      <Stack.Screen options={{ title: 'Select muscle group' }} />
+      <Stack.Screen
+        options={{
+          title: 'Select muscle group',
+          headerLeft: () => (
+            <HeaderIconButton name="xmark" size={22} color={tint} onPress={() => router.back()} />
+          ),
+        }}
+      />
       <View style={styles.grid}>
         {MUSCLE_GROUPS.map((group) => (
           <Pressable

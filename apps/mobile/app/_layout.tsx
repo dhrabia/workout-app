@@ -6,6 +6,7 @@ import { ActivityIndicator, StyleSheet } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import 'react-native-reanimated';
 
+import { ContextMenuHostProvider } from '@/components/context-menu';
 import { ThemedView } from '@/components/themed-view';
 import { AuthProvider, useAuth } from '@/contexts/auth-context';
 import { useColorScheme } from '@/hooks/use-color-scheme';
@@ -32,13 +33,15 @@ export default function RootLayout() {
       <QueryClientProvider client={queryClient}>
         <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
           <AuthProvider>
-            <AuthGate>
-              <Stack>
-                {MODAL_ROUTES.map((name) => (
-                  <Stack.Screen key={name} name={name} options={{ presentation: 'modal' }} />
-                ))}
-              </Stack>
-            </AuthGate>
+            <ContextMenuHostProvider>
+              <AuthGate>
+                <Stack>
+                  {MODAL_ROUTES.map((name) => (
+                    <Stack.Screen key={name} name={name} options={{ presentation: 'modal' }} />
+                  ))}
+                </Stack>
+              </AuthGate>
+            </ContextMenuHostProvider>
           </AuthProvider>
           <StatusBar style="auto" />
         </ThemeProvider>

@@ -4,6 +4,7 @@ import { Pressable, StyleSheet, View } from 'react-native';
 
 import { FormField } from '@/components/form-field';
 import { FormScreen } from '@/components/form-screen';
+import { HeaderIconButton } from '@/components/header-icon-button';
 import { SubmitButton } from '@/components/submit-button';
 import { ThemedText } from '@/components/themed-text';
 import { useCreateExercise } from '@/hooks/queries/use-exercises';
@@ -57,7 +58,14 @@ export default function NewExerciseScreen() {
 
   return (
     <FormScreen>
-      <Stack.Screen options={{ title: 'New Exercise' }} />
+      <Stack.Screen
+        options={{
+          title: 'New Exercise',
+          headerLeft: () => (
+            <HeaderIconButton name="xmark" size={22} color={tint} onPress={() => router.back()} />
+          ),
+        }}
+      />
       <FormField
         label="Name"
         value={name}

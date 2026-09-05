@@ -3,12 +3,14 @@ import { useEffect, useState } from 'react';
 
 import { FormField } from '@/components/form-field';
 import { FormScreen } from '@/components/form-screen';
+import { HeaderIconButton } from '@/components/header-icon-button';
 import { SubmitButton } from '@/components/submit-button';
 import {
   usePlanDay,
   useCreatePlanDay,
   useUpdatePlanDay,
 } from '@/hooks/queries/use-plan-days';
+import { useThemeColor } from '@/hooks/use-theme-color';
 
 export default function DayFormScreen() {
   const { planId, dayId } = useLocalSearchParams<{ planId: string; dayId?: string }>();
@@ -18,6 +20,7 @@ export default function DayFormScreen() {
   const { data: existingDay } = usePlanDay(dayId ?? '');
   const createDay = useCreatePlanDay(planId);
   const updateDay = useUpdatePlanDay(dayId ?? '', planId);
+  const tint = useThemeColor({}, 'tint');
 
   const [name, setName] = useState('');
   const [error, setError] = useState<string | undefined>();
@@ -38,7 +41,14 @@ export default function DayFormScreen() {
 
   return (
     <FormScreen>
-      <Stack.Screen options={{ title: isEditing ? 'Edit Day' : 'New Day' }} />
+      <Stack.Screen
+        options={{
+          title: isEditing ? 'Edit Day' : 'New Day',
+          headerLeft: () => (
+            <HeaderIconButton name="xmark" size={22} color={tint} onPress={() => router.back()} />
+          ),
+        }}
+      />
       <FormField
         label="Name"
         value={name}

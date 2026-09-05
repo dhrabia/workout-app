@@ -3,6 +3,7 @@ import { useMemo, useState } from 'react';
 import { FlatList, Pressable, StyleSheet, TextInput, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { HeaderIconButton } from '@/components/header-icon-button';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { IconSymbol } from '@/components/ui/icon-symbol';
@@ -42,7 +43,12 @@ export default function ExercisePickerScreen() {
   return (
     <ThemedView style={styles.container}>
       <Stack.Screen
-        options={{ title: muscleGroup.replace('_', ' ').replace(/^\w/, (c) => c.toUpperCase()) }}
+        options={{
+          title: muscleGroup.replace('_', ' ').replace(/^\w/, (c) => c.toUpperCase()),
+          headerLeft: () => (
+            <HeaderIconButton name="xmark" size={22} color={tint} onPress={() => router.back()} />
+          ),
+        }}
       />
       <View style={[styles.searchRow, { borderColor }]}>
         <IconSymbol name="magnifyingglass" size={18} color={borderColor} />

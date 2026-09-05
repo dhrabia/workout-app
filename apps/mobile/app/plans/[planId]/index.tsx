@@ -1,14 +1,16 @@
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
+import { useMemo } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
-import ReorderableList, { reorderItems, useReorderableDrag } from 'react-native-reorderable-list';
+import { Gesture } from 'react-native-gesture-handler';
+import ReorderableList, { reorderItems } from 'react-native-reorderable-list';
 
-import { HeaderActions, HeaderIconButton } from '@/components/header-icon-button';
 import { ListCard } from '@/components/list-card';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { IconSymbol } from '@/components/ui/icon-symbol';
-import { useDeletePlan, usePlan } from '@/hooks/queries/use-plans';
+import { usePlan } from '@/hooks/queries/use-plans';
 import { usePlanDays, useDeletePlanDay, useReorderPlanDays } from '@/hooks/queries/use-plan-days';
+import { useDragContextMenu } from '@/hooks/use-drag-context-menu';
 import { useThemeColor } from '@/hooks/use-theme-color';
 import { confirmDestructive } from '@/lib/alerts';
 import type { PlanDayWithExerciseCount } from '@/lib/types';
@@ -20,17 +22,14 @@ export default function PlanDetailScreen() {
   const { data: plan } = usePlan(planId);
   const { data: daysData, isLoading } = usePlanDays(planId);
   const days = daysData ?? [];
-  const deletePlan = useDeletePlan();
   const deletePlanDay = useDeletePlanDay(planId);
   const reorderPlanDays = useReorderPlanDays(planId);
 
   const tint = useThemeColor({}, 'tint');
-
-  function handleDeletePlan() {
-    confirmDestructive('Delete plan?', 'This removes all its days and exercises too.', 'Delete', () =>
-      deletePlan.mutate(planId, { onSuccess: () => router.back() })
-    );
-  }
+  // A near-zero activation distance so the drag reliably engages even when a
+  // long press is held almost perfectly still, instead of getting stuck
+  // between "armed" and released.
+  const panGesture = useMemo(() => Gesture.Pan().minDistance(1), []);
 
   function handleDeleteDay(dayId: string) {
     confirmDestructive('Delete day?', 'This removes all its exercises too.', 'Delete', () =>
@@ -40,22 +39,7 @@ export default function PlanDetailScreen() {
 
   return (
     <ThemedView style={styles.container}>
-      <Stack.Screen
-        options={{
-          title: plan?.name ?? 'Plan',
-          headerRight: () => (
-            <HeaderActions>
-              <HeaderIconButton
-                name="pencil"
-                size={22}
-                color={tint}
-                onPress={() => router.push({ pathname: '/plans/form', params: { planId } })}
-              />
-              <HeaderIconButton name="trash" size={22} color={tint} onPress={handleDeletePlan} />
-            </HeaderActions>
-          ),
-        }}
-      />
+      <Stack.Screen options={{ title: plan?.name ?? 'Plan' }} />
       {plan?.description ? (
         <ThemedText style={styles.description}>{plan.description}</ThemedText>
       ) : null}
@@ -65,6 +49,7 @@ export default function PlanDetailScreen() {
         <ReorderableList
           data={days}
           keyExtractor={(item) => item.id}
+          panGesture={panGesture}
           contentContainerStyle={styles.list}
           ListEmptyComponent={
             <View style={styles.empty}>
@@ -79,6 +64,12 @@ export default function PlanDetailScreen() {
               onPress={() =>
                 router.push({
                   pathname: '/plans/[planId]/days/[dayId]',
+                  params: { planId, dayId: item.id },
+                })
+              }
+              onEdit={() =>
+                router.push({
+                  pathname: '/plans/[planId]/days/form',
                   params: { planId, dayId: item.id },
                 })
               }
@@ -99,20 +90,24 @@ export default function PlanDetailScreen() {
 function DayCard({
   item,
   onPress,
+  onEdit,
   onDelete,
 }: {
   item: PlanDayWithExerciseCount;
   onPress: () => void;
+  onEdit: () => void;
   onDelete: () => void;
 }) {
-  const drag = useReorderableDrag();
   const borderColor = useThemeColor({}, 'icon');
+  const { menuButtonRef, onLongPress, onMenuPress } = useDragContextMenu({ onEdit, onDelete });
 
   return (
     <ListCard
       title={item.name}
       onPress={onPress}
-      onLongPress={drag}
+      onLongPress={onLongPress}
+      onMenuPress={onMenuPress}
+      menuButtonRef={menuButtonRef}
       meta={
         <View style={styles.metaRow}>
           <ThemedText style={[styles.meta, { color: borderColor }]}>
@@ -123,11 +118,6 @@ function DayCard({
             {item.exerciseCount * 10} min
           </ThemedText>
         </View>
-      }
-      trailing={
-        <Pressable onPress={onDelete} hitSlop={8}>
-          <IconSymbol name="trash" size={20} color={borderColor} />
-        </Pressable>
       }
     />
   );

@@ -3,8 +3,10 @@ import { useEffect, useState } from 'react';
 
 import { FormField } from '@/components/form-field';
 import { FormScreen } from '@/components/form-screen';
+import { HeaderIconButton } from '@/components/header-icon-button';
 import { SubmitButton } from '@/components/submit-button';
 import { usePlan, useCreatePlan, useUpdatePlan } from '@/hooks/queries/use-plans';
+import { useThemeColor } from '@/hooks/use-theme-color';
 
 export default function PlanFormScreen() {
   const { planId } = useLocalSearchParams<{ planId?: string }>();
@@ -14,6 +16,7 @@ export default function PlanFormScreen() {
   const { data: existingPlan } = usePlan(planId ?? '');
   const createPlan = useCreatePlan();
   const updatePlan = useUpdatePlan(planId ?? '');
+  const tint = useThemeColor({}, 'tint');
 
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
@@ -41,7 +44,14 @@ export default function PlanFormScreen() {
 
   return (
     <FormScreen>
-      <Stack.Screen options={{ title: isEditing ? 'Edit Plan' : 'New Plan' }} />
+      <Stack.Screen
+        options={{
+          title: isEditing ? 'Edit Plan' : 'New Plan',
+          headerLeft: () => (
+            <HeaderIconButton name="xmark" size={22} color={tint} onPress={() => router.back()} />
+          ),
+        }}
+      />
       <FormField
         label="Name"
         value={name}

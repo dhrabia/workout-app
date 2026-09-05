@@ -20,6 +20,8 @@ const MAPPING = {
   'trash': 'delete',
   'magnifyingglass': 'search',
   'clock': 'access-time',
+  'xmark': 'close',
+  'ellipsis': 'more-horiz',
 } as IconMapping;
 
 /**
