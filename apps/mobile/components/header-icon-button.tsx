@@ -1,5 +1,5 @@
-import { ComponentProps, PropsWithChildren } from 'react';
-import { Pressable, StyleSheet, View } from 'react-native';
+import { ComponentProps } from 'react';
+import { Pressable, StyleSheet } from 'react-native';
 
 import { IconSymbol } from '@/components/ui/icon-symbol';
 
@@ -23,10 +23,6 @@ export function HeaderIconButton({ name, color, size, onPress }: HeaderIconButto
   );
 }
 
-export function HeaderActions({ children }: PropsWithChildren) {
-  return <View style={styles.actions}>{children}</View>;
-}
-
 const styles = StyleSheet.create({
   button: {
     width: 34,
@@ -34,5 +30,4 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  actions: { flexDirection: 'row', gap: 16 },
 });

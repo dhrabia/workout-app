@@ -1,16 +1,18 @@
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
-import { useMemo } from 'react';
-import { Pressable, StyleSheet, View } from 'react-native';
-import { Gesture } from 'react-native-gesture-handler';
+import { StyleSheet, View } from 'react-native';
 import ReorderableList, { reorderItems } from 'react-native-reorderable-list';
 
+import { EmptyState } from '@/components/empty-state';
 import { ListCard } from '@/components/list-card';
+import { LoadingState } from '@/components/loading-state';
+import { OutlineButton } from '@/components/outline-button';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { usePlan } from '@/hooks/queries/use-plans';
 import { usePlanDays, useDeletePlanDay, useReorderPlanDays } from '@/hooks/queries/use-plan-days';
 import { useDragContextMenu } from '@/hooks/use-drag-context-menu';
+import { useDragPanGesture } from '@/hooks/use-drag-pan-gesture';
 import { useThemeColor } from '@/hooks/use-theme-color';
 import { confirmDestructive } from '@/lib/alerts';
 import type { PlanDayWithExerciseCount } from '@/lib/types';
@@ -25,11 +27,7 @@ export default function PlanDetailScreen() {
   const deletePlanDay = useDeletePlanDay(planId);
   const reorderPlanDays = useReorderPlanDays(planId);
 
-  const tint = useThemeColor({}, 'tint');
-  // A near-zero activation distance so the drag reliably engages even when a
-  // long press is held almost perfectly still, instead of getting stuck
-  // between "armed" and released.
-  const panGesture = useMemo(() => Gesture.Pan().minDistance(1), []);
+  const panGesture = useDragPanGesture();
 
   function handleDeleteDay(dayId: string) {
     confirmDestructive('Delete day?', 'This removes all its exercises too.', 'Delete', () =>
@@ -44,7 +42,7 @@ export default function PlanDetailScreen() {
         <ThemedText style={styles.description}>{plan.description}</ThemedText>
       ) : null}
       {isLoading ? (
-        <ThemedText style={styles.centerText}>Loading…</ThemedText>
+        <LoadingState />
       ) : (
         <ReorderableList
           data={days}
@@ -52,10 +50,7 @@ export default function PlanDetailScreen() {
           panGesture={panGesture}
           contentContainerStyle={styles.list}
           ListEmptyComponent={
-            <View style={styles.empty}>
-              <ThemedText type="subtitle">No days yet</ThemedText>
-              <ThemedText>Add a day to start building this plan.</ThemedText>
-            </View>
+            <EmptyState title="No days yet" description="Add a day to start building this plan." />
           }
           onReorder={({ from, to }) => reorderPlanDays.mutate(reorderItems(days, from, to))}
           renderItem={({ item }) => (
@@ -78,11 +73,10 @@ export default function PlanDetailScreen() {
           )}
         />
       )}
-      <Pressable
+      <OutlineButton
+        label="+ Add Day"
         onPress={() => router.push({ pathname: '/plans/[planId]/days/form', params: { planId } })}
-        style={[styles.addButton, { borderColor: tint }]}>
-        <ThemedText style={{ color: tint }}>+ Add Day</ThemedText>
-      </Pressable>
+      />
     </ThemedView>
   );
 }
@@ -129,13 +123,4 @@ const styles = StyleSheet.create({
   list: { padding: 16, gap: 12 },
   metaRow: { flexDirection: 'row', alignItems: 'center', gap: 4 },
   meta: { fontSize: 13 },
-  empty: { padding: 32, alignItems: 'center', gap: 8 },
-  centerText: { textAlign: 'center', marginTop: 32 },
-  addButton: {
-    margin: 16,
-    padding: 14,
-    borderRadius: 10,
-    borderWidth: 1,
-    alignItems: 'center',
-  },
 });

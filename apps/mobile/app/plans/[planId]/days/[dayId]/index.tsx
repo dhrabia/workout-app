@@ -7,6 +7,9 @@ import ReorderableList, {
   useReorderableDrag,
 } from 'react-native-reorderable-list';
 
+import { EmptyState } from '@/components/empty-state';
+import { LoadingState } from '@/components/loading-state';
+import { OutlineButton } from '@/components/outline-button';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { usePlanDay } from '@/hooks/queries/use-plan-days';
@@ -30,7 +33,6 @@ export default function DayDetailScreen() {
   const deletePlanExercise = useDeletePlanExercise(dayId, planId);
   const reorderPlanExercises = useReorderPlanExercises(dayId);
 
-  const tint = useThemeColor({}, 'tint');
   const borderColor = useThemeColor({}, 'icon');
 
   function handleDeleteExercise(planExerciseId: string) {
@@ -43,7 +45,7 @@ export default function DayDetailScreen() {
     <ThemedView style={styles.container}>
       <Stack.Screen options={{ title: day?.name ?? 'Day' }} />
       {isLoading ? (
-        <ThemedText style={styles.centerText}>Loading…</ThemedText>
+        <LoadingState />
       ) : (
         <ReorderableList
           data={exercises}
@@ -53,10 +55,7 @@ export default function DayDetailScreen() {
             <View style={[styles.separator, { backgroundColor: borderColor }]} />
           )}
           ListEmptyComponent={
-            <ThemedView style={styles.empty}>
-              <ThemedText type="subtitle">No exercises yet</ThemedText>
-              <ThemedText>Add an exercise to this day.</ThemedText>
-            </ThemedView>
+            <EmptyState title="No exercises yet" description="Add an exercise to this day." />
           }
           onReorder={({ from, to }) =>
             reorderPlanExercises.mutate(reorderItems(exercises, from, to))
@@ -75,16 +74,15 @@ export default function DayDetailScreen() {
           )}
         />
       )}
-      <Pressable
+      <OutlineButton
+        label="+ Add Exercise"
         onPress={() =>
           router.push({
             pathname: '/plans/[planId]/days/[dayId]/exercises/categories',
             params: { planId, dayId },
           })
         }
-        style={[styles.addButton, { borderColor: tint }]}>
-        <ThemedText style={{ color: tint }}>+ Add Exercise</ThemedText>
-      </Pressable>
+      />
     </ThemedView>
   );
 }
@@ -143,13 +141,4 @@ const styles = StyleSheet.create({
     paddingHorizontal: 24,
   },
   deleteActionText: { color: '#fff', fontWeight: '600' },
-  empty: { padding: 32, alignItems: 'center', gap: 8 },
-  centerText: { textAlign: 'center', marginTop: 32 },
-  addButton: {
-    margin: 16,
-    padding: 14,
-    borderRadius: 10,
-    borderWidth: 1,
-    alignItems: 'center',
-  },
 });

@@ -1,15 +1,16 @@
 import { Stack, useRouter } from 'expo-router';
-import { useMemo } from 'react';
-import { StyleSheet, View } from 'react-native';
-import { Gesture } from 'react-native-gesture-handler';
+import { StyleSheet } from 'react-native';
 import ReorderableList, { reorderItems } from 'react-native-reorderable-list';
 
+import { EmptyState } from '@/components/empty-state';
 import { HeaderIconButton } from '@/components/header-icon-button';
 import { ListCard } from '@/components/list-card';
+import { LoadingState } from '@/components/loading-state';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { useDeletePlan, usePlans, useReorderPlans } from '@/hooks/queries/use-plans';
 import { useDragContextMenu } from '@/hooks/use-drag-context-menu';
+import { useDragPanGesture } from '@/hooks/use-drag-pan-gesture';
 import { useThemeColor } from '@/hooks/use-theme-color';
 import { confirmDestructive } from '@/lib/alerts';
 import type { Tables } from '@workout-app/shared';
@@ -21,10 +22,7 @@ export default function PlansScreen() {
   const reorderPlans = useReorderPlans();
   const deletePlan = useDeletePlan();
   const tint = useThemeColor({}, 'tint');
-  // A near-zero activation distance so the drag reliably engages even when a
-  // long press is held almost perfectly still, instead of getting stuck
-  // between "armed" and released.
-  const panGesture = useMemo(() => Gesture.Pan().minDistance(1), []);
+  const panGesture = useDragPanGesture();
 
   function handleDeletePlan(planId: string) {
     confirmDestructive('Delete plan?', 'This removes all its days and exercises too.', 'Delete', () =>
@@ -48,7 +46,7 @@ export default function PlansScreen() {
         }}
       />
       {isLoading ? (
-        <ThemedText style={styles.centerText}>Loading…</ThemedText>
+        <LoadingState />
       ) : (
         <ReorderableList
           data={plans}
@@ -56,10 +54,10 @@ export default function PlansScreen() {
           panGesture={panGesture}
           contentContainerStyle={styles.list}
           ListEmptyComponent={
-            <View style={styles.empty}>
-              <ThemedText type="subtitle">No plans yet</ThemedText>
-              <ThemedText>Tap + to create your first workout plan.</ThemedText>
-            </View>
+            <EmptyState
+              title="No plans yet"
+              description="Tap + to create your first workout plan."
+            />
           }
           onReorder={({ from, to }) => reorderPlans.mutate(reorderItems(plans, from, to))}
           renderItem={({ item }) => (
@@ -118,6 +116,4 @@ const styles = StyleSheet.create({
   card: { paddingVertical: 32, paddingHorizontal: 32 },
   title: { fontSize: 32, lineHeight: 40 },
   meta: { fontSize: 15 },
-  empty: { padding: 32, alignItems: 'center', gap: 8 },
-  centerText: { textAlign: 'center', marginTop: 32 },
 });

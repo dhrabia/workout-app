@@ -4,6 +4,8 @@ import { FlatList, Pressable, StyleSheet, TextInput, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { HeaderIconButton } from '@/components/header-icon-button';
+import { LoadingState } from '@/components/loading-state';
+import { OutlineButton } from '@/components/outline-button';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { IconSymbol } from '@/components/ui/icon-symbol';
@@ -61,7 +63,7 @@ export default function ExercisePickerScreen() {
         />
       </View>
       {isLoading ? (
-        <ThemedText style={styles.centerText}>Loading…</ThemedText>
+        <LoadingState />
       ) : (
         <FlatList
           style={styles.flatList}
@@ -77,16 +79,16 @@ export default function ExercisePickerScreen() {
           )}
         />
       )}
-      <Pressable
+      <OutlineButton
+        label="+ Create custom exercise"
         onPress={() =>
           router.push({
             pathname: '/exercises/new',
             params: { returnPlanId: planId, returnDayId: dayId, muscleGroup },
           })
         }
-        style={[styles.addButton, { borderColor: tint, marginBottom: insets.bottom + 16 }]}>
-        <ThemedText style={{ color: tint }}>+ Create custom exercise</ThemedText>
-      </Pressable>
+        style={{ marginBottom: insets.bottom + 16 }}
+      />
     </ThemedView>
   );
 }
@@ -108,12 +110,4 @@ const styles = StyleSheet.create({
   flatList: { flex: 1 },
   list: { padding: 16, gap: 12 },
   row: { padding: 16, borderWidth: 1, borderRadius: 12, gap: 4 },
-  centerText: { textAlign: 'center', marginTop: 32 },
-  addButton: {
-    margin: 16,
-    padding: 14,
-    borderRadius: 10,
-    borderWidth: 1,
-    alignItems: 'center',
-  },
 });
