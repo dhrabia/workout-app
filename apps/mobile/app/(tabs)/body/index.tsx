@@ -209,8 +209,13 @@ function WeightChart({ history }: { history: Tables<'weight_logs'>[] }) {
     return CHART_TOP_PADDING + (1 - (weightKg - min) / range) * plotHeight;
   }
 
+  // Deduped since a 2-point line makes the middle index the same as the
+  // first (Math.floor((2-1)/2) === 0), which would otherwise render two
+  // labels sharing the same React key.
   const labelIndexes =
-    points.length <= 1 ? [0] : [0, Math.floor((points.length - 1) / 2), points.length - 1];
+    points.length <= 1
+      ? [0]
+      : Array.from(new Set([0, Math.floor((points.length - 1) / 2), points.length - 1]));
   // Weight axis ticks: just the extremes, or the single reading if the line is flat.
   const weightTicks = max === min ? [max] : [max, min];
 
@@ -261,7 +266,7 @@ function WeightChart({ history }: { history: Tables<'weight_logs'>[] }) {
             const angle = (Math.atan2(y2 - y1, x2 - x1) * 180) / Math.PI;
             return (
               <View
-                key={point.id}
+                key={`segment-${point.id}`}
                 style={[
                   styles.chartSegment,
                   {
@@ -277,7 +282,7 @@ function WeightChart({ history }: { history: Tables<'weight_logs'>[] }) {
           })}
           {points.map((point, index) => (
             <View
-              key={point.id}
+              key={`dot-${point.id}`}
               style={[
                 styles.chartDot,
                 { backgroundColor: tint, left: xAt(index) - CHART_DOT_SIZE / 2, top: yAt(point.weight_kg) - CHART_DOT_SIZE / 2 },

@@ -7,9 +7,10 @@ import { SingleChoiceModal, type SingleChoiceOption } from '@/components/single-
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { IconSymbol } from '@/components/ui/icon-symbol';
+import { RulerPickerModal } from '@/components/ruler-picker-modal';
 import { WheelPickerModal } from '@/components/wheel-picker-modal';
 import { useProfile, useUpdateProfile } from '@/hooks/queries/use-profile';
-import { useWeightLogs } from '@/hooks/queries/use-weight-logs';
+import { useLogWeight, useWeightLogs } from '@/hooks/queries/use-weight-logs';
 import { useThemeColor } from '@/hooks/use-theme-color';
 import type { Gender } from '@/lib/types';
 import { getCurrentWeight } from '@/lib/weight';
@@ -35,11 +36,16 @@ const HEIGHT_MAX = 230;
 const HEIGHT_DEFAULT = 170;
 const HEIGHT_VALUES = Array.from({ length: HEIGHT_MAX - HEIGHT_MIN + 1 }, (_, i) => HEIGHT_MIN + i);
 
+const WEIGHT_MIN = 30;
+const WEIGHT_MAX = 200;
+const WEIGHT_DEFAULT = 70;
+
 export default function ProfileScreen() {
   const router = useRouter();
   const { data: profile } = useProfile();
   const { data: weightLogs } = useWeightLogs();
   const updateProfile = useUpdateProfile();
+  const logWeight = useLogWeight();
   const tint = useThemeColor({}, 'tint');
   const displayName = profile?.username?.trim() || 'Add your name';
   const currentWeight = getCurrentWeight(weightLogs);
@@ -47,6 +53,8 @@ export default function ProfileScreen() {
   const [genderModalOpen, setGenderModalOpen] = useState(false);
   const [ageModalOpen, setAgeModalOpen] = useState(false);
   const [heightModalOpen, setHeightModalOpen] = useState(false);
+  const [weightModalOpen, setWeightModalOpen] = useState(false);
+  const [targetWeightModalOpen, setTargetWeightModalOpen] = useState(false);
 
   const genderLabel = GENDER_OPTIONS.find((option) => option.value === profile?.gender)?.label ?? NOT_SET;
 
@@ -57,7 +65,11 @@ export default function ProfileScreen() {
       value: profile?.age != null ? String(profile.age) : NOT_SET,
       onPress: () => setAgeModalOpen(true),
     },
-    { label: 'Weight', value: currentWeight != null ? `${currentWeight} kg` : NOT_SET },
+    {
+      label: 'Weight',
+      value: currentWeight != null ? `${currentWeight} kg` : NOT_SET,
+      onPress: () => setWeightModalOpen(true),
+    },
     {
       label: 'Height',
       value: profile?.height_cm != null ? `${profile.height_cm} cm` : NOT_SET,
@@ -68,6 +80,7 @@ export default function ProfileScreen() {
     {
       label: 'Target weight',
       value: profile?.target_weight_kg != null ? `${profile.target_weight_kg} kg` : NOT_SET,
+      onPress: () => setTargetWeightModalOpen(true),
     },
   ];
 
@@ -136,6 +149,39 @@ export default function ProfileScreen() {
         onClose={() => setHeightModalOpen(false)}
         onSave={(height_cm) =>
           updateProfile.mutate({ height_cm }, { onSuccess: () => setHeightModalOpen(false) })
+        }
+      />
+
+      <RulerPickerModal
+        key={weightModalOpen ? 'weight-open' : 'weight-closed'}
+        visible={weightModalOpen}
+        title="What is your weight?"
+        min={WEIGHT_MIN}
+        max={WEIGHT_MAX}
+        suffix="kg"
+        value={currentWeight ?? WEIGHT_DEFAULT}
+        pending={logWeight.isPending}
+        onClose={() => setWeightModalOpen(false)}
+        onSave={(weightKg) =>
+          logWeight.mutate(weightKg, { onSuccess: () => setWeightModalOpen(false) })
+        }
+      />
+
+      <RulerPickerModal
+        key={targetWeightModalOpen ? 'target-weight-open' : 'target-weight-closed'}
+        visible={targetWeightModalOpen}
+        title="What is your target weight?"
+        min={WEIGHT_MIN}
+        max={WEIGHT_MAX}
+        suffix="kg"
+        value={profile?.target_weight_kg ?? WEIGHT_DEFAULT}
+        pending={updateProfile.isPending}
+        onClose={() => setTargetWeightModalOpen(false)}
+        onSave={(target_weight_kg) =>
+          updateProfile.mutate(
+            { target_weight_kg },
+            { onSuccess: () => setTargetWeightModalOpen(false) }
+          )
         }
       />
     </ThemedView>
