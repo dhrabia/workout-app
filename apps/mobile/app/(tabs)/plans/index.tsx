@@ -122,7 +122,9 @@ function PlanCard({
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
-  list: { padding: 16, gap: 12 },
+  // Extra bottom padding so the last card can clear the floating tab bar
+  // (see Body screen's contentContainerStyle for the same convention).
+  list: { padding: 16, paddingBottom: 100, gap: 12 },
   card: { height: PLAN_CARD_HEIGHT },
   title: { fontSize: 32, lineHeight: 40 },
 });
