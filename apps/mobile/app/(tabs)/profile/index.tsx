@@ -30,6 +30,11 @@ const AGE_MAX = 100;
 const AGE_DEFAULT = 30;
 const AGE_VALUES = Array.from({ length: AGE_MAX - AGE_MIN + 1 }, (_, i) => AGE_MIN + i);
 
+const HEIGHT_MIN = 100;
+const HEIGHT_MAX = 230;
+const HEIGHT_DEFAULT = 170;
+const HEIGHT_VALUES = Array.from({ length: HEIGHT_MAX - HEIGHT_MIN + 1 }, (_, i) => HEIGHT_MIN + i);
+
 export default function ProfileScreen() {
   const router = useRouter();
   const { data: profile } = useProfile();
@@ -41,6 +46,7 @@ export default function ProfileScreen() {
 
   const [genderModalOpen, setGenderModalOpen] = useState(false);
   const [ageModalOpen, setAgeModalOpen] = useState(false);
+  const [heightModalOpen, setHeightModalOpen] = useState(false);
 
   const genderLabel = GENDER_OPTIONS.find((option) => option.value === profile?.gender)?.label ?? NOT_SET;
 
@@ -52,7 +58,11 @@ export default function ProfileScreen() {
       onPress: () => setAgeModalOpen(true),
     },
     { label: 'Weight', value: currentWeight != null ? `${currentWeight} kg` : NOT_SET },
-    { label: 'Height', value: profile?.height_cm != null ? `${profile.height_cm} cm` : NOT_SET },
+    {
+      label: 'Height',
+      value: profile?.height_cm != null ? `${profile.height_cm} cm` : NOT_SET,
+      onPress: () => setHeightModalOpen(true),
+    },
   ];
   const weightGoal: InfoRow[] = [
     {
@@ -112,6 +122,20 @@ export default function ProfileScreen() {
         onClose={() => setAgeModalOpen(false)}
         onSave={(age) =>
           updateProfile.mutate({ age }, { onSuccess: () => setAgeModalOpen(false) })
+        }
+      />
+
+      <WheelPickerModal
+        key={heightModalOpen ? 'height-open' : 'height-closed'}
+        visible={heightModalOpen}
+        title="What is your height?"
+        values={HEIGHT_VALUES}
+        value={profile?.height_cm ?? HEIGHT_DEFAULT}
+        suffix="cm"
+        pending={updateProfile.isPending}
+        onClose={() => setHeightModalOpen(false)}
+        onSave={(height_cm) =>
+          updateProfile.mutate({ height_cm }, { onSuccess: () => setHeightModalOpen(false) })
         }
       />
     </ThemedView>

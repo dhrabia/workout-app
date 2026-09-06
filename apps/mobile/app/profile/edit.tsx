@@ -16,14 +16,12 @@ export default function EditProfileScreen() {
   const tint = useThemeColor({}, 'tint');
 
   const [name, setName] = useState('');
-  const [height, setHeight] = useState('');
   const [targetWeight, setTargetWeight] = useState('');
   const [error, setError] = useState<string | undefined>();
 
   useEffect(() => {
     if (profile) {
       setName(profile.username ?? '');
-      setHeight(profile.height_cm != null ? String(profile.height_cm) : '');
       setTargetWeight(profile.target_weight_kg != null ? String(profile.target_weight_kg) : '');
     }
   }, [profile]);
@@ -36,7 +34,6 @@ export default function EditProfileScreen() {
     updateProfile.mutate(
       {
         username: name.trim(),
-        height_cm: height.trim() ? parseFloat(height) : null,
         target_weight_kg: targetWeight.trim() ? parseFloat(targetWeight) : null,
       },
       { onSuccess: () => router.back() }
@@ -59,15 +56,6 @@ export default function EditProfileScreen() {
         onChangeText={setName}
         placeholder="Your name"
         error={error}
-      />
-      <NumberStepper
-        label="Height"
-        value={height}
-        onChangeText={setHeight}
-        step={1}
-        min={0}
-        suffix="cm"
-        placeholder="Optional"
       />
       <NumberStepper
         label="Target weight"
