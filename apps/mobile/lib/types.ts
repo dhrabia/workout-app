@@ -1,4 +1,4 @@
-import type { Tables } from "@workout-app/shared";
+import type { Database, Tables } from "@workout-app/shared";
 
 export type PlanExerciseWithExercise = Tables<"workout_plan_exercises"> & {
   exercise: Tables<"exercises">;
@@ -6,6 +6,9 @@ export type PlanExerciseWithExercise = Tables<"workout_plan_exercises"> & {
 
 export type PlanDayWithExerciseCount = Tables<"workout_plan_days"> & {
   exerciseCount: number;
+  // Distinct muscle groups trained this day, in exercise order — [0] is
+  // treated as the day's "primary" group (see day-card-photos.ts).
+  muscleGroups: Database["public"]["Enums"]["muscle_group"][];
 };
 
 // "arms" stays a valid value in the database enum (see migration

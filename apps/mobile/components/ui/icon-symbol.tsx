@@ -24,6 +24,7 @@ const MAPPING = {
   'ellipsis': 'more-horiz',
   'person.fill': 'person',
   'chevron.right': 'chevron-right',
+  'dumbbell.fill': 'fitness-center',
 } as IconMapping;
 
 /**

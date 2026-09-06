@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import type { Tables, TablesInsert, TablesUpdate } from "@workout-app/shared";
+import type { Database, Tables, TablesInsert, TablesUpdate } from "@workout-app/shared";
 
 import { useOptimisticReorder } from "@/hooks/queries/use-optimistic-reorder";
 import { unwrap } from "@/lib/db";
@@ -12,20 +12,27 @@ export function usePlanDays(planId: string) {
     queryKey: queryKeys.planDays.list(planId),
     queryFn: async () => {
       const rows = unwrap<
-        (Tables<"workout_plan_days"> & { workout_plan_exercises: { count: number }[] })[]
+        (Tables<"workout_plan_days"> & {
+          workout_plan_exercises: {
+            order_index: number;
+            exercise: { muscle_group: Database["public"]["Enums"]["muscle_group"] };
+          }[];
+        })[]
       >(
         await supabase
           .from("workout_plan_days")
-          .select("*, workout_plan_exercises(count)")
+          .select("*, workout_plan_exercises(order_index, exercise:exercises(muscle_group))")
           .eq("plan_id", planId)
           .order("order_index", { ascending: true })
       );
-      return rows.map(
-        ({ workout_plan_exercises, ...day }): PlanDayWithExerciseCount => ({
+      return rows.map(({ workout_plan_exercises, ...day }): PlanDayWithExerciseCount => {
+        const sorted = [...workout_plan_exercises].sort((a, b) => a.order_index - b.order_index);
+        return {
           ...day,
-          exerciseCount: workout_plan_exercises[0]?.count ?? 0,
-        })
-      );
+          exerciseCount: workout_plan_exercises.length,
+          muscleGroups: [...new Set(sorted.map((e) => e.exercise.muscle_group))],
+        };
+      });
     },
     enabled: !!planId,
   });

@@ -1,19 +1,17 @@
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
-import { StyleSheet, View } from 'react-native';
+import { StyleSheet } from 'react-native';
 import ReorderableList, { reorderItems } from 'react-native-reorderable-list';
 
 import { EmptyState } from '@/components/empty-state';
-import { ListCard } from '@/components/list-card';
 import { LoadingState } from '@/components/loading-state';
 import { OutlineButton } from '@/components/outline-button';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
-import { IconSymbol } from '@/components/ui/icon-symbol';
+import { WorkoutDayCard } from '@/components/workout-day-card';
 import { usePlan } from '@/hooks/queries/use-plans';
 import { usePlanDays, useDeletePlanDay, useReorderPlanDays } from '@/hooks/queries/use-plan-days';
 import { useDragContextMenu } from '@/hooks/use-drag-context-menu';
 import { useDragPanGesture } from '@/hooks/use-drag-pan-gesture';
-import { useThemeColor } from '@/hooks/use-theme-color';
 import { confirmDestructive } from '@/lib/alerts';
 import type { PlanDayWithExerciseCount } from '@/lib/types';
 
@@ -53,9 +51,10 @@ export default function PlanDetailScreen() {
             <EmptyState title="No days yet" description="Add a day to start building this plan." />
           }
           onReorder={({ from, to }) => reorderPlanDays.mutate(reorderItems(days, from, to))}
-          renderItem={({ item }) => (
+          renderItem={({ item, index }) => (
             <DayCard
               item={item}
+              dayNumber={index + 1}
               onPress={() =>
                 router.push({
                   pathname: '/plans/[planId]/days/[dayId]',
@@ -83,36 +82,27 @@ export default function PlanDetailScreen() {
 
 function DayCard({
   item,
+  dayNumber,
   onPress,
   onEdit,
   onDelete,
 }: {
   item: PlanDayWithExerciseCount;
+  dayNumber: number;
   onPress: () => void;
   onEdit: () => void;
   onDelete: () => void;
 }) {
-  const borderColor = useThemeColor({}, 'icon');
   const { menuButtonRef, onLongPress, onMenuPress } = useDragContextMenu({ onEdit, onDelete });
 
   return (
-    <ListCard
-      title={item.name}
+    <WorkoutDayCard
+      dayNumber={dayNumber}
+      workoutDay={item}
       onPress={onPress}
       onLongPress={onLongPress}
       onMenuPress={onMenuPress}
       menuButtonRef={menuButtonRef}
-      meta={
-        <View style={styles.metaRow}>
-          <ThemedText style={[styles.meta, { color: borderColor }]}>
-            {item.exerciseCount} exercise{item.exerciseCount === 1 ? '' : 's'} ·
-          </ThemedText>
-          <IconSymbol name="clock" size={13} color={borderColor} />
-          <ThemedText style={[styles.meta, { color: borderColor }]}>
-            {item.exerciseCount * 10} min
-          </ThemedText>
-        </View>
-      }
     />
   );
 }
@@ -120,7 +110,5 @@ function DayCard({
 const styles = StyleSheet.create({
   container: { flex: 1 },
   description: { paddingHorizontal: 16, paddingTop: 8 },
-  list: { padding: 16, gap: 12 },
-  metaRow: { flexDirection: 'row', alignItems: 'center', gap: 4 },
-  meta: { fontSize: 13 },
+  list: { padding: 16, gap: 14 },
 });
