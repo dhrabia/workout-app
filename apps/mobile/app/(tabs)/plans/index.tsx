@@ -6,7 +6,6 @@ import { EmptyState } from '@/components/empty-state';
 import { HeaderIconButton } from '@/components/header-icon-button';
 import { ListCard } from '@/components/list-card';
 import { LoadingState } from '@/components/loading-state';
-import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { useDeletePlan, usePlans, useReorderPlans } from '@/hooks/queries/use-plans';
 import { useDragContextMenu } from '@/hooks/use-drag-context-menu';
@@ -14,6 +13,10 @@ import { useDragPanGesture } from '@/hooks/use-drag-pan-gesture';
 import { useThemeColor } from '@/hooks/use-theme-color';
 import { confirmDestructive } from '@/lib/alerts';
 import type { Tables } from '@workout-app/shared';
+
+const PLAN_CARD_BACKGROUND = require('@/assets/images/plan-card-background.jpg');
+// Previous card height (padding 32*2 + one 40pt title line) times 2.5.
+const PLAN_CARD_HEIGHT = 260;
 
 export default function PlansScreen() {
   const router = useRouter();
@@ -87,7 +90,6 @@ function PlanCard({
   onEdit: () => void;
   onDelete: () => void;
 }) {
-  const borderColor = useThemeColor({}, 'icon');
   const { menuButtonRef, onLongPress, onMenuPress } = useDragContextMenu({ onEdit, onDelete });
 
   return (
@@ -95,17 +97,11 @@ function PlanCard({
       title={item.name}
       titleStyle={styles.title}
       style={styles.card}
+      backgroundImage={PLAN_CARD_BACKGROUND}
       onPress={onPress}
       onLongPress={onLongPress}
       onMenuPress={onMenuPress}
       menuButtonRef={menuButtonRef}
-      meta={
-        item.description ? (
-          <ThemedText style={[styles.meta, { color: borderColor }]} numberOfLines={1}>
-            {item.description}
-          </ThemedText>
-        ) : undefined
-      }
     />
   );
 }
@@ -113,7 +109,6 @@ function PlanCard({
 const styles = StyleSheet.create({
   container: { flex: 1 },
   list: { padding: 16, gap: 12 },
-  card: { paddingVertical: 32, paddingHorizontal: 32 },
+  card: { height: PLAN_CARD_HEIGHT },
   title: { fontSize: 32, lineHeight: 40 },
-  meta: { fontSize: 15 },
 });
