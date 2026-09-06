@@ -27,14 +27,39 @@ export function usePlan(planId: string) {
   });
 }
 
+// Matches the number of apps/mobile/assets/images/plan-card-background-*.jpg
+// files.
+const CARD_BACKGROUND_COUNT = 5;
+
+// Random, but avoids any background_image_index already in use by another
+// plan when possible — so up to 5 plans never share a card photo, and only
+// a 6th+ plan (or the assignment losing a race with a concurrent create)
+// falls back to a plain random pick.
+async function pickUnusedBackgroundIndex() {
+  const { data, error } = await supabase.from("workout_plans").select("background_image_index");
+  if (error) throw error;
+
+  const used = new Set(data.map((row) => row.background_image_index));
+  const all = Array.from({ length: CARD_BACKGROUND_COUNT }, (_, i) => i + 1);
+  const pool = all.filter((index) => !used.has(index));
+  const candidates = pool.length > 0 ? pool : all;
+  return candidates[Math.floor(Math.random() * candidates.length)];
+}
+
 export function useCreatePlan() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async (input: Pick<TablesInsert<"workout_plans">, "name" | "description">) =>
-      unwrap<Tables<"workout_plans">>(
-        await supabase.from("workout_plans").insert(input).select().single()
-      ),
+    mutationFn: async (input: Pick<TablesInsert<"workout_plans">, "name" | "description">) => {
+      const background_image_index = await pickUnusedBackgroundIndex();
+      return unwrap<Tables<"workout_plans">>(
+        await supabase
+          .from("workout_plans")
+          .insert({ ...input, background_image_index })
+          .select()
+          .single()
+      );
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.plans.list() });
     },

@@ -1,6 +1,6 @@
-import { Image, type ImageSource } from 'expo-image';
+import { Image } from 'expo-image';
 import { LinearGradient } from 'expo-linear-gradient';
-import type { Ref, ReactNode } from 'react';
+import type { ComponentProps, Ref, ReactNode } from 'react';
 import {
   Pressable,
   StyleSheet,
@@ -27,7 +27,7 @@ export type ListCardProps = {
   // the title stays readable over it — used by the Plans list's hero-sized
   // cards. Forces the title (and menu icon) to a fixed white, since it no
   // longer sits on the theme's own card background.
-  backgroundImage?: ImageSource;
+  backgroundImage?: ComponentProps<typeof Image>['source'];
 };
 
 // The rounded, filled-background row used throughout the plan builder's list

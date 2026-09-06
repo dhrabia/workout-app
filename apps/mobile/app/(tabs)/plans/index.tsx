@@ -14,7 +14,16 @@ import { useThemeColor } from '@/hooks/use-theme-color';
 import { confirmDestructive } from '@/lib/alerts';
 import type { Tables } from '@workout-app/shared';
 
-const PLAN_CARD_BACKGROUND = require('@/assets/images/plan-card-background.jpg');
+// Indexed by each plan's persisted `background_image_index` (1-based, see
+// useCreatePlan) — not by list position, so a plan keeps its photo when
+// other plans are added, deleted, or reordered around it.
+const PLAN_CARD_BACKGROUNDS = [
+  require('@/assets/images/plan-card-background-1.jpg'),
+  require('@/assets/images/plan-card-background-2.jpg'),
+  require('@/assets/images/plan-card-background-3.jpg'),
+  require('@/assets/images/plan-card-background-4.jpg'),
+  require('@/assets/images/plan-card-background-5.jpg'),
+];
 // Previous card height (padding 32*2 + one 40pt title line) times 2.5.
 const PLAN_CARD_HEIGHT = 260;
 
@@ -66,6 +75,9 @@ export default function PlansScreen() {
           renderItem={({ item }) => (
             <PlanCard
               item={item}
+              backgroundImage={
+                PLAN_CARD_BACKGROUNDS[(item.background_image_index - 1) % PLAN_CARD_BACKGROUNDS.length]
+              }
               onPress={() =>
                 router.push({ pathname: '/plans/[planId]', params: { planId: item.id } })
               }
@@ -81,11 +93,13 @@ export default function PlansScreen() {
 
 function PlanCard({
   item,
+  backgroundImage,
   onPress,
   onEdit,
   onDelete,
 }: {
   item: Tables<'workout_plans'>;
+  backgroundImage: number;
   onPress: () => void;
   onEdit: () => void;
   onDelete: () => void;
@@ -97,7 +111,7 @@ function PlanCard({
       title={item.name}
       titleStyle={styles.title}
       style={styles.card}
-      backgroundImage={PLAN_CARD_BACKGROUND}
+      backgroundImage={backgroundImage}
       onPress={onPress}
       onLongPress={onLongPress}
       onMenuPress={onMenuPress}

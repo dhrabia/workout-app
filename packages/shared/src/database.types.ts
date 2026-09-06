@@ -262,6 +262,7 @@ export type Database = {
       }
       workout_plans: {
         Row: {
+          background_image_index: number
           created_at: string
           description: string | null
           id: string
@@ -271,6 +272,7 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          background_image_index: number
           created_at?: string
           description?: string | null
           id?: string
@@ -280,6 +282,7 @@ export type Database = {
           user_id?: string
         }
         Update: {
+          background_image_index?: number
           created_at?: string
           description?: string | null
           id?: string
