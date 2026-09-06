@@ -24,3 +24,7 @@ export const MUSCLE_GROUPS = [
 ] as const;
 
 export type MuscleGroup = (typeof MUSCLE_GROUPS)[number];
+
+export const GENDERS = ["male", "female"] as const;
+
+export type Gender = (typeof GENDERS)[number];

@@ -1,33 +1,46 @@
 import { Stack, useRouter } from 'expo-router';
+import { useState } from 'react';
 import { Alert, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 
 import { SectionLabel } from '@/components/section-label';
+import { SingleChoiceModal, type SingleChoiceOption } from '@/components/single-choice-modal';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { IconSymbol } from '@/components/ui/icon-symbol';
-import { useProfile } from '@/hooks/queries/use-profile';
+import { useProfile, useUpdateProfile } from '@/hooks/queries/use-profile';
 import { useWeightLogs } from '@/hooks/queries/use-weight-logs';
 import { useThemeColor } from '@/hooks/use-theme-color';
+import type { Gender } from '@/lib/types';
 import { getCurrentWeight } from '@/lib/weight';
 
-type InfoRow = { label: string; value: string };
+type InfoRow = { label: string; value: string; onPress?: () => void };
 
-// Gender and age aren't backed by any column yet (see
+// Age isn't backed by any column yet (see
 // supabase/migrations/20260810134542_initial_schema.sql) — rendered as
 // unset so the layout is in place without inventing fake persisted data.
-// Weight (latest weight log), height and target weight are real.
+// Gender, weight (latest weight log), height and target weight are real.
 const NOT_SET = 'Not set';
+
+const GENDER_OPTIONS: SingleChoiceOption<Gender>[] = [
+  { value: 'male', label: 'Male' },
+  { value: 'female', label: 'Female' },
+];
 
 export default function ProfileScreen() {
   const router = useRouter();
   const { data: profile } = useProfile();
   const { data: weightLogs } = useWeightLogs();
+  const updateProfile = useUpdateProfile();
   const tint = useThemeColor({}, 'tint');
   const displayName = profile?.username?.trim() || 'Add your name';
   const currentWeight = getCurrentWeight(weightLogs);
 
+  const [genderModalOpen, setGenderModalOpen] = useState(false);
+
+  const genderLabel = GENDER_OPTIONS.find((option) => option.value === profile?.gender)?.label ?? NOT_SET;
+
   const personalInfo: InfoRow[] = [
-    { label: 'Gender', value: NOT_SET },
+    { label: 'Gender', value: genderLabel, onPress: () => setGenderModalOpen(true) },
     { label: 'Age', value: NOT_SET },
     { label: 'Weight', value: currentWeight != null ? `${currentWeight} kg` : NOT_SET },
     { label: 'Height', value: profile?.height_cm != null ? `${profile.height_cm} cm` : NOT_SET },
@@ -66,6 +79,19 @@ export default function ProfileScreen() {
         <Section title="Personal information" rows={personalInfo} />
         <Section title="Weight goal" rows={weightGoal} />
       </ScrollView>
+
+      <SingleChoiceModal
+        key={genderModalOpen ? 'open' : 'closed'}
+        visible={genderModalOpen}
+        title="What is your gender?"
+        options={GENDER_OPTIONS}
+        value={profile?.gender}
+        pending={updateProfile.isPending}
+        onClose={() => setGenderModalOpen(false)}
+        onSave={(gender) =>
+          updateProfile.mutate({ gender }, { onSuccess: () => setGenderModalOpen(false) })
+        }
+      />
     </ThemedView>
   );
 }
@@ -110,15 +136,21 @@ function InfoCard({ rows }: { rows: InfoRow[] }) {
   return (
     <View style={[styles.card, { backgroundColor: cardBackground }]}>
       {rows.map((row, index) => (
-        <View
+        <Pressable
           key={row.label}
+          onPress={row.onPress}
+          disabled={!row.onPress}
+          accessibilityRole={row.onPress ? 'button' : undefined}
           style={[
             styles.row,
             index > 0 && { borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: borderColor },
           ]}>
           <ThemedText>{row.label}</ThemedText>
-          <ThemedText style={{ color: secondaryColor }}>{row.value}</ThemedText>
-        </View>
+          <View style={styles.rowValue}>
+            <ThemedText style={{ color: secondaryColor }}>{row.value}</ThemedText>
+            {row.onPress && <IconSymbol name="chevron.right" size={16} color={secondaryColor} />}
+          </View>
+        </Pressable>
       ))}
     </View>
   );
@@ -159,4 +191,5 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 14,
   },
+  rowValue: { flexDirection: 'row', alignItems: 'center', gap: 2 },
 });

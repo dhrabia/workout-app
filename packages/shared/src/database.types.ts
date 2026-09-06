@@ -118,6 +118,7 @@ export type Database = {
       profiles: {
         Row: {
           created_at: string
+          gender: Database["public"]["Enums"]["gender"] | null
           height_cm: number | null
           id: string
           target_weight_kg: number | null
@@ -125,6 +126,7 @@ export type Database = {
         }
         Insert: {
           created_at?: string
+          gender?: Database["public"]["Enums"]["gender"] | null
           height_cm?: number | null
           id: string
           target_weight_kg?: number | null
@@ -132,6 +134,7 @@ export type Database = {
         }
         Update: {
           created_at?: string
+          gender?: Database["public"]["Enums"]["gender"] | null
           height_cm?: number | null
           id?: string
           target_weight_kg?: number | null
@@ -308,6 +311,7 @@ export type Database = {
       reorder_plans: { Args: { p_plan_ids: string[] }; Returns: undefined }
     }
     Enums: {
+      gender: "male" | "female"
       muscle_group:
         | "chest"
         | "back"
@@ -449,6 +453,7 @@ export const Constants = {
   },
   public: {
     Enums: {
+      gender: ["male", "female"],
       muscle_group: [
         "chest",
         "back",
