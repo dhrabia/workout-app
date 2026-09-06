@@ -1,33 +1,43 @@
 import { Stack, useRouter } from 'expo-router';
 import { Alert, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 
+import { SectionLabel } from '@/components/section-label';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { useProfile } from '@/hooks/queries/use-profile';
+import { useWeightLogs } from '@/hooks/queries/use-weight-logs';
 import { useThemeColor } from '@/hooks/use-theme-color';
+import { getCurrentWeight } from '@/lib/weight';
 
 type InfoRow = { label: string; value: string };
 
-// `profiles` only has a `username` column today (see
-// supabase/migrations/20260810134542_initial_schema.sql) — gender, age,
-// weight, height and target weight aren't backed by any table yet. Rendered
-// as unset so the layout and interaction are in place without inventing
-// fake persisted data.
-const PERSONAL_INFO: InfoRow[] = [
-  { label: 'Gender', value: 'Not set' },
-  { label: 'Age', value: 'Not set' },
-  { label: 'Weight', value: 'Not set' },
-  { label: 'Height', value: 'Not set' },
-];
-
-const WEIGHT_GOAL: InfoRow[] = [{ label: 'Target weight', value: 'Not set' }];
+// Gender and age aren't backed by any column yet (see
+// supabase/migrations/20260810134542_initial_schema.sql) — rendered as
+// unset so the layout is in place without inventing fake persisted data.
+// Weight (latest weight log), height and target weight are real.
+const NOT_SET = 'Not set';
 
 export default function ProfileScreen() {
   const router = useRouter();
   const { data: profile } = useProfile();
+  const { data: weightLogs } = useWeightLogs();
   const tint = useThemeColor({}, 'tint');
   const displayName = profile?.username?.trim() || 'Add your name';
+  const currentWeight = getCurrentWeight(weightLogs);
+
+  const personalInfo: InfoRow[] = [
+    { label: 'Gender', value: NOT_SET },
+    { label: 'Age', value: NOT_SET },
+    { label: 'Weight', value: currentWeight != null ? `${currentWeight} kg` : NOT_SET },
+    { label: 'Height', value: profile?.height_cm != null ? `${profile.height_cm} cm` : NOT_SET },
+  ];
+  const weightGoal: InfoRow[] = [
+    {
+      label: 'Target weight',
+      value: profile?.target_weight_kg != null ? `${profile.target_weight_kg} kg` : NOT_SET,
+    },
+  ];
 
   function handleAvatarPress() {
     Alert.alert('Coming soon', "Profile photos aren't available yet.");
@@ -53,8 +63,8 @@ export default function ProfileScreen() {
           </Pressable>
         </View>
 
-        <Section title="Personal information" rows={PERSONAL_INFO} />
-        <Section title="Weight goal" rows={WEIGHT_GOAL} />
+        <Section title="Personal information" rows={personalInfo} />
+        <Section title="Weight goal" rows={weightGoal} />
       </ScrollView>
     </ThemedView>
   );
@@ -84,11 +94,9 @@ function Avatar({ onPress }: { onPress: () => void }) {
 }
 
 function Section({ title, rows }: { title: string; rows: InfoRow[] }) {
-  const labelColor = useThemeColor({}, 'icon');
-
   return (
     <View style={styles.section}>
-      <ThemedText style={[styles.sectionLabel, { color: labelColor }]}>{title}</ThemedText>
+      <SectionLabel>{title}</SectionLabel>
       <InfoCard rows={rows} />
     </View>
   );
@@ -143,13 +151,6 @@ const styles = StyleSheet.create({
   editAction: { flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 6, padding: 4 },
   editText: { fontSize: 15, fontWeight: '600' },
   section: { gap: 8 },
-  sectionLabel: {
-    fontSize: 13,
-    fontWeight: '600',
-    letterSpacing: 0.5,
-    textTransform: 'uppercase',
-    marginLeft: 4,
-  },
   card: { borderRadius: 12 },
   row: {
     flexDirection: 'row',

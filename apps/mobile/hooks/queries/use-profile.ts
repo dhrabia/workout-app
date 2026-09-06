@@ -24,7 +24,7 @@ export function useUpdateProfile() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async (input: Pick<TablesUpdate<"profiles">, "username">) =>
+    mutationFn: async (input: Omit<TablesUpdate<"profiles">, "id" | "created_at">) =>
       unwrap<Tables<"profiles">>(
         await supabase.from("profiles").update(input).eq("id", userId!).select().single()
       ),

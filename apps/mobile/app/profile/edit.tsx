@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { FormField } from '@/components/form-field';
 import { FormScreen } from '@/components/form-screen';
 import { HeaderIconButton } from '@/components/header-icon-button';
+import { NumberStepper } from '@/components/number-stepper';
 import { SubmitButton } from '@/components/submit-button';
 import { useProfile, useUpdateProfile } from '@/hooks/queries/use-profile';
 import { useThemeColor } from '@/hooks/use-theme-color';
@@ -15,10 +16,16 @@ export default function EditProfileScreen() {
   const tint = useThemeColor({}, 'tint');
 
   const [name, setName] = useState('');
+  const [height, setHeight] = useState('');
+  const [targetWeight, setTargetWeight] = useState('');
   const [error, setError] = useState<string | undefined>();
 
   useEffect(() => {
-    if (profile) setName(profile.username ?? '');
+    if (profile) {
+      setName(profile.username ?? '');
+      setHeight(profile.height_cm != null ? String(profile.height_cm) : '');
+      setTargetWeight(profile.target_weight_kg != null ? String(profile.target_weight_kg) : '');
+    }
   }, [profile]);
 
   function handleSubmit() {
@@ -26,7 +33,14 @@ export default function EditProfileScreen() {
       setError('Name is required');
       return;
     }
-    updateProfile.mutate({ username: name.trim() }, { onSuccess: () => router.back() });
+    updateProfile.mutate(
+      {
+        username: name.trim(),
+        height_cm: height.trim() ? parseFloat(height) : null,
+        target_weight_kg: targetWeight.trim() ? parseFloat(targetWeight) : null,
+      },
+      { onSuccess: () => router.back() }
+    );
   }
 
   return (
@@ -45,6 +59,25 @@ export default function EditProfileScreen() {
         onChangeText={setName}
         placeholder="Your name"
         error={error}
+      />
+      <NumberStepper
+        label="Height"
+        value={height}
+        onChangeText={setHeight}
+        step={1}
+        min={0}
+        suffix="cm"
+        placeholder="Optional"
+      />
+      <NumberStepper
+        label="Target weight"
+        value={targetWeight}
+        onChangeText={setTargetWeight}
+        step={0.5}
+        min={0}
+        decimals={1}
+        suffix="kg"
+        placeholder="Optional"
       />
       <SubmitButton label="Save" pending={updateProfile.isPending} onPress={handleSubmit} />
     </FormScreen>

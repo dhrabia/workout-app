@@ -22,4 +22,12 @@ export const queryKeys = {
     all: ["profile"] as const,
     detail: (userId: string) => [...queryKeys.profile.all, "detail", userId] as const,
   },
+  weightLogs: {
+    all: ["weightLogs"] as const,
+    list: (userId: string) => [...queryKeys.weightLogs.all, "list", userId] as const,
+  },
+  bodyMeasurements: {
+    all: ["bodyMeasurements"] as const,
+    detail: (userId: string) => [...queryKeys.bodyMeasurements.all, "detail", userId] as const,
+  },
 };
