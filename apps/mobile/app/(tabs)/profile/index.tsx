@@ -7,6 +7,7 @@ import { SingleChoiceModal, type SingleChoiceOption } from '@/components/single-
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { IconSymbol } from '@/components/ui/icon-symbol';
+import { WheelPickerModal } from '@/components/wheel-picker-modal';
 import { useProfile, useUpdateProfile } from '@/hooks/queries/use-profile';
 import { useWeightLogs } from '@/hooks/queries/use-weight-logs';
 import { useThemeColor } from '@/hooks/use-theme-color';
@@ -15,16 +16,19 @@ import { getCurrentWeight } from '@/lib/weight';
 
 type InfoRow = { label: string; value: string; onPress?: () => void };
 
-// Age isn't backed by any column yet (see
-// supabase/migrations/20260810134542_initial_schema.sql) — rendered as
-// unset so the layout is in place without inventing fake persisted data.
-// Gender, weight (latest weight log), height and target weight are real.
+// Weight is derived from the latest weight log; every other field here maps
+// directly to a `profiles` column (see migrations).
 const NOT_SET = 'Not set';
 
 const GENDER_OPTIONS: SingleChoiceOption<Gender>[] = [
   { value: 'male', label: 'Male' },
   { value: 'female', label: 'Female' },
 ];
+
+const AGE_MIN = 13;
+const AGE_MAX = 100;
+const AGE_DEFAULT = 30;
+const AGE_VALUES = Array.from({ length: AGE_MAX - AGE_MIN + 1 }, (_, i) => AGE_MIN + i);
 
 export default function ProfileScreen() {
   const router = useRouter();
@@ -36,12 +40,17 @@ export default function ProfileScreen() {
   const currentWeight = getCurrentWeight(weightLogs);
 
   const [genderModalOpen, setGenderModalOpen] = useState(false);
+  const [ageModalOpen, setAgeModalOpen] = useState(false);
 
   const genderLabel = GENDER_OPTIONS.find((option) => option.value === profile?.gender)?.label ?? NOT_SET;
 
   const personalInfo: InfoRow[] = [
     { label: 'Gender', value: genderLabel, onPress: () => setGenderModalOpen(true) },
-    { label: 'Age', value: NOT_SET },
+    {
+      label: 'Age',
+      value: profile?.age != null ? String(profile.age) : NOT_SET,
+      onPress: () => setAgeModalOpen(true),
+    },
     { label: 'Weight', value: currentWeight != null ? `${currentWeight} kg` : NOT_SET },
     { label: 'Height', value: profile?.height_cm != null ? `${profile.height_cm} cm` : NOT_SET },
   ];
@@ -81,7 +90,7 @@ export default function ProfileScreen() {
       </ScrollView>
 
       <SingleChoiceModal
-        key={genderModalOpen ? 'open' : 'closed'}
+        key={genderModalOpen ? 'gender-open' : 'gender-closed'}
         visible={genderModalOpen}
         title="What is your gender?"
         options={GENDER_OPTIONS}
@@ -90,6 +99,19 @@ export default function ProfileScreen() {
         onClose={() => setGenderModalOpen(false)}
         onSave={(gender) =>
           updateProfile.mutate({ gender }, { onSuccess: () => setGenderModalOpen(false) })
+        }
+      />
+
+      <WheelPickerModal
+        key={ageModalOpen ? 'age-open' : 'age-closed'}
+        visible={ageModalOpen}
+        title="What is your age?"
+        values={AGE_VALUES}
+        value={profile?.age ?? AGE_DEFAULT}
+        pending={updateProfile.isPending}
+        onClose={() => setAgeModalOpen(false)}
+        onSave={(age) =>
+          updateProfile.mutate({ age }, { onSuccess: () => setAgeModalOpen(false) })
         }
       />
     </ThemedView>
