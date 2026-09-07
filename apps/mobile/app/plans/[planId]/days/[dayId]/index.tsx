@@ -12,6 +12,7 @@ import { LoadingState } from '@/components/loading-state';
 import { OutlineButton } from '@/components/outline-button';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
+import { IconSymbol } from '@/components/ui/icon-symbol';
 import { usePlanDay } from '@/hooks/queries/use-plan-days';
 import {
   usePlanExercises,
@@ -33,8 +34,6 @@ export default function DayDetailScreen() {
   const deletePlanExercise = useDeletePlanExercise(dayId, planId);
   const reorderPlanExercises = useReorderPlanExercises(dayId);
 
-  const borderColor = useThemeColor({}, 'border');
-
   function handleDeleteExercise(planExerciseId: string) {
     confirmDestructive('Remove exercise?', undefined, 'Remove', () =>
       deletePlanExercise.mutate(planExerciseId)
@@ -51,9 +50,7 @@ export default function DayDetailScreen() {
           data={exercises}
           keyExtractor={(item) => item.id}
           contentContainerStyle={styles.list}
-          ItemSeparatorComponent={() => (
-            <View style={[styles.separator, { backgroundColor: borderColor }]} />
-          )}
+          ItemSeparatorComponent={() => <View style={styles.separator} />}
           ListEmptyComponent={
             <EmptyState title="No exercises yet" description="Add an exercise to this day." />
           }
@@ -75,13 +72,15 @@ export default function DayDetailScreen() {
         />
       )}
       <OutlineButton
-        label="+ Add Exercise"
+        icon="plus"
+        label="Add Exercise"
         onPress={() =>
           router.push({
             pathname: '/plans/[planId]/days/[dayId]/exercises/categories',
             params: { planId, dayId },
           })
         }
+        variant="primary"
       />
     </ThemedView>
   );
@@ -99,6 +98,10 @@ function ExerciseRow({
   const drag = useReorderableDrag();
   const isDragging = useIsActive();
   const errorColor = useThemeColor({}, 'error');
+  const cardBackground = useThemeColor({}, 'cardBackground');
+  const borderColor = useThemeColor({}, 'border');
+  const iconBackground = useThemeColor({}, 'cardElevated');
+  const secondaryColor = useThemeColor({}, 'icon');
 
   return (
     <Swipeable
@@ -109,20 +112,28 @@ function ExerciseRow({
           <ThemedText style={styles.deleteActionText}>Delete</ThemedText>
         </Pressable>
       )}>
-      <Pressable style={styles.row} onPress={onEdit} onLongPress={drag}>
-        <Image
-          source={MUSCLE_ICONS[item.exercise.muscle_group]}
-          style={styles.icon}
-          resizeMode="contain"
-        />
+      <Pressable
+        style={[styles.card, { backgroundColor: cardBackground, borderColor }]}
+        onPress={onEdit}
+        onLongPress={drag}>
+        <View style={[styles.iconBox, { backgroundColor: iconBackground }]}>
+          <Image
+            source={MUSCLE_ICONS[item.exercise.muscle_group]}
+            style={styles.icon}
+            resizeMode="contain"
+          />
+        </View>
         <View style={styles.rowContent}>
-          <ThemedText type="defaultSemiBold">{item.exercise.name}</ThemedText>
-          <ThemedText>
+          <ThemedText type="defaultSemiBold" style={styles.name}>
+            {item.exercise.name}
+          </ThemedText>
+          <ThemedText style={[styles.meta, { color: secondaryColor }]}>
             {item.target_sets} × {item.target_reps}
             {item.target_weight_kg ? ` @ ${item.target_weight_kg}kg` : ''}
             {item.rest_seconds ? ` · ${item.rest_seconds}s rest` : ''}
           </ThemedText>
         </View>
+        <IconSymbol name="chevron.right" size={18} color={secondaryColor} />
       </Pressable>
     </Swipeable>
   );
@@ -131,10 +142,20 @@ function ExerciseRow({
 const styles = StyleSheet.create({
   container: { flex: 1 },
   list: { paddingHorizontal: 16, paddingVertical: 8 },
-  separator: { height: StyleSheet.hairlineWidth },
-  row: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingVertical: 16 },
-  icon: { width: 36, height: 36 },
-  rowContent: { flex: 1, gap: 2 },
+  separator: { height: 14 },
+  card: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 14,
+    borderRadius: 20,
+    borderWidth: StyleSheet.hairlineWidth,
+    padding: 16,
+  },
+  iconBox: { width: 52, height: 52, borderRadius: 16, alignItems: 'center', justifyContent: 'center' },
+  icon: { width: 34, height: 34 },
+  rowContent: { flex: 1, gap: 4 },
+  name: { fontSize: 18, lineHeight: 23 },
+  meta: { fontSize: 15, lineHeight: 20 },
   deleteAction: {
     justifyContent: 'center',
     alignItems: 'center',

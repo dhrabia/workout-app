@@ -83,13 +83,15 @@ export default function ExercisePickerScreen() {
         />
       )}
       <OutlineButton
-        label="+ Create custom exercise"
+        icon="plus"
+        label="Create custom exercise"
         onPress={() =>
           router.push({
             pathname: '/exercises/new',
             params: { returnPlanId: planId, returnDayId: dayId, muscleGroup },
           })
         }
+        variant="primary"
         style={{ marginBottom: insets.bottom + 16 }}
       />
     </ThemedView>

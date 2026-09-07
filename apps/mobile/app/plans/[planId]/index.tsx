@@ -73,8 +73,10 @@ export default function PlanDetailScreen() {
         />
       )}
       <OutlineButton
-        label="+ Add Day"
+        icon="plus"
+        label="Add Day"
         onPress={() => router.push({ pathname: '/plans/[planId]/days/form', params: { planId } })}
+        variant="primary"
       />
     </ThemedView>
   );
