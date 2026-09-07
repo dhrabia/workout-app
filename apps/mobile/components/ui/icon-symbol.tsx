@@ -29,6 +29,7 @@ const MAPPING = {
   'square.stack.fill': 'layers',
   'arrow.2.squarepath': 'repeat',
   'doc.text.fill': 'notes',
+  'list.bullet': 'subject',
 } as IconMapping;
 
 /**

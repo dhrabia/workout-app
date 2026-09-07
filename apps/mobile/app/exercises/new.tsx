@@ -2,13 +2,14 @@ import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import { useState } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 
-import { FormField } from '@/components/form-field';
 import { FormScreen } from '@/components/form-screen';
 import { HeaderIconButton } from '@/components/header-icon-button';
 import { SubmitButton } from '@/components/submit-button';
 import { ThemedText } from '@/components/themed-text';
+import { FieldCard, FieldCardInput, FieldCardLabel } from '@/components/ui/field-card';
 import { useCreateExercise } from '@/hooks/queries/use-exercises';
 import { useThemeColor } from '@/hooks/use-theme-color';
+import { hexToRgba } from '@/lib/color';
 import { MUSCLE_GROUPS, type MuscleGroup } from '@/lib/types';
 
 export default function NewExerciseScreen() {
@@ -26,8 +27,13 @@ export default function NewExerciseScreen() {
   const [error, setError] = useState<string | undefined>();
 
   const tint = useThemeColor({}, 'tint');
+  const textColor = useThemeColor({}, 'text');
   const borderColor = useThemeColor({}, 'border');
-  const chipTextSelectedColor = useThemeColor({}, 'buttonText');
+  const cardElevated = useThemeColor({}, 'cardElevated');
+  const secondaryColor = useThemeColor({}, 'icon');
+
+  const selectedChip = { backgroundColor: hexToRgba(tint, 0.16), borderColor: tint, textColor };
+  const unselectedChip = { backgroundColor: cardElevated, borderColor, textColor: secondaryColor };
 
   function handleSubmit() {
     if (!name.trim()) {
@@ -66,50 +72,45 @@ export default function NewExerciseScreen() {
           ),
         }}
       />
-      <FormField
-        label="Name"
-        value={name}
-        onChangeText={setName}
-        placeholder="e.g. Cable Fly"
-        error={error}
-      />
-      <View style={styles.chipsSection}>
-        <ThemedText type="defaultSemiBold">Muscle group</ThemedText>
+      <FieldCard>
+        <FieldCardLabel label="Name" icon="doc.text.fill" />
+        <FieldCardInput value={name} onChangeText={setName} placeholder="e.g. Cable Fly" error={error} />
+      </FieldCard>
+      <FieldCard>
+        <FieldCardLabel label="Muscle group" icon="square.stack.fill" />
         <View style={styles.chips}>
           {MUSCLE_GROUPS.map((group) => {
-            const selected = group === muscleGroup;
+            const chip = group === muscleGroup ? selectedChip : unselectedChip;
             return (
               <Pressable
                 key={group}
                 onPress={() => setMuscleGroup(group)}
-                style={[
-                  styles.chip,
-                  { borderColor: selected ? tint : borderColor },
-                  selected && { backgroundColor: tint },
-                ]}>
-                <ThemedText
-                  style={selected ? [styles.chipTextSelected, { color: chipTextSelectedColor }] : undefined}>
+                style={[styles.chip, { backgroundColor: chip.backgroundColor, borderColor: chip.borderColor }]}>
+                <ThemedText style={[styles.chipText, { color: chip.textColor }]}>
                   {group.replace('_', ' ')}
                 </ThemedText>
               </Pressable>
             );
           })}
         </View>
-      </View>
-      <FormField
-        label="Equipment"
-        value={equipment}
-        onChangeText={setEquipment}
-        placeholder="Optional, e.g. barbell"
+      </FieldCard>
+      <FieldCard>
+        <FieldCardLabel label="Equipment" icon="dumbbell.fill" />
+        <FieldCardInput value={equipment} onChangeText={setEquipment} placeholder="Optional, e.g. barbell" />
+      </FieldCard>
+      <SubmitButton
+        label="Save"
+        pending={createExercise.isPending}
+        onPress={handleSubmit}
+        size="large"
+        muted={!name.trim()}
       />
-      <SubmitButton label="Save" pending={createExercise.isPending} onPress={handleSubmit} />
     </FormScreen>
   );
 }
 
 const styles = StyleSheet.create({
-  chipsSection: { gap: 8 },
   chips: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
-  chip: { paddingHorizontal: 12, paddingVertical: 8, borderRadius: 20, borderWidth: 1 },
-  chipTextSelected: { fontWeight: '600' },
+  chip: { paddingHorizontal: 16, paddingVertical: 9, borderRadius: 18, borderWidth: 1 },
+  chipText: { fontSize: 14, fontWeight: '600' },
 });

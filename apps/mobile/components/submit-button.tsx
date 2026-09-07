@@ -9,6 +9,10 @@ export type SubmitButtonProps = {
   pending?: boolean;
   onPress: () => void;
   size?: 'default' | 'large';
+  // Visually subdues the button (e.g. while a required field is still empty)
+  // without disabling it — tapping still fires onPress so existing
+  // validation/error behavior on tap is preserved.
+  muted?: boolean;
 };
 
 export function SubmitButton({
@@ -17,10 +21,14 @@ export function SubmitButton({
   pending,
   onPress,
   size = 'default',
+  muted,
 }: SubmitButtonProps) {
   const tint = useThemeColor({}, 'tint');
   const tintDark = useThemeColor({}, 'tintDark');
+  const mutedBackground = useThemeColor({}, 'cardElevated');
   const buttonText = useThemeColor({}, 'buttonText');
+  const mutedText = useThemeColor({}, 'textDisabled');
+  const textColor = muted ? mutedText : buttonText;
 
   return (
     <Pressable
@@ -29,9 +37,9 @@ export function SubmitButton({
       style={({ pressed }) => [
         styles.button,
         size === 'large' && styles.buttonLarge,
-        { backgroundColor: pressed ? tintDark : tint },
+        { backgroundColor: muted ? mutedBackground : pressed ? tintDark : tint },
       ]}>
-      <ThemedText style={[styles.buttonText, { color: buttonText }]}>
+      <ThemedText style={[styles.buttonText, { color: textColor }]}>
         {pending ? pendingLabel : label}
       </ThemedText>
     </Pressable>

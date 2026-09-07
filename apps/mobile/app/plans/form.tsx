@@ -1,10 +1,10 @@
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
 
-import { FormField } from '@/components/form-field';
 import { FormScreen } from '@/components/form-screen';
 import { HeaderIconButton } from '@/components/header-icon-button';
 import { SubmitButton } from '@/components/submit-button';
+import { FieldCard, FieldCardInput, FieldCardLabel } from '@/components/ui/field-card';
 import { usePlan, useCreatePlan, useUpdatePlan } from '@/hooks/queries/use-plans';
 import { useThemeColor } from '@/hooks/use-theme-color';
 
@@ -52,21 +52,31 @@ export default function PlanFormScreen() {
           ),
         }}
       />
-      <FormField
-        label="Name"
-        value={name}
-        onChangeText={setName}
-        placeholder="e.g. Push Pull Legs"
-        error={error}
+      <FieldCard>
+        <FieldCardLabel label="Name" icon="doc.text.fill" />
+        <FieldCardInput
+          value={name}
+          onChangeText={setName}
+          placeholder="e.g. Push Pull Legs"
+          error={error}
+        />
+      </FieldCard>
+      <FieldCard>
+        <FieldCardLabel label="Description" icon="list.bullet" />
+        <FieldCardInput
+          value={description}
+          onChangeText={setDescription}
+          placeholder="Optional"
+          multiline
+        />
+      </FieldCard>
+      <SubmitButton
+        label="Save"
+        pending={mutation.isPending}
+        onPress={handleSubmit}
+        size="large"
+        muted={!name.trim()}
       />
-      <FormField
-        label="Description"
-        value={description}
-        onChangeText={setDescription}
-        placeholder="Optional"
-        multiline
-      />
-      <SubmitButton label="Save" pending={mutation.isPending} onPress={handleSubmit} />
     </FormScreen>
   );
 }

@@ -21,6 +21,7 @@ import {
   MEASUREMENT_VALUES,
   type MeasurementFieldKey,
 } from '@/lib/body-measurement-fields';
+import { hexToRgba } from '@/lib/color';
 import type { Tables } from '@workout-app/shared';
 
 type MeasurementLog = Tables<'body_measurement_logs'>;
@@ -118,14 +119,6 @@ export default function BodyMeasurementsHistoryScreen() {
       />
     </ThemedView>
   );
-}
-
-function hexToRgba(hex: string, alpha: number) {
-  const value = hex.replace('#', '');
-  const r = parseInt(value.substring(0, 2), 16);
-  const g = parseInt(value.substring(2, 4), 16);
-  const b = parseInt(value.substring(4, 6), 16);
-  return `rgba(${r}, ${g}, ${b}, ${alpha})`;
 }
 
 function MeasurementTypePills({

@@ -1,10 +1,10 @@
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
 
-import { FormField } from '@/components/form-field';
 import { FormScreen } from '@/components/form-screen';
 import { HeaderIconButton } from '@/components/header-icon-button';
 import { SubmitButton } from '@/components/submit-button';
+import { FieldCard, FieldCardInput, FieldCardLabel } from '@/components/ui/field-card';
 import {
   usePlanDay,
   useCreatePlanDay,
@@ -49,14 +49,22 @@ export default function DayFormScreen() {
           ),
         }}
       />
-      <FormField
-        label="Name"
-        value={name}
-        onChangeText={setName}
-        placeholder="e.g. Day A, Push, Legs"
-        error={error}
+      <FieldCard>
+        <FieldCardLabel label="Name" icon="doc.text.fill" />
+        <FieldCardInput
+          value={name}
+          onChangeText={setName}
+          placeholder="e.g. Day A, Push, Legs"
+          error={error}
+        />
+      </FieldCard>
+      <SubmitButton
+        label="Save"
+        pending={mutation.isPending}
+        onPress={handleSubmit}
+        size="large"
+        muted={!name.trim()}
       />
-      <SubmitButton label="Save" pending={mutation.isPending} onPress={handleSubmit} />
     </FormScreen>
   );
 }
