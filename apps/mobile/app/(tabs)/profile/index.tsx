@@ -1,5 +1,4 @@
 import { Stack, useRouter } from 'expo-router';
-import { useState } from 'react';
 import { Alert, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 
 import { SectionLabel } from '@/components/section-label';
@@ -11,7 +10,9 @@ import { RulerPickerModal } from '@/components/ruler-picker-modal';
 import { WheelPickerModal } from '@/components/wheel-picker-modal';
 import { useProfile, useUpdateProfile } from '@/hooks/queries/use-profile';
 import { useLogWeight, useWeightLogs } from '@/hooks/queries/use-weight-logs';
+import { usePickerModal } from '@/hooks/use-picker-modal';
 import { useThemeColor } from '@/hooks/use-theme-color';
+import { generateRange } from '@/lib/number-range';
 import type { Gender } from '@/lib/types';
 import { getCurrentWeight } from '@/lib/weight';
 
@@ -29,12 +30,12 @@ const GENDER_OPTIONS: SingleChoiceOption<Gender>[] = [
 const AGE_MIN = 13;
 const AGE_MAX = 100;
 const AGE_DEFAULT = 30;
-const AGE_VALUES = Array.from({ length: AGE_MAX - AGE_MIN + 1 }, (_, i) => AGE_MIN + i);
+const AGE_VALUES = generateRange(AGE_MIN, AGE_MAX, 1);
 
 const HEIGHT_MIN = 100;
 const HEIGHT_MAX = 230;
 const HEIGHT_DEFAULT = 170;
-const HEIGHT_VALUES = Array.from({ length: HEIGHT_MAX - HEIGHT_MIN + 1 }, (_, i) => HEIGHT_MIN + i);
+const HEIGHT_VALUES = generateRange(HEIGHT_MIN, HEIGHT_MAX, 1);
 
 const WEIGHT_MIN = 30;
 const WEIGHT_MAX = 200;
@@ -50,37 +51,37 @@ export default function ProfileScreen() {
   const displayName = profile?.username?.trim() || 'Add your name';
   const currentWeight = getCurrentWeight(weightLogs);
 
-  const [genderModalOpen, setGenderModalOpen] = useState(false);
-  const [ageModalOpen, setAgeModalOpen] = useState(false);
-  const [heightModalOpen, setHeightModalOpen] = useState(false);
-  const [weightModalOpen, setWeightModalOpen] = useState(false);
-  const [targetWeightModalOpen, setTargetWeightModalOpen] = useState(false);
+  const genderModal = usePickerModal<true>();
+  const ageModal = usePickerModal<true>();
+  const heightModal = usePickerModal<true>();
+  const weightModal = usePickerModal<true>();
+  const targetWeightModal = usePickerModal<true>();
 
   const genderLabel = GENDER_OPTIONS.find((option) => option.value === profile?.gender)?.label ?? NOT_SET;
 
   const personalInfo: InfoRow[] = [
-    { label: 'Gender', value: genderLabel, onPress: () => setGenderModalOpen(true) },
+    { label: 'Gender', value: genderLabel, onPress: () => genderModal.open(true) },
     {
       label: 'Age',
       value: profile?.age != null ? String(profile.age) : NOT_SET,
-      onPress: () => setAgeModalOpen(true),
+      onPress: () => ageModal.open(true),
     },
     {
       label: 'Weight',
       value: currentWeight != null ? `${currentWeight} kg` : NOT_SET,
-      onPress: () => setWeightModalOpen(true),
+      onPress: () => weightModal.open(true),
     },
     {
       label: 'Height',
       value: profile?.height_cm != null ? `${profile.height_cm} cm` : NOT_SET,
-      onPress: () => setHeightModalOpen(true),
+      onPress: () => heightModal.open(true),
     },
   ];
   const weightGoal: InfoRow[] = [
     {
       label: 'Target weight',
       value: profile?.target_weight_kg != null ? `${profile.target_weight_kg} kg` : NOT_SET,
-      onPress: () => setTargetWeightModalOpen(true),
+      onPress: () => targetWeightModal.open(true),
     },
   ];
 
@@ -113,75 +114,64 @@ export default function ProfileScreen() {
       </ScrollView>
 
       <SingleChoiceModal
-        key={genderModalOpen ? 'gender-open' : 'gender-closed'}
-        visible={genderModalOpen}
+        key={genderModal.key}
+        visible={genderModal.visible}
         title="What is your gender?"
         options={GENDER_OPTIONS}
         value={profile?.gender}
         pending={updateProfile.isPending}
-        onClose={() => setGenderModalOpen(false)}
-        onSave={(gender) =>
-          updateProfile.mutate({ gender }, { onSuccess: () => setGenderModalOpen(false) })
-        }
+        onClose={genderModal.close}
+        onSave={(gender) => updateProfile.mutate({ gender }, { onSuccess: genderModal.close })}
       />
 
       <WheelPickerModal
-        key={ageModalOpen ? 'age-open' : 'age-closed'}
-        visible={ageModalOpen}
+        key={ageModal.key}
+        visible={ageModal.visible}
         title="What is your age?"
         values={AGE_VALUES}
         value={profile?.age ?? AGE_DEFAULT}
         pending={updateProfile.isPending}
-        onClose={() => setAgeModalOpen(false)}
-        onSave={(age) =>
-          updateProfile.mutate({ age }, { onSuccess: () => setAgeModalOpen(false) })
-        }
+        onClose={ageModal.close}
+        onSave={(age) => updateProfile.mutate({ age }, { onSuccess: ageModal.close })}
       />
 
       <WheelPickerModal
-        key={heightModalOpen ? 'height-open' : 'height-closed'}
-        visible={heightModalOpen}
+        key={heightModal.key}
+        visible={heightModal.visible}
         title="What is your height?"
         values={HEIGHT_VALUES}
         value={profile?.height_cm ?? HEIGHT_DEFAULT}
         suffix="cm"
         pending={updateProfile.isPending}
-        onClose={() => setHeightModalOpen(false)}
-        onSave={(height_cm) =>
-          updateProfile.mutate({ height_cm }, { onSuccess: () => setHeightModalOpen(false) })
-        }
+        onClose={heightModal.close}
+        onSave={(height_cm) => updateProfile.mutate({ height_cm }, { onSuccess: heightModal.close })}
       />
 
       <RulerPickerModal
-        key={weightModalOpen ? 'weight-open' : 'weight-closed'}
-        visible={weightModalOpen}
+        key={weightModal.key}
+        visible={weightModal.visible}
         title="What is your weight?"
         min={WEIGHT_MIN}
         max={WEIGHT_MAX}
         suffix="kg"
         value={currentWeight ?? WEIGHT_DEFAULT}
         pending={logWeight.isPending}
-        onClose={() => setWeightModalOpen(false)}
-        onSave={(weightKg) =>
-          logWeight.mutate(weightKg, { onSuccess: () => setWeightModalOpen(false) })
-        }
+        onClose={weightModal.close}
+        onSave={(weightKg) => logWeight.mutate(weightKg, { onSuccess: weightModal.close })}
       />
 
       <RulerPickerModal
-        key={targetWeightModalOpen ? 'target-weight-open' : 'target-weight-closed'}
-        visible={targetWeightModalOpen}
+        key={targetWeightModal.key}
+        visible={targetWeightModal.visible}
         title="What is your target weight?"
         min={WEIGHT_MIN}
         max={WEIGHT_MAX}
         suffix="kg"
         value={profile?.target_weight_kg ?? WEIGHT_DEFAULT}
         pending={updateProfile.isPending}
-        onClose={() => setTargetWeightModalOpen(false)}
+        onClose={targetWeightModal.close}
         onSave={(target_weight_kg) =>
-          updateProfile.mutate(
-            { target_weight_kg },
-            { onSuccess: () => setTargetWeightModalOpen(false) }
-          )
+          updateProfile.mutate({ target_weight_kg }, { onSuccess: targetWeightModal.close })
         }
       />
     </ThemedView>

@@ -1,5 +1,7 @@
 import type { Tables } from '@workout-app/shared';
 
+import { generateRange } from '@/lib/number-range';
+
 export const MEASUREMENT_FIELDS = [
   { key: 'chest', label: 'Chest' },
   { key: 'waist', label: 'Waist' },
@@ -15,10 +17,7 @@ export const MEASUREMENT_MIN = 10;
 export const MEASUREMENT_MAX = 200;
 export const MEASUREMENT_DEFAULT = 40;
 // 0.5cm increments.
-export const MEASUREMENT_VALUES = Array.from(
-  { length: (MEASUREMENT_MAX - MEASUREMENT_MIN) / 0.5 + 1 },
-  (_, i) => MEASUREMENT_MIN + i * 0.5
-);
+export const MEASUREMENT_VALUES = generateRange(MEASUREMENT_MIN, MEASUREMENT_MAX, 0.5);
 
 // Logs are oldest-first (see useBodyMeasurementLogs), so each type's current
 // value is simply its last log — folding the list keeps that in one place.

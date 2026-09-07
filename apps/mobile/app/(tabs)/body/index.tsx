@@ -1,5 +1,4 @@
 import { Stack, useRouter } from 'expo-router';
-import { useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 
 import { SectionLabel } from '@/components/section-label';
@@ -11,6 +10,7 @@ import { WheelPickerModal } from '@/components/wheel-picker-modal';
 import { useBodyMeasurementLogs, useLogBodyMeasurement } from '@/hooks/queries/use-body-measurement-logs';
 import { useProfile } from '@/hooks/queries/use-profile';
 import { useWeightLogs } from '@/hooks/queries/use-weight-logs';
+import { usePickerModal } from '@/hooks/use-picker-modal';
 import { useThemeColor } from '@/hooks/use-theme-color';
 import { calculateBmi, getBmiCategory } from '@/lib/bmi';
 import {
@@ -44,8 +44,8 @@ export default function BodyScreen() {
   const startWeight = weightLogs?.[0]?.weight_kg;
   const latestMeasurements = getLatestMeasurements(measurementLogs);
 
-  const [editingField, setEditingField] = useState<MeasurementFieldKey | null>(null);
-  const editingFieldLabel = MEASUREMENT_FIELDS.find((field) => field.key === editingField)?.label;
+  const measurementModal = usePickerModal<MeasurementFieldKey>();
+  const editingFieldLabel = MEASUREMENT_FIELDS.find((field) => field.key === measurementModal.field)?.label;
 
   return (
     <ThemedView style={styles.container}>
@@ -74,24 +74,24 @@ export default function BodyScreen() {
             <SectionLabel>Body measurements</SectionLabel>
             <HistoryAction onPress={() => router.push('/body/measurement-history')} />
           </View>
-          <MeasurementsGrid measurements={latestMeasurements} onSelectField={setEditingField} />
+          <MeasurementsGrid measurements={latestMeasurements} onSelectField={measurementModal.open} />
         </View>
       </ScrollView>
 
       <WheelPickerModal
-        key={editingField ?? 'closed'}
-        visible={editingField != null}
+        key={measurementModal.key}
+        visible={measurementModal.visible}
         title={`What's your ${editingFieldLabel?.toLowerCase()} measurement?`}
         values={MEASUREMENT_VALUES}
-        value={(editingField && latestMeasurements[editingField]) ?? MEASUREMENT_DEFAULT}
+        value={(measurementModal.field && latestMeasurements[measurementModal.field]) ?? MEASUREMENT_DEFAULT}
         suffix="cm"
         pending={logMeasurement.isPending}
-        onClose={() => setEditingField(null)}
+        onClose={measurementModal.close}
         onSave={(value) => {
-          if (!editingField) return;
+          if (!measurementModal.field) return;
           logMeasurement.mutate(
-            { measurement_type: editingField, value_cm: value },
-            { onSuccess: () => setEditingField(null) }
+            { measurement_type: measurementModal.field, value_cm: value },
+            { onSuccess: measurementModal.close }
           );
         }}
       />
