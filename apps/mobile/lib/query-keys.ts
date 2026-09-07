@@ -26,8 +26,8 @@ export const queryKeys = {
     all: ["weightLogs"] as const,
     list: (userId: string) => [...queryKeys.weightLogs.all, "list", userId] as const,
   },
-  bodyMeasurements: {
-    all: ["bodyMeasurements"] as const,
-    detail: (userId: string) => [...queryKeys.bodyMeasurements.all, "detail", userId] as const,
+  bodyMeasurementLogs: {
+    all: ["bodyMeasurementLogs"] as const,
+    list: (userId: string) => [...queryKeys.bodyMeasurementLogs.all, "list", userId] as const,
   },
 };

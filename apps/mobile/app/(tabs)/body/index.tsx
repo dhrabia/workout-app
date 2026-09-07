@@ -1,33 +1,31 @@
 import { Stack, useRouter } from 'expo-router';
 import { useState } from 'react';
-import { Pressable, ScrollView, StyleSheet, View, type LayoutChangeEvent } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 
 import { SectionLabel } from '@/components/section-label';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { IconSymbol } from '@/components/ui/icon-symbol';
+import { formatShortDate, TrendChart } from '@/components/trend-chart';
 import { WheelPickerModal } from '@/components/wheel-picker-modal';
-import { useBodyMeasurements, useUpdateBodyMeasurements } from '@/hooks/queries/use-body-measurements';
+import { useBodyMeasurementLogs, useLogBodyMeasurement } from '@/hooks/queries/use-body-measurement-logs';
 import { useProfile } from '@/hooks/queries/use-profile';
 import { useWeightLogs } from '@/hooks/queries/use-weight-logs';
 import { useThemeColor } from '@/hooks/use-theme-color';
 import { calculateBmi, getBmiCategory } from '@/lib/bmi';
-import { MEASUREMENT_FIELDS, type MeasurementFieldKey } from '@/lib/body-measurement-fields';
+import {
+  getLatestMeasurements,
+  MEASUREMENT_DEFAULT,
+  MEASUREMENT_FIELDS,
+  MEASUREMENT_VALUES,
+  type MeasurementFieldKey,
+} from '@/lib/body-measurement-fields';
 import { getCurrentWeight } from '@/lib/weight';
 import type { Tables } from '@workout-app/shared';
 
 function formatWeight(kg: number) {
   return kg.toFixed(1);
 }
-
-const MEASUREMENT_MIN = 10;
-const MEASUREMENT_MAX = 200;
-const MEASUREMENT_DEFAULT = 40;
-// 0.5cm increments (unlike Age/Height's whole-unit steps in profile/index.tsx).
-const MEASUREMENT_VALUES = Array.from(
-  { length: (MEASUREMENT_MAX - MEASUREMENT_MIN) / 0.5 + 1 },
-  (_, i) => MEASUREMENT_MIN + i * 0.5
-);
 
 // How far current sits between the first-ever log and the target, 0-1.
 function computeProgress(start: number, current: number, target: number) {
@@ -39,11 +37,12 @@ export default function BodyScreen() {
   const router = useRouter();
   const { data: profile } = useProfile();
   const { data: weightLogs } = useWeightLogs();
-  const { data: measurements } = useBodyMeasurements();
-  const updateMeasurements = useUpdateBodyMeasurements();
+  const { data: measurementLogs } = useBodyMeasurementLogs();
+  const logMeasurement = useLogBodyMeasurement();
 
   const currentWeight = getCurrentWeight(weightLogs);
   const startWeight = weightLogs?.[0]?.weight_kg;
+  const latestMeasurements = getLatestMeasurements(measurementLogs);
 
   const [editingField, setEditingField] = useState<MeasurementFieldKey | null>(null);
   const editingFieldLabel = MEASUREMENT_FIELDS.find((field) => field.key === editingField)?.label;
@@ -73,9 +72,9 @@ export default function BodyScreen() {
         <View style={styles.section}>
           <View style={styles.sectionHeaderRow}>
             <SectionLabel>Body measurements</SectionLabel>
-            <EditMeasurementsAction onPress={() => router.push('/body/measurements')} />
+            <HistoryAction onPress={() => router.push('/body/measurement-history')} />
           </View>
-          <MeasurementsGrid measurements={measurements} onSelectField={setEditingField} />
+          <MeasurementsGrid measurements={latestMeasurements} onSelectField={setEditingField} />
         </View>
       </ScrollView>
 
@@ -84,13 +83,16 @@ export default function BodyScreen() {
         visible={editingField != null}
         title={`What's your ${editingFieldLabel?.toLowerCase()} measurement?`}
         values={MEASUREMENT_VALUES}
-        value={(editingField && measurements?.[editingField]) ?? MEASUREMENT_DEFAULT}
+        value={(editingField && latestMeasurements[editingField]) ?? MEASUREMENT_DEFAULT}
         suffix="cm"
-        pending={updateMeasurements.isPending}
+        pending={logMeasurement.isPending}
         onClose={() => setEditingField(null)}
         onSave={(value) => {
           if (!editingField) return;
-          updateMeasurements.mutate({ [editingField]: value }, { onSuccess: () => setEditingField(null) });
+          logMeasurement.mutate(
+            { measurement_type: editingField, value_cm: value },
+            { onSuccess: () => setEditingField(null) }
+          );
         }}
       />
     </ThemedView>
@@ -201,144 +203,15 @@ function WeightProgressCard({ history }: { history: Tables<'weight_logs'>[] | un
     );
   }
 
+  const points = history.map((log) => ({
+    id: log.id,
+    date: formatShortDate(log.logged_at),
+    value: log.weight_kg,
+  }));
+
   return (
     <View style={[styles.card, styles.chartCard, { backgroundColor: cardBackground }]}>
-      <WeightChart history={history} />
-    </View>
-  );
-}
-
-const CHART_HEIGHT = 160;
-const CHART_TOP_PADDING = 12;
-const CHART_BOTTOM_PADDING = 20;
-const CHART_LEFT_PADDING = 38;
-const CHART_DOT_SIZE = 8;
-const CHART_LABEL_WIDTH = 40;
-const CHART_MAX_POINTS = 12;
-
-function WeightChart({ history }: { history: Tables<'weight_logs'>[] }) {
-  const tint = useThemeColor({}, 'tint');
-  const secondary = useThemeColor({}, 'icon');
-  const axisColor = useThemeColor({}, 'border');
-  const [width, setWidth] = useState(0);
-
-  const points = history.slice(-CHART_MAX_POINTS);
-  const weights = points.map((point) => point.weight_kg);
-  const min = Math.min(...weights);
-  const max = Math.max(...weights);
-  const range = max - min || 1;
-  const plotHeight = CHART_HEIGHT - CHART_TOP_PADDING - CHART_BOTTOM_PADDING;
-  const plotWidth = Math.max(0, width - CHART_LEFT_PADDING - CHART_DOT_SIZE);
-
-  function xAt(index: number) {
-    if (points.length === 1) return CHART_LEFT_PADDING + plotWidth / 2;
-    return CHART_LEFT_PADDING + (index / (points.length - 1)) * plotWidth + CHART_DOT_SIZE / 2;
-  }
-  function yAt(weightKg: number) {
-    return CHART_TOP_PADDING + (1 - (weightKg - min) / range) * plotHeight;
-  }
-
-  // Deduped since a 2-point line makes the middle index the same as the
-  // first (Math.floor((2-1)/2) === 0), which would otherwise render two
-  // labels sharing the same React key.
-  const labelIndexes =
-    points.length <= 1
-      ? [0]
-      : Array.from(new Set([0, Math.floor((points.length - 1) / 2), points.length - 1]));
-  // Weight axis ticks: just the extremes, or the single reading if the line is flat.
-  const weightTicks = max === min ? [max] : [max, min];
-
-  function handleLayout(event: LayoutChangeEvent) {
-    setWidth(event.nativeEvent.layout.width);
-  }
-
-  return (
-    <View
-      style={styles.chart}
-      onLayout={handleLayout}
-      accessible
-      accessibilityRole="image"
-      accessibilityLabel={`Weight trend chart. ${points.length} entries, from ${formatWeight(weights[0])} to ${formatWeight(weights.at(-1) ?? weights[0])} kilograms.`}>
-      {width > 0 && (
-        <>
-          <View
-            style={[
-              styles.chartAxisY,
-              { backgroundColor: axisColor, left: CHART_LEFT_PADDING, top: CHART_TOP_PADDING, height: plotHeight },
-            ]}
-          />
-          <View
-            style={[
-              styles.chartAxisX,
-              {
-                backgroundColor: axisColor,
-                left: CHART_LEFT_PADDING,
-                top: CHART_TOP_PADDING + plotHeight,
-                width: width - CHART_LEFT_PADDING,
-              },
-            ]}
-          />
-          {weightTicks.map((tick) => (
-            <ThemedText
-              key={tick}
-              style={[styles.chartYLabel, { color: secondary, top: yAt(tick) - 7, width: CHART_LEFT_PADDING - 6 }]}>
-              {formatWeight(tick)}
-            </ThemedText>
-          ))}
-          {points.slice(1).map((point, index) => {
-            const prev = points[index];
-            const x1 = xAt(index);
-            const y1 = yAt(prev.weight_kg);
-            const x2 = xAt(index + 1);
-            const y2 = yAt(point.weight_kg);
-            const length = Math.hypot(x2 - x1, y2 - y1);
-            const angle = (Math.atan2(y2 - y1, x2 - x1) * 180) / Math.PI;
-            return (
-              <View
-                key={`segment-${point.id}`}
-                style={[
-                  styles.chartSegment,
-                  {
-                    backgroundColor: tint,
-                    width: length,
-                    left: (x1 + x2) / 2 - length / 2,
-                    top: (y1 + y2) / 2 - 1,
-                    transform: [{ rotate: `${angle}deg` }],
-                  },
-                ]}
-              />
-            );
-          })}
-          {points.map((point, index) => (
-            <View
-              key={`dot-${point.id}`}
-              style={[
-                styles.chartDot,
-                { backgroundColor: tint, left: xAt(index) - CHART_DOT_SIZE / 2, top: yAt(point.weight_kg) - CHART_DOT_SIZE / 2 },
-              ]}
-            />
-          ))}
-          {labelIndexes.map((index) => (
-            <ThemedText
-              key={index}
-              style={[
-                styles.chartLabel,
-                {
-                  color: secondary,
-                  left: Math.max(
-                    CHART_LEFT_PADDING,
-                    Math.min(width - CHART_LABEL_WIDTH, xAt(index) - CHART_LABEL_WIDTH / 2)
-                  ),
-                },
-              ]}>
-              {new Date(points[index].logged_at).toLocaleDateString(undefined, {
-                month: 'short',
-                day: 'numeric',
-              })}
-            </ThemedText>
-          ))}
-        </>
-      )}
+      <TrendChart points={points} label="Weight" unit="kilograms" formatValue={formatWeight} />
     </View>
   );
 }
@@ -375,15 +248,18 @@ function BmiCard({
   );
 }
 
-function EditMeasurementsAction({ onPress }: { onPress: () => void }) {
+function HistoryAction({ onPress }: { onPress: () => void }) {
   const tint = useThemeColor({}, 'tint');
+  const cardElevated = useThemeColor({}, 'cardElevated');
   return (
     <Pressable
       onPress={onPress}
       hitSlop={8}
       accessibilityRole="button"
-      accessibilityLabel="Edit body measurements">
-      <IconSymbol name="pencil" size={14} color={tint} />
+      accessibilityLabel="View measurement history"
+      style={[styles.historyAction, { backgroundColor: cardElevated }]}>
+      <IconSymbol name="clock.arrow.circlepath" size={13} color={tint} />
+      <ThemedText style={[styles.historyActionText, { color: tint }]}>History</ThemedText>
     </Pressable>
   );
 }
@@ -392,7 +268,7 @@ function MeasurementsGrid({
   measurements,
   onSelectField,
 }: {
-  measurements: Tables<'body_measurements'> | null | undefined;
+  measurements: Partial<Record<MeasurementFieldKey, number>>;
   onSelectField: (key: MeasurementFieldKey) => void;
 }) {
   const cardBackground = useThemeColor({}, 'cardBackground');
@@ -402,7 +278,7 @@ function MeasurementsGrid({
   return (
     <View style={[styles.card, styles.measurementsGrid, { backgroundColor: cardBackground }]}>
       {MEASUREMENT_FIELDS.map(({ key, label }, index) => {
-        const value = measurements?.[key];
+        const value = measurements[key];
         const isRightColumn = index % 2 === 1;
         const isLastRow = index >= MEASUREMENT_FIELDS.length - 2;
         return (
@@ -416,7 +292,9 @@ function MeasurementsGrid({
             ]}>
             <ThemedText style={{ color: secondary }}>{label}</ThemedText>
             <View style={styles.measurementValueRow}>
-              <ThemedText type="defaultSemiBold">{value != null ? `${value} cm` : 'Not set'}</ThemedText>
+              <ThemedText type="defaultSemiBold">
+                {value != null ? `${value} cm` : 'Not set'}
+              </ThemedText>
               <IconSymbol name="chevron.right" size={14} color={secondary} />
             </View>
           </Pressable>
@@ -455,17 +333,20 @@ const styles = StyleSheet.create({
   emptyChartCard: { padding: 24, alignItems: 'center', gap: 6 },
   emptyChartHint: { textAlign: 'center' },
   chartCard: { padding: 16 },
-  chart: { height: CHART_HEIGHT },
-  chartAxisY: { position: 'absolute', width: StyleSheet.hairlineWidth },
-  chartAxisX: { position: 'absolute', height: StyleSheet.hairlineWidth },
-  chartYLabel: { position: 'absolute', left: 0, textAlign: 'right', fontSize: 11 },
-  chartSegment: { position: 'absolute', height: 2 },
-  chartDot: { position: 'absolute', width: CHART_DOT_SIZE, height: CHART_DOT_SIZE, borderRadius: CHART_DOT_SIZE / 2 },
-  chartLabel: { position: 'absolute', bottom: 0, width: CHART_LABEL_WIDTH, textAlign: 'center', fontSize: 11 },
 
   bmiCard: { padding: 16, alignItems: 'center', gap: 2 },
   bmiValue: { fontSize: 28, lineHeight: 34, fontWeight: '700' },
   bmiHint: { textAlign: 'center' },
+
+  historyAction: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 14,
+  },
+  historyActionText: { fontSize: 13, fontWeight: '600' },
 
   measurementsGrid: { flexDirection: 'row', flexWrap: 'wrap' },
   measurementCell: { width: '50%', padding: 16, gap: 4 },

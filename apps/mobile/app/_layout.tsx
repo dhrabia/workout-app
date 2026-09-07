@@ -26,7 +26,6 @@ const MODAL_ROUTES = [
   'exercises/new',
   'profile/edit',
   'body/log-weight',
-  'body/measurements',
 ] as const;
 
 export default function RootLayout() {

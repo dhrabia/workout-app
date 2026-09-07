@@ -39,42 +39,33 @@ export type Database = {
   }
   public: {
     Tables: {
-      body_measurements: {
+      body_measurement_logs: {
         Row: {
-          arm_cm: number | null
-          chest_cm: number | null
-          hips_cm: number | null
-          neck_cm: number | null
-          thigh_cm: number | null
-          updated_at: string
+          id: string
+          logged_at: string
+          measurement_type: Database["public"]["Enums"]["measurement_type"]
           user_id: string
-          waist_cm: number | null
+          value_cm: number
         }
         Insert: {
-          arm_cm?: number | null
-          chest_cm?: number | null
-          hips_cm?: number | null
-          neck_cm?: number | null
-          thigh_cm?: number | null
-          updated_at?: string
+          id?: string
+          logged_at?: string
+          measurement_type: Database["public"]["Enums"]["measurement_type"]
           user_id: string
-          waist_cm?: number | null
+          value_cm: number
         }
         Update: {
-          arm_cm?: number | null
-          chest_cm?: number | null
-          hips_cm?: number | null
-          neck_cm?: number | null
-          thigh_cm?: number | null
-          updated_at?: string
+          id?: string
+          logged_at?: string
+          measurement_type?: Database["public"]["Enums"]["measurement_type"]
           user_id?: string
-          waist_cm?: number | null
+          value_cm?: number
         }
         Relationships: [
           {
-            foreignKeyName: "body_measurements_user_id_fkey"
+            foreignKeyName: "body_measurement_logs_user_id_fkey"
             columns: ["user_id"]
-            isOneToOne: true
+            isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
@@ -318,6 +309,7 @@ export type Database = {
     }
     Enums: {
       gender: "male" | "female"
+      measurement_type: "chest" | "waist" | "hips" | "arm" | "thigh" | "neck"
       muscle_group:
         | "chest"
         | "back"
@@ -460,6 +452,7 @@ export const Constants = {
   public: {
     Enums: {
       gender: ["male", "female"],
+      measurement_type: ["chest", "waist", "hips", "arm", "thigh", "neck"],
       muscle_group: [
         "chest",
         "back",

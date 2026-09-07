@@ -25,6 +25,7 @@ const MAPPING = {
   'person.fill': 'person',
   'chevron.right': 'chevron-right',
   'dumbbell.fill': 'fitness-center',
+  'clock.arrow.circlepath': 'history',
 } as IconMapping;
 
 /**
