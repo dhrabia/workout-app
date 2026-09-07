@@ -1,12 +1,14 @@
-import { useEffect, useId, useRef, useState } from 'react';
+import { useEffect, useId, useRef, useState, type ComponentProps } from 'react';
 import { InputAccessoryView, Platform, Pressable, StyleSheet, TextInput, View } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
+import { FieldCard, FieldCardLabel } from '@/components/ui/field-card';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { useThemeColor } from '@/hooks/use-theme-color';
 
 export type NumberStepperProps = {
   label: string;
+  icon?: ComponentProps<typeof IconSymbol>['name'];
   value: string;
   onChangeText: (value: string) => void;
   step?: number | ((current: number) => number);
@@ -26,8 +28,13 @@ function format(n: number, decimals: number) {
   return String(parseFloat(n.toFixed(decimals)));
 }
 
+// A card-style +/- stepper: a leading icon/label row, a large tap-to-edit
+// value below it, and a pair of circular repeat-on-hold buttons. Used by the
+// exercise form (Sets/Reps/Weight/Rest) — see that screen for the visual
+// language this matches (Body screen's cards, etc).
 export function NumberStepper({
   label,
+  icon,
   value,
   onChangeText,
   step = 1,
@@ -57,7 +64,9 @@ export function NumberStepper({
   const textColor = useThemeColor({}, 'text');
   const placeholderColor = useThemeColor({}, 'textDisabled');
   const errorColor = useThemeColor({}, 'error');
-  const backgroundColor = useThemeColor({}, 'background');
+  const cardBackground = useThemeColor({}, 'cardBackground');
+  const borderColor = useThemeColor({}, 'border');
+  const controlBackground = useThemeColor({}, 'cardElevated');
   const accessoryId = useId();
 
   useEffect(() => stopRepeating, []);
@@ -113,72 +122,86 @@ export function NumberStepper({
   const hasValue = !!value.trim();
 
   return (
-    <View style={styles.container}>
-      <ThemedText type="defaultSemiBold" style={styles.label}>
-        {label}
-      </ThemedText>
+    <FieldCard>
       <View style={styles.row}>
-        <Pressable onPressIn={() => startRepeating(-1)} onPressOut={stopRepeating} hitSlop={8} style={styles.button}>
-          <IconSymbol name="minus" size={18} color={tint} />
-        </Pressable>
-        {isEditing ? (
-          <>
-            <TextInput
-              ref={inputRef}
-              style={[styles.valueInput, { color: textColor }]}
-              value={draft}
-              onChangeText={setDraft}
-              onBlur={commitEditing}
-              onSubmitEditing={commitEditing}
-              onFocus={() => {
-                // selectTextOnFocus alone is unreliable together with autoFocus on iOS;
-                // setSelection needs a tick after focus to actually stick.
-                requestAnimationFrame(() => inputRef.current?.setSelection(0, draft.length));
-              }}
-              keyboardType={keyboardType}
-              autoFocus
-              selectTextOnFocus
-              inputAccessoryViewID={Platform.OS === 'ios' ? accessoryId : undefined}
-            />
-            {Platform.OS === 'ios' && (
-              // number-pad/decimal-pad have no return key on iOS, so there's normally
-              // no way to dismiss the keyboard other than tapping elsewhere.
-              <InputAccessoryView nativeID={accessoryId}>
-                <View style={[styles.accessory, { backgroundColor }]}>
-                  <Pressable onPress={() => inputRef.current?.blur()} hitSlop={8}>
-                    <ThemedText style={[styles.doneText, { color: tint }]}>Done</ThemedText>
-                  </Pressable>
-                </View>
-              </InputAccessoryView>
-            )}
-          </>
-        ) : (
-          <Pressable onPress={startEditing} style={styles.valueDisplay}>
-            <ThemedText style={[styles.valueText, { color: hasValue ? textColor : placeholderColor }]}>
-              {hasValue ? `${value}${suffix ? ` ${suffix}` : ''}` : placeholder}
-            </ThemedText>
+        <View style={styles.main}>
+          <FieldCardLabel label={label} icon={icon} />
+          {isEditing ? (
+            <>
+              <TextInput
+                ref={inputRef}
+                style={[styles.valueInput, { color: textColor }]}
+                value={draft}
+                onChangeText={setDraft}
+                onBlur={commitEditing}
+                onSubmitEditing={commitEditing}
+                onFocus={() => {
+                  // selectTextOnFocus alone is unreliable together with autoFocus on iOS;
+                  // setSelection needs a tick after focus to actually stick.
+                  requestAnimationFrame(() => inputRef.current?.setSelection(0, draft.length));
+                }}
+                keyboardType={keyboardType}
+                autoFocus
+                selectTextOnFocus
+                inputAccessoryViewID={Platform.OS === 'ios' ? accessoryId : undefined}
+              />
+              {Platform.OS === 'ios' && (
+                // number-pad/decimal-pad have no return key on iOS, so there's normally
+                // no way to dismiss the keyboard other than tapping elsewhere.
+                <InputAccessoryView nativeID={accessoryId}>
+                  <View style={[styles.accessory, { backgroundColor: cardBackground }]}>
+                    <Pressable onPress={() => inputRef.current?.blur()} hitSlop={8}>
+                      <ThemedText style={[styles.doneText, { color: tint }]}>Done</ThemedText>
+                    </Pressable>
+                  </View>
+                </InputAccessoryView>
+              )}
+            </>
+          ) : (
+            <Pressable onPress={startEditing} hitSlop={8} style={styles.valueDisplay}>
+              <ThemedText style={[styles.valueText, { color: hasValue ? textColor : placeholderColor }]}>
+                {hasValue ? `${value}${suffix ? ` ${suffix}` : ''}` : placeholder}
+              </ThemedText>
+            </Pressable>
+          )}
+        </View>
+        <View style={styles.controls}>
+          <Pressable
+            onPressIn={() => startRepeating(-1)}
+            onPressOut={stopRepeating}
+            hitSlop={8}
+            style={[styles.circleButton, { backgroundColor: controlBackground, borderColor }]}>
+            <IconSymbol name="minus" size={16} color={tint} />
           </Pressable>
-        )}
-        <Pressable onPressIn={() => startRepeating(1)} onPressOut={stopRepeating} hitSlop={8} style={styles.button}>
-          <IconSymbol name="plus" size={18} color={tint} />
-        </Pressable>
+          <Pressable
+            onPressIn={() => startRepeating(1)}
+            onPressOut={stopRepeating}
+            hitSlop={8}
+            style={[styles.circleButton, { backgroundColor: controlBackground, borderColor }]}>
+            <IconSymbol name="plus" size={16} color={tint} />
+          </Pressable>
+        </View>
       </View>
       {error ? <ThemedText style={[styles.error, { color: errorColor }]}>{error}</ThemedText> : null}
-    </View>
+    </FieldCard>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { gap: 6 },
-  label: { fontSize: 14 },
-  row: {
-    flexDirection: 'row',
+  row: { flexDirection: 'row', alignItems: 'center' },
+  main: { flex: 1, gap: 4 },
+  valueDisplay: { alignSelf: 'flex-start' },
+  valueText: { fontSize: 28, fontWeight: '700', lineHeight: 34 },
+  valueInput: { fontSize: 28, fontWeight: '700', lineHeight: 34, padding: 0 },
+  controls: { flexDirection: 'row', gap: 10 },
+  circleButton: {
+    width: 38,
+    height: 38,
+    borderRadius: 19,
+    borderWidth: StyleSheet.hairlineWidth,
     alignItems: 'center',
+    justifyContent: 'center',
   },
-  button: { paddingVertical: 10, paddingHorizontal: 16 },
-  valueDisplay: { flex: 1, paddingVertical: 10, alignItems: 'center' },
-  valueText: { fontSize: 16 },
-  valueInput: { flex: 1, paddingVertical: 10, fontSize: 16, textAlign: 'center' },
   error: { fontSize: 13 },
   accessory: {
     flexDirection: 'row',

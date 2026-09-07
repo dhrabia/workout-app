@@ -11,6 +11,7 @@ import { ThemedView } from '@/components/themed-view';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { useExerciseCatalog } from '@/hooks/queries/use-exercises';
 import { useThemeColor } from '@/hooks/use-theme-color';
+import { formatMuscleGroup } from '@/lib/muscle-icons';
 
 export default function ExercisePickerScreen() {
   const { planId, dayId, muscleGroup } = useLocalSearchParams<{
@@ -48,7 +49,7 @@ export default function ExercisePickerScreen() {
     <ThemedView style={styles.container}>
       <Stack.Screen
         options={{
-          title: muscleGroup.replace('_', ' ').replace(/^\w/, (c) => c.toUpperCase()),
+          title: formatMuscleGroup(muscleGroup),
           headerLeft: () => (
             <HeaderIconButton name="xmark" size={22} color={tint} onPress={() => router.back()} />
           ),

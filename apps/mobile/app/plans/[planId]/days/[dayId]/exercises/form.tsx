@@ -1,13 +1,13 @@
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { Pressable, StyleSheet } from 'react-native';
+import { Image, Pressable, StyleSheet, TextInput, View } from 'react-native';
 
-import { FormField } from '@/components/form-field';
 import { FormScreen } from '@/components/form-screen';
 import { HeaderIconButton } from '@/components/header-icon-button';
 import { NumberStepper } from '@/components/number-stepper';
 import { SubmitButton } from '@/components/submit-button';
 import { ThemedText } from '@/components/themed-text';
+import { FieldCard, FieldCardLabel } from '@/components/ui/field-card';
 import {
   usePlanExercise,
   useCreatePlanExercise,
@@ -16,6 +16,7 @@ import {
 } from '@/hooks/queries/use-plan-exercises';
 import { useThemeColor } from '@/hooks/use-theme-color';
 import { confirmDestructive } from '@/lib/alerts';
+import { formatMuscleGroup, MUSCLE_ICONS } from '@/lib/muscle-icons';
 
 export default function PlanExerciseFormScreen() {
   const { planId, dayId, planExerciseId, exerciseId, exerciseName } = useLocalSearchParams<{
@@ -104,9 +105,28 @@ export default function PlanExerciseFormScreen() {
           ),
         }}
       />
-      <ThemedText type="subtitle">{displayName}</ThemedText>
+      <View style={styles.header}>
+        <ThemedText style={styles.exerciseName}>{displayName}</ThemedText>
+        {existing?.exercise ? (
+          <View style={styles.typeRow}>
+            <Image
+              source={MUSCLE_ICONS[existing.exercise.muscle_group]}
+              style={styles.typeIcon}
+              resizeMode="contain"
+            />
+            <View>
+              <ThemedText style={styles.typeLabel}>Muscle group</ThemedText>
+              <ThemedText type="defaultSemiBold">
+                {formatMuscleGroup(existing.exercise.muscle_group)}
+              </ThemedText>
+            </View>
+          </View>
+        ) : null}
+      </View>
+
       <NumberStepper
         label="Sets"
+        icon="square.stack.fill"
         value={sets}
         onChangeText={setSets}
         step={1}
@@ -116,6 +136,7 @@ export default function PlanExerciseFormScreen() {
       />
       <NumberStepper
         label="Reps"
+        icon="arrow.2.squarepath"
         value={reps}
         onChangeText={setReps}
         step={1}
@@ -125,7 +146,8 @@ export default function PlanExerciseFormScreen() {
         error={repsError}
       />
       <NumberStepper
-        label="Weight (kg)"
+        label="Weight"
+        icon="dumbbell.fill"
         value={weight}
         onChangeText={setWeight}
         step={(current) => (current >= 40 ? 2.5 : 0.5)}
@@ -136,6 +158,7 @@ export default function PlanExerciseFormScreen() {
       />
       <NumberStepper
         label="Rest"
+        icon="clock"
         value={rest}
         onChangeText={setRest}
         step={15}
@@ -143,14 +166,9 @@ export default function PlanExerciseFormScreen() {
         suffix="s"
         placeholder="Optional"
       />
-      <FormField
-        label="Notes"
-        value={notes}
-        onChangeText={setNotes}
-        placeholder="Optional"
-        multiline
-      />
-      <SubmitButton label="Save" pending={mutation.isPending} onPress={handleSubmit} />
+      <NotesCard value={notes} onChangeText={setNotes} />
+
+      <SubmitButton label="Save" pending={mutation.isPending} onPress={handleSubmit} size="large" />
       {isEditing ? (
         <Pressable onPress={handleDelete} style={styles.deleteButton}>
           <ThemedText style={{ color: errorColor }}>Remove exercise</ThemedText>
@@ -160,6 +178,40 @@ export default function PlanExerciseFormScreen() {
   );
 }
 
+function NotesCard({
+  value,
+  onChangeText,
+}: {
+  value: string;
+  onChangeText: (value: string) => void;
+}) {
+  const textColor = useThemeColor({}, 'text');
+  const placeholderColor = useThemeColor({}, 'textDisabled');
+
+  return (
+    <FieldCard style={styles.notesCard}>
+      <FieldCardLabel label="Notes" icon="doc.text.fill" />
+      <TextInput
+        style={[styles.notesInput, { color: textColor }]}
+        value={value}
+        onChangeText={onChangeText}
+        placeholder="Add notes (optional)"
+        placeholderTextColor={placeholderColor}
+        multiline
+      />
+    </FieldCard>
+  );
+}
+
 const styles = StyleSheet.create({
+  header: { gap: 12 },
+  exerciseName: { fontSize: 26, fontWeight: '700', lineHeight: 32 },
+  typeRow: { flexDirection: 'row', alignItems: 'center', gap: 10 },
+  typeIcon: { width: 32, height: 32 },
+  typeLabel: { fontSize: 12, opacity: 0.6, marginBottom: 1 },
+
+  notesCard: { gap: 10 },
+  notesInput: { fontSize: 16, minHeight: 72, textAlignVertical: 'top', padding: 0 },
+
   deleteButton: { padding: 14, alignItems: 'center' },
 });

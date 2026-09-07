@@ -25,3 +25,7 @@ export const MUSCLE_ICONS: Record<
   full_body: require("@/assets/images/muscle-icons/full_body.png"),
   cardio: require("@/assets/images/muscle-icons/cardio.png"),
 };
+
+export function formatMuscleGroup(group: string) {
+  return group.replace("_", " ").replace(/^\w/, (c) => c.toUpperCase());
+}
