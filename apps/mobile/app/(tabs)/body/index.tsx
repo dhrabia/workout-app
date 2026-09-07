@@ -6,18 +6,28 @@ import { SectionLabel } from '@/components/section-label';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { IconSymbol } from '@/components/ui/icon-symbol';
-import { useBodyMeasurements } from '@/hooks/queries/use-body-measurements';
+import { WheelPickerModal } from '@/components/wheel-picker-modal';
+import { useBodyMeasurements, useUpdateBodyMeasurements } from '@/hooks/queries/use-body-measurements';
 import { useProfile } from '@/hooks/queries/use-profile';
 import { useWeightLogs } from '@/hooks/queries/use-weight-logs';
 import { useThemeColor } from '@/hooks/use-theme-color';
 import { calculateBmi, getBmiCategory } from '@/lib/bmi';
-import { MEASUREMENT_FIELDS } from '@/lib/body-measurement-fields';
+import { MEASUREMENT_FIELDS, type MeasurementFieldKey } from '@/lib/body-measurement-fields';
 import { getCurrentWeight } from '@/lib/weight';
 import type { Tables } from '@workout-app/shared';
 
 function formatWeight(kg: number) {
   return kg.toFixed(1);
 }
+
+const MEASUREMENT_MIN = 10;
+const MEASUREMENT_MAX = 200;
+const MEASUREMENT_DEFAULT = 40;
+// 0.5cm increments (unlike Age/Height's whole-unit steps in profile/index.tsx).
+const MEASUREMENT_VALUES = Array.from(
+  { length: (MEASUREMENT_MAX - MEASUREMENT_MIN) / 0.5 + 1 },
+  (_, i) => MEASUREMENT_MIN + i * 0.5
+);
 
 // How far current sits between the first-ever log and the target, 0-1.
 function computeProgress(start: number, current: number, target: number) {
@@ -30,9 +40,13 @@ export default function BodyScreen() {
   const { data: profile } = useProfile();
   const { data: weightLogs } = useWeightLogs();
   const { data: measurements } = useBodyMeasurements();
+  const updateMeasurements = useUpdateBodyMeasurements();
 
   const currentWeight = getCurrentWeight(weightLogs);
   const startWeight = weightLogs?.[0]?.weight_kg;
+
+  const [editingField, setEditingField] = useState<MeasurementFieldKey | null>(null);
+  const editingFieldLabel = MEASUREMENT_FIELDS.find((field) => field.key === editingField)?.label;
 
   return (
     <ThemedView style={styles.container}>
@@ -61,9 +75,24 @@ export default function BodyScreen() {
             <SectionLabel>Body measurements</SectionLabel>
             <EditMeasurementsAction onPress={() => router.push('/body/measurements')} />
           </View>
-          <MeasurementsGrid measurements={measurements} />
+          <MeasurementsGrid measurements={measurements} onSelectField={setEditingField} />
         </View>
       </ScrollView>
+
+      <WheelPickerModal
+        key={editingField ?? 'closed'}
+        visible={editingField != null}
+        title={`What's your ${editingFieldLabel?.toLowerCase()} measurement?`}
+        values={MEASUREMENT_VALUES}
+        value={(editingField && measurements?.[editingField]) ?? MEASUREMENT_DEFAULT}
+        suffix="cm"
+        pending={updateMeasurements.isPending}
+        onClose={() => setEditingField(null)}
+        onSave={(value) => {
+          if (!editingField) return;
+          updateMeasurements.mutate({ [editingField]: value }, { onSuccess: () => setEditingField(null) });
+        }}
+      />
     </ThemedView>
   );
 }
@@ -361,8 +390,10 @@ function EditMeasurementsAction({ onPress }: { onPress: () => void }) {
 
 function MeasurementsGrid({
   measurements,
+  onSelectField,
 }: {
   measurements: Tables<'body_measurements'> | null | undefined;
+  onSelectField: (key: MeasurementFieldKey) => void;
 }) {
   const cardBackground = useThemeColor({}, 'cardBackground');
   const borderColor = useThemeColor({}, 'border');
@@ -375,16 +406,20 @@ function MeasurementsGrid({
         const isRightColumn = index % 2 === 1;
         const isLastRow = index >= MEASUREMENT_FIELDS.length - 2;
         return (
-          <View
+          <Pressable
             key={key}
+            onPress={() => onSelectField(key)}
             style={[
               styles.measurementCell,
               !isRightColumn && { borderRightWidth: StyleSheet.hairlineWidth, borderRightColor: borderColor },
               !isLastRow && { borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: borderColor },
             ]}>
             <ThemedText style={{ color: secondary }}>{label}</ThemedText>
-            <ThemedText type="defaultSemiBold">{value != null ? `${value} cm` : 'Not set'}</ThemedText>
-          </View>
+            <View style={styles.measurementValueRow}>
+              <ThemedText type="defaultSemiBold">{value != null ? `${value} cm` : 'Not set'}</ThemedText>
+              <IconSymbol name="chevron.right" size={14} color={secondary} />
+            </View>
+          </Pressable>
         );
       })}
     </View>
@@ -434,4 +469,5 @@ const styles = StyleSheet.create({
 
   measurementsGrid: { flexDirection: 'row', flexWrap: 'wrap' },
   measurementCell: { width: '50%', padding: 16, gap: 4 },
+  measurementValueRow: { flexDirection: 'row', alignItems: 'center', gap: 2 },
 });
