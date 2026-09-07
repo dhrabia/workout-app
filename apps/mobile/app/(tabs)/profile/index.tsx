@@ -13,7 +13,7 @@ import { useProfile, useUpdateProfile } from '@/hooks/queries/use-profile';
 import { useLogWeight, useWeightLogs } from '@/hooks/queries/use-weight-logs';
 import { useThemeColor } from '@/hooks/use-theme-color';
 import type { Gender } from '@/lib/types';
-import { getCurrentWeight } from '@/lib/weight';
+import { getCurrentWeight, WEIGHT_DEFAULT, WEIGHT_MAX, WEIGHT_MIN } from '@/lib/weight';
 
 type InfoRow = { label: string; value: string; onPress?: () => void };
 
@@ -35,10 +35,6 @@ const HEIGHT_MIN = 100;
 const HEIGHT_MAX = 230;
 const HEIGHT_DEFAULT = 170;
 const HEIGHT_VALUES = Array.from({ length: HEIGHT_MAX - HEIGHT_MIN + 1 }, (_, i) => HEIGHT_MIN + i);
-
-const WEIGHT_MIN = 30;
-const WEIGHT_MAX = 200;
-const WEIGHT_DEFAULT = 70;
 
 export default function ProfileScreen() {
   const router = useRouter();

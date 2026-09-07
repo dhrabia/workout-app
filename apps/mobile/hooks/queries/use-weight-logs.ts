@@ -43,3 +43,20 @@ export function useLogWeight() {
     },
   });
 }
+
+// Edits a past entry in place (rather than logging a new one) — used when
+// the user taps a specific row in the weight history list.
+export function useUpdateWeightLog() {
+  const { userId } = useAuth();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({ id, weight_kg }: { id: string; weight_kg: number }) =>
+      unwrap<Tables<"weight_logs">>(
+        await supabase.from("weight_logs").update({ weight_kg }).eq("id", id).select().single()
+      ),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.weightLogs.list(userId ?? "") });
+    },
+  });
+}

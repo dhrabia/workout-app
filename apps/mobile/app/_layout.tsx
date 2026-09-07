@@ -25,7 +25,6 @@ const MODAL_ROUTES = [
   'plans/[planId]/days/[dayId]/exercises/form',
   'exercises/new',
   'profile/edit',
-  'body/log-weight',
 ] as const;
 
 export default function RootLayout() {

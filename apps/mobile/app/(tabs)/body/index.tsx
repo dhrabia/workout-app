@@ -2,15 +2,16 @@ import { Stack, useRouter } from 'expo-router';
 import { useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 
+import { RulerPickerModal } from '@/components/ruler-picker-modal';
 import { SectionLabel } from '@/components/section-label';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { IconSymbol } from '@/components/ui/icon-symbol';
-import { formatShortDate, TrendChart } from '@/components/trend-chart';
+import { WeightProgressCard } from '@/components/weight-progress-card';
 import { WheelPickerModal } from '@/components/wheel-picker-modal';
 import { useBodyMeasurementLogs, useLogBodyMeasurement } from '@/hooks/queries/use-body-measurement-logs';
 import { useProfile } from '@/hooks/queries/use-profile';
-import { useWeightLogs } from '@/hooks/queries/use-weight-logs';
+import { useLogWeight, useWeightLogs } from '@/hooks/queries/use-weight-logs';
 import { useThemeColor } from '@/hooks/use-theme-color';
 import { calculateBmi, getBmiCategory } from '@/lib/bmi';
 import {
@@ -20,12 +21,7 @@ import {
   MEASUREMENT_VALUES,
   type MeasurementFieldKey,
 } from '@/lib/body-measurement-fields';
-import { getCurrentWeight } from '@/lib/weight';
-import type { Tables } from '@workout-app/shared';
-
-function formatWeight(kg: number) {
-  return kg.toFixed(1);
-}
+import { formatWeight, getCurrentWeight, WEIGHT_DEFAULT, WEIGHT_MAX, WEIGHT_MIN } from '@/lib/weight';
 
 // How far current sits between the first-ever log and the target, 0-1.
 function computeProgress(start: number, current: number, target: number) {
@@ -38,12 +34,14 @@ export default function BodyScreen() {
   const { data: profile } = useProfile();
   const { data: weightLogs } = useWeightLogs();
   const { data: measurementLogs } = useBodyMeasurementLogs();
+  const logWeight = useLogWeight();
   const logMeasurement = useLogBodyMeasurement();
 
   const currentWeight = getCurrentWeight(weightLogs);
   const startWeight = weightLogs?.[0]?.weight_kg;
   const latestMeasurements = getLatestMeasurements(measurementLogs);
 
+  const [weightModalOpen, setWeightModalOpen] = useState(false);
   const [editingField, setEditingField] = useState<MeasurementFieldKey | null>(null);
   const editingFieldLabel = MEASUREMENT_FIELDS.find((field) => field.key === editingField)?.label;
 
@@ -55,12 +53,18 @@ export default function BodyScreen() {
           currentWeight={currentWeight}
           startWeight={startWeight}
           targetWeight={profile?.target_weight_kg}
-          onLogWeight={() => router.push('/body/log-weight')}
+          onLogWeight={() => setWeightModalOpen(true)}
           onSetTarget={() => router.push('/profile/edit')}
         />
 
         <View style={styles.section}>
-          <SectionLabel>Weight progress</SectionLabel>
+          <View style={styles.sectionHeaderRow}>
+            <SectionLabel>Weight progress</SectionLabel>
+            <HistoryAction
+              accessibilityLabel="View weight history"
+              onPress={() => router.push('/body/weight-history')}
+            />
+          </View>
           <WeightProgressCard history={weightLogs} />
         </View>
 
@@ -72,11 +76,27 @@ export default function BodyScreen() {
         <View style={styles.section}>
           <View style={styles.sectionHeaderRow}>
             <SectionLabel>Body measurements</SectionLabel>
-            <HistoryAction onPress={() => router.push('/body/measurement-history')} />
+            <HistoryAction
+              accessibilityLabel="View measurement history"
+              onPress={() => router.push('/body/measurement-history')}
+            />
           </View>
           <MeasurementsGrid measurements={latestMeasurements} onSelectField={setEditingField} />
         </View>
       </ScrollView>
+
+      <RulerPickerModal
+        key={weightModalOpen ? 'weight-open' : 'weight-closed'}
+        visible={weightModalOpen}
+        title="What's your weight?"
+        min={WEIGHT_MIN}
+        max={WEIGHT_MAX}
+        suffix="kg"
+        value={currentWeight ?? WEIGHT_DEFAULT}
+        pending={logWeight.isPending}
+        onClose={() => setWeightModalOpen(false)}
+        onSave={(weightKg) => logWeight.mutate(weightKg, { onSuccess: () => setWeightModalOpen(false) })}
+      />
 
       <WheelPickerModal
         key={editingField ?? 'closed'}
@@ -188,34 +208,6 @@ function HeroAction({ label, onPress }: { label: string; onPress: () => void }) 
   );
 }
 
-function WeightProgressCard({ history }: { history: Tables<'weight_logs'>[] | undefined }) {
-  const cardBackground = useThemeColor({}, 'cardBackground');
-  const secondary = useThemeColor({}, 'icon');
-
-  if (!history || history.length === 0) {
-    return (
-      <View style={[styles.card, styles.emptyChartCard, { backgroundColor: cardBackground }]}>
-        <ThemedText type="defaultSemiBold">No weight history yet</ThemedText>
-        <ThemedText style={[styles.emptyChartHint, { color: secondary }]}>
-          Start tracking your weight to see your progress here.
-        </ThemedText>
-      </View>
-    );
-  }
-
-  const points = history.map((log) => ({
-    id: log.id,
-    date: formatShortDate(log.logged_at),
-    value: log.weight_kg,
-  }));
-
-  return (
-    <View style={[styles.card, styles.chartCard, { backgroundColor: cardBackground }]}>
-      <TrendChart points={points} label="Weight" unit="kilograms" formatValue={formatWeight} />
-    </View>
-  );
-}
-
 function BmiCard({
   weightKg,
   heightCm,
@@ -248,7 +240,13 @@ function BmiCard({
   );
 }
 
-function HistoryAction({ onPress }: { onPress: () => void }) {
+function HistoryAction({
+  onPress,
+  accessibilityLabel,
+}: {
+  onPress: () => void;
+  accessibilityLabel: string;
+}) {
   const tint = useThemeColor({}, 'tint');
   const cardElevated = useThemeColor({}, 'cardElevated');
   return (
@@ -256,7 +254,7 @@ function HistoryAction({ onPress }: { onPress: () => void }) {
       onPress={onPress}
       hitSlop={8}
       accessibilityRole="button"
-      accessibilityLabel="View measurement history"
+      accessibilityLabel={accessibilityLabel}
       style={[styles.historyAction, { backgroundColor: cardElevated }]}>
       <IconSymbol name="clock.arrow.circlepath" size={13} color={tint} />
       <ThemedText style={[styles.historyActionText, { color: tint }]}>History</ThemedText>
@@ -329,10 +327,6 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
   },
   progressFill: { height: '100%', borderRadius: 3 },
-
-  emptyChartCard: { padding: 24, alignItems: 'center', gap: 6 },
-  emptyChartHint: { textAlign: 'center' },
-  chartCard: { padding: 16 },
 
   bmiCard: { padding: 16, alignItems: 'center', gap: 2 },
   bmiValue: { fontSize: 28, lineHeight: 34, fontWeight: '700' },
