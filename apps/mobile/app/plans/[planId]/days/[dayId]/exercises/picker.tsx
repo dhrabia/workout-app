@@ -35,7 +35,9 @@ export default function ExercisePickerScreen() {
     [exercises, muscleGroup]
   );
   const q = query.trim().toLowerCase();
-  const filtered = q ? byGroup.filter((exercise) => exercise.name.toLowerCase().includes(q)) : byGroup;
+  const filtered = q
+    ? byGroup.filter((exercise) => exercise.name_en.toLowerCase().includes(q))
+    : byGroup;
 
   function selectExercise(exerciseId: string, exerciseName: string) {
     router.push({
@@ -76,7 +78,7 @@ export default function ExercisePickerScreen() {
             />
           }
           renderItem={({ item }) => (
-            <ExercisePickerRow name={item.name} onPress={() => selectExercise(item.id, item.name)} />
+            <ExercisePickerRow name={item.name_en} onPress={() => selectExercise(item.id, item.name_en)} />
           )}
         />
       )}

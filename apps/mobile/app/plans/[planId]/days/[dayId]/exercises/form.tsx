@@ -55,7 +55,7 @@ export default function PlanExerciseFormScreen() {
     }
   }, [existing]);
 
-  const displayName = existing?.exercise.name ?? exerciseName;
+  const displayName = existing?.exercise.name_en ?? exerciseName;
 
   function handleSubmit() {
     const setsNumber = parseInt(sets, 10);

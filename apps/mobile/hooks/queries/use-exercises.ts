@@ -9,7 +9,9 @@ export function useExerciseCatalog() {
   return useQuery({
     queryKey: queryKeys.exercises.all,
     queryFn: async () =>
-      unwrap<Tables<"exercises">[]>(await supabase.from("exercises").select("*").order("name")),
+      unwrap<Tables<"exercises">[]>(
+        await supabase.from("exercises").select("*").order("name_en")
+      ),
     staleTime: 5 * 60 * 1000,
   });
 }
@@ -19,7 +21,7 @@ export function useCreateExercise() {
 
   return useMutation({
     mutationFn: async (
-      input: Pick<TablesInsert<"exercises">, "name" | "muscle_group" | "equipment">
+      input: Pick<TablesInsert<"exercises">, "name_en" | "muscle_group" | "equipment">
     ) =>
       unwrap<Tables<"exercises">>(
         await supabase.from("exercises").insert(input).select().single()

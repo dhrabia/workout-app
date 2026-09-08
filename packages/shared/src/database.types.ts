@@ -78,7 +78,8 @@ export type Database = {
           equipment: string | null
           id: string
           muscle_group: Database["public"]["Enums"]["muscle_group"]
-          name: string
+          name_en: string
+          name_pl: string | null
         }
         Insert: {
           created_at?: string
@@ -86,7 +87,8 @@ export type Database = {
           equipment?: string | null
           id?: string
           muscle_group: Database["public"]["Enums"]["muscle_group"]
-          name: string
+          name_en: string
+          name_pl?: string | null
         }
         Update: {
           created_at?: string
@@ -94,7 +96,8 @@ export type Database = {
           equipment?: string | null
           id?: string
           muscle_group?: Database["public"]["Enums"]["muscle_group"]
-          name?: string
+          name_en?: string
+          name_pl?: string | null
         }
         Relationships: [
           {
@@ -105,6 +108,24 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      muscle_group_translations: {
+        Row: {
+          label_en: string
+          label_pl: string
+          muscle_group: Database["public"]["Enums"]["muscle_group"]
+        }
+        Insert: {
+          label_en: string
+          label_pl: string
+          muscle_group: Database["public"]["Enums"]["muscle_group"]
+        }
+        Update: {
+          label_en?: string
+          label_pl?: string
+          muscle_group?: Database["public"]["Enums"]["muscle_group"]
+        }
+        Relationships: []
       }
       profiles: {
         Row: {

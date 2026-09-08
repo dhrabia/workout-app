@@ -95,7 +95,7 @@ function ExerciseRow({
       </View>
       <View style={styles.rowContent}>
         <ThemedText type="defaultSemiBold" style={styles.name}>
-          {item.exercise.name}
+          {item.exercise.name_en}
         </ThemedText>
         <ThemedText style={[styles.meta, { color: secondaryColor }]}>
           {item.target_sets} × {item.target_reps}

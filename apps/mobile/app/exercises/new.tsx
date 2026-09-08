@@ -41,7 +41,7 @@ export default function NewExerciseScreen() {
       return;
     }
     createExercise.mutate(
-      { name: name.trim(), muscle_group: muscleGroup, equipment: equipment.trim() || null },
+      { name_en: name.trim(), muscle_group: muscleGroup, equipment: equipment.trim() || null },
       {
         onSuccess: (created) => {
           if (returnPlanId && returnDayId) {
@@ -51,7 +51,7 @@ export default function NewExerciseScreen() {
                 planId: returnPlanId,
                 dayId: returnDayId,
                 exerciseId: created.id,
-                exerciseName: created.name,
+                exerciseName: created.name_en,
               },
             });
           } else {
