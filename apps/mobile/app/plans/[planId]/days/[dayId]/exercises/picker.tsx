@@ -57,7 +57,15 @@ export default function ExercisePickerScreen() {
         }}
       />
       <View style={styles.searchWrap}>
-        <FieldCardInput icon="magnifyingglass" value={query} onChangeText={setQuery} placeholder="Search exercises" />
+        <FieldCardInput
+          icon="magnifyingglass"
+          value={query}
+          onChangeText={setQuery}
+          onClear={() => setQuery('')}
+          placeholder="Search exercises"
+          autoCorrect={false}
+          autoCapitalize="none"
+        />
       </View>
       <View style={styles.sectionHeader}>
         <SectionLabel count={byGroup.length}>{`${formatMuscleGroup(muscleGroup)} exercises`}</SectionLabel>

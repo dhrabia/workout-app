@@ -21,6 +21,7 @@ const MAPPING = {
   'magnifyingglass': 'search',
   'clock': 'access-time',
   'xmark': 'close',
+  'xmark.circle.fill': 'cancel',
   'ellipsis': 'more-horiz',
   'person.fill': 'person',
   'chevron.right': 'chevron-right',

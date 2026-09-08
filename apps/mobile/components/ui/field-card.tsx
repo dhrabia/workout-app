@@ -57,9 +57,22 @@ export function FieldCardLabel({
 export type FieldCardInputProps = TextInputProps & {
   error?: string;
   icon?: ComponentProps<typeof IconSymbol>['name'];
+  // Opt-in: shows a trailing clear button once there's text, for search-style
+  // inputs (e.g. the exercise picker) rather than every field on a form.
+  onClear?: () => void;
 };
 
-export function FieldCardInput({ error, style, multiline, icon, onFocus, onBlur, ...rest }: FieldCardInputProps) {
+export function FieldCardInput({
+  error,
+  style,
+  multiline,
+  icon,
+  onFocus,
+  onBlur,
+  onClear,
+  value,
+  ...rest
+}: FieldCardInputProps) {
   const [isFocused, setIsFocused] = useState(false);
   const textColor = useThemeColor({}, 'text');
   const placeholderColor = useThemeColor({}, 'textDisabled');
@@ -82,6 +95,7 @@ export function FieldCardInput({ error, style, multiline, icon, onFocus, onBlur,
           style={[styles.input, multiline && styles.multilineInput, { color: textColor }, style]}
           placeholderTextColor={placeholderColor}
           multiline={multiline}
+          value={value}
           onFocus={(e) => {
             setIsFocused(true);
             onFocus?.(e);
@@ -92,6 +106,11 @@ export function FieldCardInput({ error, style, multiline, icon, onFocus, onBlur,
           }}
           {...rest}
         />
+        {onClear && value ? (
+          <Pressable onPress={onClear} hitSlop={8}>
+            <IconSymbol name="xmark.circle.fill" size={18} color={secondaryColor} />
+          </Pressable>
+        ) : null}
       </View>
       {error ? <ThemedText style={[styles.error, { color: errorColor }]}>{error}</ThemedText> : null}
     </>
