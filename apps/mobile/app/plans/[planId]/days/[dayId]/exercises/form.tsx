@@ -1,6 +1,6 @@
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { Image, Pressable, StyleSheet, TextInput, View } from 'react-native';
+import { Image, StyleSheet, TextInput, View } from 'react-native';
 
 import { FormScreen } from '@/components/form-screen';
 import { HeaderIconButton } from '@/components/header-icon-button';
@@ -103,6 +103,10 @@ export default function PlanExerciseFormScreen() {
           headerLeft: () => (
             <HeaderIconButton name="xmark" size={22} color={tint} onPress={() => router.back()} />
           ),
+          headerRight: () =>
+            isEditing ? (
+              <HeaderIconButton name="trash" size={22} color={errorColor} onPress={handleDelete} />
+            ) : undefined,
         }}
       />
       <View style={styles.header}>
@@ -169,11 +173,6 @@ export default function PlanExerciseFormScreen() {
       <NotesCard value={notes} onChangeText={setNotes} />
 
       <SubmitButton label="Save" pending={mutation.isPending} onPress={handleSubmit} size="large" />
-      {isEditing ? (
-        <Pressable onPress={handleDelete} style={styles.deleteButton}>
-          <ThemedText style={{ color: errorColor }}>Remove exercise</ThemedText>
-        </Pressable>
-      ) : null}
     </FormScreen>
   );
 }
@@ -212,6 +211,4 @@ const styles = StyleSheet.create({
 
   notesCard: { gap: 10 },
   notesInput: { fontSize: 16, minHeight: 72, textAlignVertical: 'top', padding: 0 },
-
-  deleteButton: { padding: 14, alignItems: 'center' },
 });

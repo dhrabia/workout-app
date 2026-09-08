@@ -1,11 +1,6 @@
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import { Image, Pressable, StyleSheet, View } from 'react-native';
-import Swipeable from 'react-native-gesture-handler/ReanimatedSwipeable';
-import ReorderableList, {
-  reorderItems,
-  useIsActive,
-  useReorderableDrag,
-} from 'react-native-reorderable-list';
+import ReorderableList, { reorderItems, useReorderableDrag } from 'react-native-reorderable-list';
 
 import { EmptyState } from '@/components/empty-state';
 import { LoadingState } from '@/components/loading-state';
@@ -14,13 +9,8 @@ import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { usePlanDay } from '@/hooks/queries/use-plan-days';
-import {
-  usePlanExercises,
-  useDeletePlanExercise,
-  useReorderPlanExercises,
-} from '@/hooks/queries/use-plan-exercises';
+import { usePlanExercises, useReorderPlanExercises } from '@/hooks/queries/use-plan-exercises';
 import { useThemeColor } from '@/hooks/use-theme-color';
-import { confirmDestructive } from '@/lib/alerts';
 import { MUSCLE_ICONS } from '@/lib/muscle-icons';
 import type { PlanExerciseWithExercise } from '@/lib/types';
 
@@ -31,14 +21,7 @@ export default function DayDetailScreen() {
   const { data: day } = usePlanDay(dayId);
   const { data: exercisesData, isLoading } = usePlanExercises(dayId);
   const exercises = exercisesData ?? [];
-  const deletePlanExercise = useDeletePlanExercise(dayId, planId);
   const reorderPlanExercises = useReorderPlanExercises(dayId);
-
-  function handleDeleteExercise(planExerciseId: string) {
-    confirmDestructive('Remove exercise?', undefined, 'Remove', () =>
-      deletePlanExercise.mutate(planExerciseId)
-    );
-  }
 
   return (
     <ThemedView style={styles.container}>
@@ -66,7 +49,6 @@ export default function DayDetailScreen() {
                   params: { planId, dayId, planExerciseId: item.id },
                 })
               }
-              onDelete={() => handleDeleteExercise(item.id)}
             />
           )}
         />
@@ -89,53 +71,40 @@ export default function DayDetailScreen() {
 function ExerciseRow({
   item,
   onEdit,
-  onDelete,
 }: {
   item: PlanExerciseWithExercise;
   onEdit: () => void;
-  onDelete: () => void;
 }) {
   const drag = useReorderableDrag();
-  const isDragging = useIsActive();
-  const errorColor = useThemeColor({}, 'error');
   const cardBackground = useThemeColor({}, 'cardBackground');
   const borderColor = useThemeColor({}, 'border');
   const iconBackground = useThemeColor({}, 'cardElevated');
   const secondaryColor = useThemeColor({}, 'icon');
 
   return (
-    <Swipeable
-      enabled={!isDragging}
-      overshootRight={false}
-      renderRightActions={() => (
-        <Pressable onPress={onDelete} style={[styles.deleteAction, { backgroundColor: errorColor }]}>
-          <ThemedText style={styles.deleteActionText}>Delete</ThemedText>
-        </Pressable>
-      )}>
-      <Pressable
-        style={[styles.card, { backgroundColor: cardBackground, borderColor }]}
-        onPress={onEdit}
-        onLongPress={drag}>
-        <View style={[styles.iconBox, { backgroundColor: iconBackground }]}>
-          <Image
-            source={MUSCLE_ICONS[item.exercise.muscle_group]}
-            style={styles.icon}
-            resizeMode="contain"
-          />
-        </View>
-        <View style={styles.rowContent}>
-          <ThemedText type="defaultSemiBold" style={styles.name}>
-            {item.exercise.name}
-          </ThemedText>
-          <ThemedText style={[styles.meta, { color: secondaryColor }]}>
-            {item.target_sets} × {item.target_reps}
-            {item.target_weight_kg ? ` @ ${item.target_weight_kg}kg` : ''}
-            {item.rest_seconds ? ` · ${item.rest_seconds}s rest` : ''}
-          </ThemedText>
-        </View>
-        <IconSymbol name="chevron.right" size={18} color={secondaryColor} />
-      </Pressable>
-    </Swipeable>
+    <Pressable
+      style={[styles.card, { backgroundColor: cardBackground, borderColor }]}
+      onPress={onEdit}
+      onLongPress={drag}>
+      <View style={[styles.iconBox, { backgroundColor: iconBackground }]}>
+        <Image
+          source={MUSCLE_ICONS[item.exercise.muscle_group]}
+          style={styles.icon}
+          resizeMode="contain"
+        />
+      </View>
+      <View style={styles.rowContent}>
+        <ThemedText type="defaultSemiBold" style={styles.name}>
+          {item.exercise.name}
+        </ThemedText>
+        <ThemedText style={[styles.meta, { color: secondaryColor }]}>
+          {item.target_sets} × {item.target_reps}
+          {item.target_weight_kg ? ` @ ${item.target_weight_kg}kg` : ''}
+          {item.rest_seconds ? ` · ${item.rest_seconds}s rest` : ''}
+        </ThemedText>
+      </View>
+      <IconSymbol name="chevron.right" size={18} color={secondaryColor} />
+    </Pressable>
   );
 }
 
@@ -156,10 +125,4 @@ const styles = StyleSheet.create({
   rowContent: { flex: 1, gap: 4 },
   name: { fontSize: 18, lineHeight: 23 },
   meta: { fontSize: 15, lineHeight: 20 },
-  deleteAction: {
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingHorizontal: 24,
-  },
-  deleteActionText: { color: '#fff', fontWeight: '600' },
 });
