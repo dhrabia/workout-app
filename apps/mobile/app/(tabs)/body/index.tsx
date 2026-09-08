@@ -21,13 +21,15 @@ import {
   MEASUREMENT_VALUES,
   type MeasurementFieldKey,
 } from '@/lib/body-measurement-fields';
-import { formatWeight, getCurrentWeight, WEIGHT_DEFAULT, WEIGHT_MAX, WEIGHT_MIN } from '@/lib/weight';
-
-// How far current sits between the first-ever log and the target, 0-1.
-function computeProgress(start: number, current: number, target: number) {
-  if (start === target) return 1;
-  return Math.min(1, Math.max(0, (start - current) / (start - target)));
-}
+import {
+  computeWeightProgress,
+  formatWeight,
+  getCurrentWeight,
+  weightRemaining,
+  WEIGHT_DEFAULT,
+  WEIGHT_MAX,
+  WEIGHT_MIN,
+} from '@/lib/weight';
 
 export default function BodyScreen() {
   const router = useRouter();
@@ -38,7 +40,8 @@ export default function BodyScreen() {
   const logMeasurement = useLogBodyMeasurement();
 
   const currentWeight = getCurrentWeight(weightLogs);
-  const startWeight = weightLogs?.[0]?.weight_kg;
+  // See computeWeightProgress in lib/weight.ts for what this baseline means.
+  const startWeight = profile?.goal_start_weight_kg ?? currentWeight;
   const latestMeasurements = getLatestMeasurements(measurementLogs);
 
   const [weightModalOpen, setWeightModalOpen] = useState(false);
@@ -148,11 +151,11 @@ function WeightHero({
     );
   }
 
-  const diff = targetWeight != null ? currentWeight - targetWeight : null;
-  const reached = diff != null && Math.abs(diff) < 0.05;
+  const remaining = targetWeight != null ? weightRemaining(currentWeight, targetWeight) : null;
+  const reached = remaining != null && remaining < 0.05;
   const progress =
     targetWeight != null && startWeight != null
-      ? computeProgress(startWeight, currentWeight, targetWeight)
+      ? computeWeightProgress(startWeight, currentWeight, targetWeight)
       : null;
 
   return (
@@ -174,7 +177,7 @@ function WeightHero({
             </View>
           )}
           <ThemedText style={[styles.heroRemaining, { color: secondary }]}>
-            {reached ? 'Goal reached' : `${formatWeight(Math.abs(diff ?? 0))} kg to go`}
+            {reached ? 'Goal reached' : `${formatWeight(remaining ?? 0)} kg to go`}
           </ThemedText>
         </>
       ) : (

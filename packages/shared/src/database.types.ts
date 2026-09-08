@@ -133,6 +133,7 @@ export type Database = {
           avatar_url: string | null
           created_at: string
           gender: Database["public"]["Enums"]["gender"] | null
+          goal_start_weight_kg: number | null
           height_cm: number | null
           id: string
           target_weight_kg: number | null
@@ -143,6 +144,7 @@ export type Database = {
           avatar_url?: string | null
           created_at?: string
           gender?: Database["public"]["Enums"]["gender"] | null
+          goal_start_weight_kg?: number | null
           height_cm?: number | null
           id: string
           target_weight_kg?: number | null
@@ -153,6 +155,7 @@ export type Database = {
           avatar_url?: string | null
           created_at?: string
           gender?: Database["public"]["Enums"]["gender"] | null
+          goal_start_weight_kg?: number | null
           height_cm?: number | null
           id?: string
           target_weight_kg?: number | null

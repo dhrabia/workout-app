@@ -248,7 +248,9 @@ export default function ProfileScreen() {
         onClose={() => setTargetWeightModalOpen(false)}
         onSave={(target_weight_kg) =>
           updateProfile.mutate(
-            { target_weight_kg },
+            // See computeWeightProgress in lib/weight.ts: a new target always
+            // starts a fresh progress cycle from the current weight.
+            { target_weight_kg, goal_start_weight_kg: currentWeight ?? null },
             { onSuccess: () => setTargetWeightModalOpen(false) }
           )
         }

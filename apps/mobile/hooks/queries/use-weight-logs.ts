@@ -38,8 +38,25 @@ export function useLogWeight() {
           .select()
           .single()
       ),
-    onSuccess: () => {
+    onSuccess: async (_log, weightKg) => {
       queryClient.invalidateQueries({ queryKey: queryKeys.weightLogs.list(userId ?? "") });
+
+      // A target can exist with no goal baseline yet — it was set before any
+      // weight was ever logged (see profile/index.tsx). This first log is
+      // then the only sensible baseline, so seed it once; without this, a
+      // screen that falls back to "current weight" when the baseline is
+      // missing would keep recomputing it from the newest log on every
+      // render, permanently reporting 0% progress.
+      const profile = queryClient.getQueryData<Tables<"profiles">>(
+        queryKeys.profile.detail(userId ?? "")
+      );
+      if (profile?.target_weight_kg != null && profile.goal_start_weight_kg == null) {
+        await supabase
+          .from("profiles")
+          .update({ goal_start_weight_kg: weightKg })
+          .eq("id", userId!);
+        queryClient.invalidateQueries({ queryKey: queryKeys.profile.detail(userId ?? "") });
+      }
     },
   });
 }
