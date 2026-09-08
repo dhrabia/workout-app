@@ -1,6 +1,8 @@
+import { Image } from 'expo-image';
+import * as ImagePicker from 'expo-image-picker';
 import { Stack, useRouter } from 'expo-router';
 import { useState } from 'react';
-import { Alert, Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import { ActivityIndicator, Alert, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 
 import { SectionLabel } from '@/components/section-label';
 import { SingleChoiceModal, type SingleChoiceOption } from '@/components/single-choice-modal';
@@ -9,7 +11,12 @@ import { ThemedView } from '@/components/themed-view';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { RulerPickerModal } from '@/components/ruler-picker-modal';
 import { WheelPickerModal } from '@/components/wheel-picker-modal';
-import { useProfile, useUpdateProfile } from '@/hooks/queries/use-profile';
+import {
+  useProfile,
+  useRemoveAvatar,
+  useUpdateProfile,
+  useUploadAvatar,
+} from '@/hooks/queries/use-profile';
 import { useLogWeight, useWeightLogs } from '@/hooks/queries/use-weight-logs';
 import { useThemeColor } from '@/hooks/use-theme-color';
 import type { Gender } from '@/lib/types';
@@ -36,11 +43,26 @@ const HEIGHT_MAX = 230;
 const HEIGHT_DEFAULT = 170;
 const HEIGHT_VALUES = Array.from({ length: HEIGHT_MAX - HEIGHT_MIN + 1 }, (_, i) => HEIGHT_MIN + i);
 
+const AVATAR_SOURCES = {
+  camera: {
+    requestPermission: ImagePicker.requestCameraPermissionsAsync,
+    launch: ImagePicker.launchCameraAsync,
+    permissionLabel: 'camera',
+  },
+  library: {
+    requestPermission: ImagePicker.requestMediaLibraryPermissionsAsync,
+    launch: ImagePicker.launchImageLibraryAsync,
+    permissionLabel: 'photos',
+  },
+} as const;
+
 export default function ProfileScreen() {
   const router = useRouter();
   const { data: profile } = useProfile();
   const { data: weightLogs } = useWeightLogs();
   const updateProfile = useUpdateProfile();
+  const uploadAvatar = useUploadAvatar();
+  const removeAvatar = useRemoveAvatar();
   const logWeight = useLogWeight();
   const tint = useThemeColor({}, 'tint');
   const displayName = profile?.username?.trim() || 'Add your name';
@@ -80,8 +102,55 @@ export default function ProfileScreen() {
     },
   ];
 
+  async function pickAvatar(source: keyof typeof AVATAR_SOURCES) {
+    const { requestPermission, launch, permissionLabel } = AVATAR_SOURCES[source];
+    const permission = await requestPermission();
+
+    if (!permission.granted) {
+      Alert.alert(
+        'Permission needed',
+        `Allow access to your ${permissionLabel} to set a profile picture.`
+      );
+      return;
+    }
+
+    const result = await launch({
+      mediaTypes: ['images'],
+      allowsEditing: true,
+      aspect: [1, 1],
+      quality: 0.8,
+    });
+
+    if (result.canceled) return;
+
+    const asset = result.assets[0];
+    uploadAvatar.mutate(
+      { uri: asset.uri, mimeType: asset.mimeType ?? 'image/jpeg' },
+      {
+        onError: () =>
+          Alert.alert('Upload failed', 'Could not update your profile photo. Please try again.'),
+      }
+    );
+  }
+
   function handleAvatarPress() {
-    Alert.alert('Coming soon', "Profile photos aren't available yet.");
+    Alert.alert('Profile Photo', undefined, [
+      { text: 'Take Photo', onPress: () => pickAvatar('camera') },
+      { text: 'Choose from Library', onPress: () => pickAvatar('library') },
+      ...(profile?.avatar_url
+        ? [
+            {
+              text: 'Remove Photo',
+              style: 'destructive' as const,
+              onPress: () =>
+                removeAvatar.mutate(undefined, {
+                  onError: () => Alert.alert('Error', 'Could not remove your profile photo.'),
+                }),
+            },
+          ]
+        : []),
+      { text: 'Cancel', style: 'cancel' as const },
+    ]);
   }
 
   return (
@@ -89,7 +158,11 @@ export default function ProfileScreen() {
       <Stack.Screen options={{ title: 'Profile' }} />
       <ScrollView contentContainerStyle={styles.content}>
         <View style={styles.header}>
-          <Avatar onPress={handleAvatarPress} />
+          <Avatar
+            uri={profile?.avatar_url}
+            uploading={uploadAvatar.isPending || removeAvatar.isPending}
+            onPress={handleAvatarPress}
+          />
           <ThemedText type="defaultSemiBold" style={styles.name}>
             {displayName}
           </ThemedText>
@@ -184,7 +257,15 @@ export default function ProfileScreen() {
   );
 }
 
-function Avatar({ onPress }: { onPress: () => void }) {
+function Avatar({
+  uri,
+  uploading,
+  onPress,
+}: {
+  uri?: string | null;
+  uploading: boolean;
+  onPress: () => void;
+}) {
   const cardElevated = useThemeColor({}, 'cardElevated');
   const iconColor = useThemeColor({}, 'icon');
   const tint = useThemeColor({}, 'tint');
@@ -194,14 +275,24 @@ function Avatar({ onPress }: { onPress: () => void }) {
   return (
     <Pressable
       onPress={onPress}
+      disabled={uploading}
       accessibilityRole="button"
-      accessibilityLabel="Add profile photo"
+      accessibilityLabel={uri ? 'Change profile photo' : 'Add profile photo'}
       style={styles.avatarWrap}>
-      <View style={[styles.avatar, { backgroundColor: cardElevated }]}>
-        <IconSymbol name="person.fill" size={44} color={iconColor} />
-      </View>
+      {uri ? (
+        <Image source={{ uri }} style={styles.avatar} contentFit="cover" />
+      ) : (
+        <View style={[styles.avatar, { backgroundColor: cardElevated }]}>
+          <IconSymbol name="person.fill" size={44} color={iconColor} />
+        </View>
+      )}
+      {uploading && (
+        <View style={[styles.avatar, styles.avatarOverlay]}>
+          <ActivityIndicator color="#fff" />
+        </View>
+      )}
       <View style={[styles.avatarBadge, { backgroundColor: tint, borderColor: background }]}>
-        <IconSymbol name="plus" size={13} color={buttonText} />
+        <IconSymbol name={uri ? 'pencil' : 'plus'} size={13} color={buttonText} />
       </View>
     </Pressable>
   );
@@ -255,6 +346,12 @@ const styles = StyleSheet.create({
     borderRadius: 46,
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  avatarOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    backgroundColor: 'rgba(0, 0, 0, 0.4)',
   },
   avatarBadge: {
     position: 'absolute',
