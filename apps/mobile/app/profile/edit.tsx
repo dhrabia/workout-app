@@ -1,10 +1,10 @@
 import { Stack, useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
 
-import { FormField } from '@/components/form-field';
 import { FormScreen } from '@/components/form-screen';
 import { HeaderIconButton } from '@/components/header-icon-button';
 import { SubmitButton } from '@/components/submit-button';
+import { FieldCard, FieldCardInput, FieldCardLabel } from '@/components/ui/field-card';
 import { useProfile, useUpdateProfile } from '@/hooks/queries/use-profile';
 import { useThemeColor } from '@/hooks/use-theme-color';
 
@@ -39,14 +39,17 @@ export default function EditProfileScreen() {
           ),
         }}
       />
-      <FormField
-        label="Name"
-        value={name}
-        onChangeText={setName}
-        placeholder="Your name"
-        error={error}
+      <FieldCard>
+        <FieldCardLabel label="Name" icon="doc.text.fill" />
+        <FieldCardInput value={name} onChangeText={setName} placeholder="Your name" error={error} />
+      </FieldCard>
+      <SubmitButton
+        label="Save"
+        pending={updateProfile.isPending}
+        onPress={handleSubmit}
+        size="large"
+        muted={!name.trim()}
       />
-      <SubmitButton label="Save" pending={updateProfile.isPending} onPress={handleSubmit} />
     </FormScreen>
   );
 }
