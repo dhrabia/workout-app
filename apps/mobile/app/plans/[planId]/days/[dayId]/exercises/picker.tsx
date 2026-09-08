@@ -38,7 +38,7 @@ export default function ExercisePickerScreen() {
   const filtered = q ? byGroup.filter((exercise) => exercise.name.toLowerCase().includes(q)) : byGroup;
 
   function selectExercise(exerciseId: string, exerciseName: string) {
-    router.replace({
+    router.push({
       pathname: '/plans/[planId]/days/[dayId]/exercises/form',
       params: { planId, dayId, exerciseId, exerciseName },
     });
