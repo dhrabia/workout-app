@@ -1,10 +1,9 @@
 import type { ImageSourcePropType } from "react-native";
 import type { Database } from "@workout-app/shared";
 
-// Cropped from the same reference sheet as the category tiles
-// (assets/images/muscle-groups/*.png), with the label text cropped off and
-// the background keyed to transparent — small enough to sit as a leading
-// icon on a list row instead of a full tile.
+// Small flat glyphs, background keyed to transparent — sit as a leading
+// icon on a list row, unlike the full-bleed hero photos in
+// day-card-photos.ts.
 //
 // Keyed by the full database enum, not the narrower MuscleGroup used for new
 // exercises: "arms" predates the biceps/triceps split (see migration
