@@ -22,7 +22,13 @@ export default function ExerciseCategoriesScreen() {
         options={{
           title: 'Select muscle group',
           headerLeft: () => (
-            <HeaderIconButton name="xmark" size={22} color={tint} onPress={() => router.back()} />
+            <HeaderIconButton
+              name="xmark"
+              size={22}
+              color={tint}
+              onPress={() => router.back()}
+              testID="categories-close-button"
+            />
           ),
         }}
       />
@@ -57,7 +63,7 @@ function MuscleGroupTile({
   onPress: () => void;
 }) {
   return (
-    <Pressable onPress={onPress} style={styles.tile}>
+    <Pressable onPress={onPress} style={styles.tile} testID={`muscle-group-tile-${group}`}>
       <Image source={DAY_CARD_PHOTOS[group]} style={StyleSheet.absoluteFill} contentFit="cover" />
       <LinearGradient colors={['transparent', 'rgba(0,0,0,0.75)']} style={styles.gradient} />
       <View style={styles.label}>

@@ -77,6 +77,7 @@ export default function PlanDetailScreen() {
         label="Add Day"
         onPress={() => router.push({ pathname: '/plans/[planId]/days/form', params: { planId } })}
         variant="primary"
+        testID="plan-add-day-button"
       />
     </ThemedView>
   );
@@ -95,7 +96,11 @@ function DayCard({
   onEdit: () => void;
   onDelete: () => void;
 }) {
-  const { menuButtonRef, onLongPress, onMenuPress } = useDragContextMenu({ onEdit, onDelete });
+  const { menuButtonRef, onLongPress, onMenuPress } = useDragContextMenu({
+    onEdit,
+    onDelete,
+    testIDPrefix: `day-${item.id}`,
+  });
 
   return (
     <WorkoutDayCard
@@ -105,6 +110,8 @@ function DayCard({
       onLongPress={onLongPress}
       onMenuPress={onMenuPress}
       menuButtonRef={menuButtonRef}
+      testID={`day-card-${item.id}`}
+      menuTestID={`day-menu-${item.id}`}
     />
   );
 }

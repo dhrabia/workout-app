@@ -12,14 +12,16 @@ import { useThemeColor } from '@/hooks/use-theme-color';
 export function FieldCard({
   style,
   onPress,
+  testID,
   children,
-}: PropsWithChildren<{ style?: StyleProp<ViewStyle>; onPress?: () => void }>) {
+}: PropsWithChildren<{ style?: StyleProp<ViewStyle>; onPress?: () => void; testID?: string }>) {
   const cardBackground = useThemeColor({}, 'cardBackground');
   const borderColor = useThemeColor({}, 'border');
 
   return (
     <Pressable
       onPress={onPress}
+      testID={testID}
       style={[styles.card, { backgroundColor: cardBackground, borderColor }, style]}>
       {children}
     </Pressable>
@@ -71,6 +73,7 @@ export function FieldCardInput({
   onBlur,
   onClear,
   value,
+  testID,
   ...rest
 }: FieldCardInputProps) {
   const [isFocused, setIsFocused] = useState(false);
@@ -92,6 +95,7 @@ export function FieldCardInput({
         ]}>
         {icon ? <IconSymbol name={icon} size={18} color={secondaryColor} /> : null}
         <TextInput
+          testID={testID}
           style={[styles.input, multiline && styles.multilineInput, { color: textColor }, style]}
           placeholderTextColor={placeholderColor}
           multiline={multiline}
@@ -107,7 +111,7 @@ export function FieldCardInput({
           {...rest}
         />
         {onClear && value ? (
-          <Pressable onPress={onClear} hitSlop={8}>
+          <Pressable onPress={onClear} hitSlop={8} testID={testID ? `${testID}-clear` : undefined}>
             <IconSymbol name="xmark.circle.fill" size={18} color={secondaryColor} />
           </Pressable>
         ) : null}

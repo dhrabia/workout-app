@@ -20,6 +20,8 @@ export function WorkoutDayCard({
   onLongPress,
   onMenuPress,
   menuButtonRef,
+  testID,
+  menuTestID,
 }: {
   dayNumber: number;
   workoutDay: PlanDayWithExerciseCount;
@@ -27,6 +29,8 @@ export function WorkoutDayCard({
   onLongPress?: () => void;
   onMenuPress?: () => void;
   menuButtonRef?: Ref<View>;
+  testID?: string;
+  menuTestID?: string;
 }) {
   const cardBackground = useThemeColor({}, 'cardBackground');
   const borderColor = useThemeColor({}, 'border');
@@ -42,7 +46,7 @@ export function WorkoutDayCard({
 
   return (
     <View style={[styles.card, { backgroundColor: cardBackground, borderColor }]}>
-      <Pressable onPress={onPress} onLongPress={onLongPress}>
+      <Pressable onPress={onPress} onLongPress={onLongPress} testID={testID}>
         <View style={styles.header}>
           <Image source={photo} style={StyleSheet.absoluteFillObject} contentFit="cover" />
           <LinearGradient
@@ -101,7 +105,7 @@ export function WorkoutDayCard({
 
       {onMenuPress ? (
         <View ref={menuButtonRef} collapsable={false} style={styles.menuButtonAnchor}>
-          <Pressable onPress={onMenuPress} hitSlop={10} style={styles.menuButton}>
+          <Pressable onPress={onMenuPress} hitSlop={10} style={styles.menuButton} testID={menuTestID}>
             <IconSymbol name="ellipsis" size={20} color="rgba(255,255,255,0.85)" />
           </Pressable>
         </View>

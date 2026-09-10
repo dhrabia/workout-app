@@ -89,6 +89,7 @@ export default function WeightHistoryScreen() {
             logWeight.mutate(weightKg, { onSuccess: () => setPickerTarget(null) });
           }
         }}
+        testID="weight-history-modal"
       />
     </ThemedView>
   );
@@ -103,7 +104,8 @@ function CurrentValueHeader({ value, onPress }: { value: number; onPress: () => 
         onPress={onPress}
         style={styles.currentValueRow}
         accessibilityRole="button"
-        accessibilityLabel="Log a new weight entry">
+        accessibilityLabel="Log a new weight entry"
+        testID="weight-history-log-button">
         <ThemedText style={styles.currentValue}>{formatWeight(value)} kg</ThemedText>
         <IconSymbol name="chevron.right" size={18} color={secondary} />
       </Pressable>
@@ -125,7 +127,8 @@ function HistoryList({ entries, onSelect }: { entries: WeightLog[]; onSelect: (l
           style={[
             styles.historyRow,
             index > 0 && { borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: borderColor },
-          ]}>
+          ]}
+          testID={`weight-log-row-${log.id}`}>
           <ThemedText>{formatEntryDate(log.logged_at)}</ThemedText>
           <View style={styles.historyRowValue}>
             <ThemedText type="defaultSemiBold">{formatWeight(log.weight_kg)} kg</ThemedText>
@@ -144,7 +147,12 @@ function EmptyWeightState({ onAdd }: { onAdd: () => void }) {
     <View style={[styles.card, styles.emptyCard, { backgroundColor: cardBackground }]}>
       <ThemedText type="subtitle">Weight</ThemedText>
       <ThemedText style={[styles.emptyHint, { color: secondary }]}>No weight logged yet</ThemedText>
-      <OutlineButton label="Log weight" onPress={onAdd} style={styles.emptyButton} />
+      <OutlineButton
+        label="Log weight"
+        onPress={onAdd}
+        style={styles.emptyButton}
+        testID="weight-history-empty-log-button"
+      />
     </View>
   );
 }

@@ -8,6 +8,7 @@ export type HeaderIconButtonProps = {
   color: string;
   size: number;
   onPress: () => void;
+  testID?: string;
 };
 
 // Deliberately no visible border/background here: on iOS 26, native-stack wraps a
@@ -15,9 +16,9 @@ export type HeaderIconButtonProps = {
 // per-item bar-button API to split it), so a per-icon border/background just nests
 // inside that pill instead of separating adjacent icons. The fixed 34x34 box only
 // keeps every icon's tap target a consistent, adequately-sized hit area.
-export function HeaderIconButton({ name, color, size, onPress }: HeaderIconButtonProps) {
+export function HeaderIconButton({ name, color, size, onPress, testID }: HeaderIconButtonProps) {
   return (
-    <Pressable onPress={onPress} hitSlop={8} style={styles.button}>
+    <Pressable onPress={onPress} hitSlop={8} style={styles.button} testID={testID}>
       <IconSymbol name={name} size={size} color={color} />
     </Pressable>
   );

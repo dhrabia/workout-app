@@ -35,13 +35,25 @@ export default function EditProfileScreen() {
         options={{
           title: 'Edit Profile',
           headerLeft: () => (
-            <HeaderIconButton name="xmark" size={22} color={tint} onPress={() => router.back()} />
+            <HeaderIconButton
+              name="xmark"
+              size={22}
+              color={tint}
+              onPress={() => router.back()}
+              testID="edit-profile-close-button"
+            />
           ),
         }}
       />
       <FieldCard>
         <FieldCardLabel label="Name" icon="doc.text.fill" />
-        <FieldCardInput value={name} onChangeText={setName} placeholder="Your name" error={error} />
+        <FieldCardInput
+          value={name}
+          onChangeText={setName}
+          placeholder="Your name"
+          error={error}
+          testID="edit-profile-name-input"
+        />
       </FieldCard>
       <SubmitButton
         label="Save"
@@ -49,6 +61,7 @@ export default function EditProfileScreen() {
         onPress={handleSubmit}
         size="large"
         muted={!name.trim()}
+        testID="edit-profile-save-button"
       />
     </FormScreen>
   );

@@ -63,6 +63,7 @@ export default function DayDetailScreen() {
           })
         }
         variant="primary"
+        testID="day-add-exercise-button"
       />
     </ThemedView>
   );
@@ -85,7 +86,8 @@ function ExerciseRow({
     <Pressable
       style={[styles.card, { backgroundColor: cardBackground, borderColor }]}
       onPress={onEdit}
-      onLongPress={drag}>
+      onLongPress={drag}
+      testID={`exercise-row-${item.id}`}>
       <View style={[styles.iconBox, { backgroundColor: iconBackground }]}>
         <Image
           source={MUSCLE_ICONS[item.exercise.muscle_group]}

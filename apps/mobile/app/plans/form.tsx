@@ -48,7 +48,13 @@ export default function PlanFormScreen() {
         options={{
           title: isEditing ? 'Edit Plan' : 'New Plan',
           headerLeft: () => (
-            <HeaderIconButton name="xmark" size={22} color={tint} onPress={() => router.back()} />
+            <HeaderIconButton
+              name="xmark"
+              size={22}
+              color={tint}
+              onPress={() => router.back()}
+              testID="plan-form-close-button"
+            />
           ),
         }}
       />
@@ -59,6 +65,7 @@ export default function PlanFormScreen() {
           onChangeText={setName}
           placeholder="e.g. Push Pull Legs"
           error={error}
+          testID="plan-form-name-input"
         />
       </FieldCard>
       <FieldCard>
@@ -68,6 +75,7 @@ export default function PlanFormScreen() {
           onChangeText={setDescription}
           placeholder="Optional"
           multiline
+          testID="plan-form-description-input"
         />
       </FieldCard>
       <SubmitButton
@@ -76,6 +84,7 @@ export default function PlanFormScreen() {
         onPress={handleSubmit}
         size="large"
         muted={!name.trim()}
+        testID="plan-form-save-button"
       />
     </FormScreen>
   );

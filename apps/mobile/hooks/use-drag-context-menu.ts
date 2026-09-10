@@ -11,9 +11,14 @@ import { useOpenContextMenu } from '@/components/context-menu';
 export function useDragContextMenu({
   onEdit,
   onDelete,
+  testIDPrefix,
 }: {
   onEdit: () => void;
   onDelete: () => void;
+  // Lets each row's Edit/Delete actions carry a stable, per-item testID
+  // (e.g. `${testIDPrefix}-edit`), since the menu itself is a single shared
+  // overlay with no other way to tell which row opened it.
+  testIDPrefix?: string;
 }) {
   const openMenuAt = useOpenContextMenu();
   const menuButtonRef = useRef<View>(null);
@@ -21,10 +26,21 @@ export function useDragContextMenu({
 
   const actions = useMemo(
     () => [
-      { label: 'Edit', icon: 'pencil' as const, onPress: onEdit },
-      { label: 'Delete', icon: 'trash' as const, destructive: true, onPress: onDelete },
+      {
+        label: 'Edit',
+        icon: 'pencil' as const,
+        onPress: onEdit,
+        testID: testIDPrefix ? `${testIDPrefix}-edit` : undefined,
+      },
+      {
+        label: 'Delete',
+        icon: 'trash' as const,
+        destructive: true,
+        onPress: onDelete,
+        testID: testIDPrefix ? `${testIDPrefix}-delete` : undefined,
+      },
     ],
-    [onEdit, onDelete]
+    [onEdit, onDelete, testIDPrefix]
   );
 
   const handleMenuPress = useCallback(() => {

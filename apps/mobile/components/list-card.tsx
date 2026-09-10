@@ -28,6 +28,8 @@ export type ListCardProps = {
   // cards. Forces the title (and menu icon) to a fixed white, since it no
   // longer sits on the theme's own card background.
   backgroundImage?: ComponentProps<typeof Image>['source'];
+  testID?: string;
+  menuTestID?: string;
 };
 
 // The rounded, filled-background row used throughout the plan builder's list
@@ -47,6 +49,8 @@ export function ListCard({
   menuButtonRef,
   style,
   backgroundImage,
+  testID,
+  menuTestID,
 }: ListCardProps) {
   const cardBackground = useThemeColor({}, 'cardBackground');
   const separatorColor = useThemeColor({}, 'border');
@@ -73,7 +77,8 @@ export function ListCard({
           onMenuPress && styles.contentWithMenu,
         ]}
         onPress={onPress}
-        onLongPress={onLongPress}>
+        onLongPress={onLongPress}
+        testID={testID}>
         <ThemedText type="defaultSemiBold" style={[titleStyle, !!backgroundImage && styles.titleOnImage]}>
           {title}
         </ThemedText>
@@ -86,7 +91,7 @@ export function ListCard({
       </Pressable>
       {onMenuPress ? (
         <View ref={menuButtonRef} collapsable={false} style={styles.menuButtonAnchor}>
-          <Pressable onPress={onMenuPress} hitSlop={10} style={styles.menuButton}>
+          <Pressable onPress={onMenuPress} hitSlop={10} style={styles.menuButton} testID={menuTestID}>
             <IconSymbol name="ellipsis" size={20} color={menuIconColor} />
           </Pressable>
         </View>

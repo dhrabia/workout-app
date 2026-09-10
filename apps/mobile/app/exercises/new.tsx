@@ -68,13 +68,25 @@ export default function NewExerciseScreen() {
         options={{
           title: 'New Exercise',
           headerLeft: () => (
-            <HeaderIconButton name="xmark" size={22} color={tint} onPress={() => router.back()} />
+            <HeaderIconButton
+              name="xmark"
+              size={22}
+              color={tint}
+              onPress={() => router.back()}
+              testID="new-exercise-close-button"
+            />
           ),
         }}
       />
       <FieldCard>
         <FieldCardLabel label="Name" icon="doc.text.fill" />
-        <FieldCardInput value={name} onChangeText={setName} placeholder="e.g. Cable Fly" error={error} />
+        <FieldCardInput
+          value={name}
+          onChangeText={setName}
+          placeholder="e.g. Cable Fly"
+          error={error}
+          testID="new-exercise-name-input"
+        />
       </FieldCard>
       <FieldCard>
         <FieldCardLabel label="Muscle group" icon="square.stack.fill" />
@@ -85,7 +97,8 @@ export default function NewExerciseScreen() {
               <Pressable
                 key={group}
                 onPress={() => setMuscleGroup(group)}
-                style={[styles.chip, { backgroundColor: chip.backgroundColor, borderColor: chip.borderColor }]}>
+                style={[styles.chip, { backgroundColor: chip.backgroundColor, borderColor: chip.borderColor }]}
+                testID={`muscle-group-chip-${group}`}>
                 <ThemedText style={[styles.chipText, { color: chip.textColor }]}>
                   {group.replace('_', ' ')}
                 </ThemedText>
@@ -96,7 +109,12 @@ export default function NewExerciseScreen() {
       </FieldCard>
       <FieldCard>
         <FieldCardLabel label="Equipment" icon="dumbbell.fill" />
-        <FieldCardInput value={equipment} onChangeText={setEquipment} placeholder="Optional, e.g. barbell" />
+        <FieldCardInput
+          value={equipment}
+          onChangeText={setEquipment}
+          placeholder="Optional, e.g. barbell"
+          testID="new-exercise-equipment-input"
+        />
       </FieldCard>
       <SubmitButton
         label="Save"
@@ -104,6 +122,7 @@ export default function NewExerciseScreen() {
         onPress={handleSubmit}
         size="large"
         muted={!name.trim()}
+        testID="new-exercise-save-button"
       />
     </FormScreen>
   );

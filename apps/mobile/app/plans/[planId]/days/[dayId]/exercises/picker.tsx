@@ -52,7 +52,13 @@ export default function ExercisePickerScreen() {
         options={{
           title: formatMuscleGroup(muscleGroup),
           headerLeft: () => (
-            <HeaderIconButton name="xmark" size={22} color={tint} onPress={() => router.back()} />
+            <HeaderIconButton
+              name="xmark"
+              size={22}
+              color={tint}
+              onPress={() => router.back()}
+              testID="picker-close-button"
+            />
           ),
         }}
       />
@@ -65,6 +71,7 @@ export default function ExercisePickerScreen() {
           placeholder="Search exercises"
           autoCorrect={false}
           autoCapitalize="none"
+          testID="picker-search-input"
         />
       </View>
       <View style={styles.sectionHeader}>
@@ -86,7 +93,11 @@ export default function ExercisePickerScreen() {
             />
           }
           renderItem={({ item }) => (
-            <ExercisePickerRow name={item.name_en} onPress={() => selectExercise(item.id, item.name_en)} />
+            <ExercisePickerRow
+              id={item.id}
+              name={item.name_en}
+              onPress={() => selectExercise(item.id, item.name_en)}
+            />
           )}
         />
       )}
@@ -101,18 +112,27 @@ export default function ExercisePickerScreen() {
         }
         variant="primary"
         style={{ marginBottom: insets.bottom + 16 }}
+        testID="picker-create-custom-button"
       />
     </ThemedView>
   );
 }
 
-function ExercisePickerRow({ name, onPress }: { name: string; onPress: () => void }) {
+function ExercisePickerRow({
+  id,
+  name,
+  onPress,
+}: {
+  id: string;
+  name: string;
+  onPress: () => void;
+}) {
   const controlBackground = useThemeColor({}, 'cardElevated');
   const borderColor = useThemeColor({}, 'border');
   const tint = useThemeColor({}, 'tint');
 
   return (
-    <FieldCard onPress={onPress} style={styles.row}>
+    <FieldCard onPress={onPress} style={styles.row} testID={`exercise-picker-row-${id}`}>
       <ThemedText type="defaultSemiBold" style={styles.rowName}>
         {name}
       </ThemedText>

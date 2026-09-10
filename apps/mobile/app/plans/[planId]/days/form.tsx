@@ -45,7 +45,13 @@ export default function DayFormScreen() {
         options={{
           title: isEditing ? 'Edit Day' : 'New Day',
           headerLeft: () => (
-            <HeaderIconButton name="xmark" size={22} color={tint} onPress={() => router.back()} />
+            <HeaderIconButton
+              name="xmark"
+              size={22}
+              color={tint}
+              onPress={() => router.back()}
+              testID="day-form-close-button"
+            />
           ),
         }}
       />
@@ -56,6 +62,7 @@ export default function DayFormScreen() {
           onChangeText={setName}
           placeholder="e.g. Day A, Push, Legs"
           error={error}
+          testID="day-form-name-input"
         />
       </FieldCard>
       <SubmitButton
@@ -64,6 +71,7 @@ export default function DayFormScreen() {
         onPress={handleSubmit}
         size="large"
         muted={!name.trim()}
+        testID="day-form-save-button"
       />
     </FormScreen>
   );

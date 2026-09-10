@@ -18,6 +18,7 @@ type ContextMenuActionItem = {
   icon: ComponentProps<typeof IconSymbol>['name'];
   destructive?: boolean;
   onPress: () => void;
+  testID?: string;
 };
 
 type ContextMenuAnchorRect = { x: number; y: number; width: number; height: number };
@@ -90,6 +91,7 @@ function ContextMenuOverlay({
     <View style={StyleSheet.absoluteFill} pointerEvents="box-none">
       <Pressable style={StyleSheet.absoluteFill} onPress={onClose} />
       <View
+        testID="context-menu"
         style={[
           styles.menu,
           { backgroundColor: cardElevated, width: MENU_WIDTH, left },
@@ -104,6 +106,7 @@ function ContextMenuOverlay({
               onClose();
               action.onPress();
             }}
+            testID={action.testID}
             style={({ pressed }) => [
               styles.row,
               index > 0 && { borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: borderColor },

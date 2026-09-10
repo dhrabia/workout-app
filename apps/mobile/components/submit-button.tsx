@@ -13,6 +13,7 @@ export type SubmitButtonProps = {
   // without disabling it — tapping still fires onPress so existing
   // validation/error behavior on tap is preserved.
   muted?: boolean;
+  testID?: string;
 };
 
 export function SubmitButton({
@@ -22,6 +23,7 @@ export function SubmitButton({
   onPress,
   size = 'default',
   muted,
+  testID,
 }: SubmitButtonProps) {
   const tint = useThemeColor({}, 'tint');
   const tintDark = useThemeColor({}, 'tintDark');
@@ -34,6 +36,7 @@ export function SubmitButton({
     <Pressable
       onPress={onPress}
       disabled={pending}
+      testID={testID}
       style={({ pressed }) => [
         styles.button,
         size === 'large' && styles.buttonLarge,

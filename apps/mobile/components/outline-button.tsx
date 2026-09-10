@@ -14,12 +14,14 @@ export function OutlineButton({
   onPress,
   style,
   variant = 'default',
+  testID,
 }: {
   label: string;
   icon?: ComponentProps<typeof IconSymbol>['name'];
   onPress: () => void;
   style?: StyleProp<ViewStyle>;
   variant?: 'default' | 'primary';
+  testID?: string;
 }) {
   const tint = useThemeColor({}, 'tint');
   const tintDark = useThemeColor({}, 'tintDark');
@@ -28,6 +30,7 @@ export function OutlineButton({
   return (
     <Pressable
       onPress={onPress}
+      testID={testID}
       style={({ pressed }) => [
         styles.button,
         isPrimary && styles.buttonPrimary,

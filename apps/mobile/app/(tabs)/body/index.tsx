@@ -66,6 +66,7 @@ export default function BodyScreen() {
             <HistoryAction
               accessibilityLabel="View weight history"
               onPress={() => router.push('/body/weight-history')}
+              testID="body-weight-history-button"
             />
           </View>
           <WeightProgressCard history={weightLogs} />
@@ -82,6 +83,7 @@ export default function BodyScreen() {
             <HistoryAction
               accessibilityLabel="View measurement history"
               onPress={() => router.push('/body/measurement-history')}
+              testID="body-measurement-history-button"
             />
           </View>
           <MeasurementsGrid measurements={latestMeasurements} onSelectField={setEditingField} />
@@ -99,6 +101,7 @@ export default function BodyScreen() {
         pending={logWeight.isPending}
         onClose={() => setWeightModalOpen(false)}
         onSave={(weightKg) => logWeight.mutate(weightKg, { onSuccess: () => setWeightModalOpen(false) })}
+        testID="weight-modal"
       />
 
       <WheelPickerModal
@@ -117,6 +120,7 @@ export default function BodyScreen() {
             { onSuccess: () => setEditingField(null) }
           );
         }}
+        testID={editingField ? `measurement-modal-${editingField}` : undefined}
       />
     </ThemedView>
   );
@@ -146,7 +150,7 @@ function WeightHero({
         <ThemedText style={[styles.heroHint, { color: secondary }]}>
           Log your weight to start tracking your progress.
         </ThemedText>
-        <HeroAction label="Log weight" onPress={onLogWeight} />
+        <HeroAction label="Log weight" onPress={onLogWeight} testID="body-log-weight-button" />
       </View>
     );
   }
@@ -186,17 +190,26 @@ function WeightHero({
           hitSlop={8}
           accessibilityRole="button"
           accessibilityLabel="Set a target weight"
-          style={styles.heroAction}>
+          style={styles.heroAction}
+          testID="body-set-target-button">
           <ThemedText style={[styles.heroActionText, { color: tint }]}>Set a target weight</ThemedText>
         </Pressable>
       )}
 
-      <HeroAction label="Log weight" onPress={onLogWeight} />
+      <HeroAction label="Log weight" onPress={onLogWeight} testID="body-log-weight-button" />
     </View>
   );
 }
 
-function HeroAction({ label, onPress }: { label: string; onPress: () => void }) {
+function HeroAction({
+  label,
+  onPress,
+  testID,
+}: {
+  label: string;
+  onPress: () => void;
+  testID?: string;
+}) {
   const tint = useThemeColor({}, 'tint');
   return (
     <Pressable
@@ -204,7 +217,8 @@ function HeroAction({ label, onPress }: { label: string; onPress: () => void }) 
       hitSlop={8}
       accessibilityRole="button"
       accessibilityLabel={label}
-      style={styles.heroAction}>
+      style={styles.heroAction}
+      testID={testID}>
       <IconSymbol name="plus" size={13} color={tint} />
       <ThemedText style={[styles.heroActionText, { color: tint }]}>{label}</ThemedText>
     </Pressable>
@@ -246,9 +260,11 @@ function BmiCard({
 function HistoryAction({
   onPress,
   accessibilityLabel,
+  testID,
 }: {
   onPress: () => void;
   accessibilityLabel: string;
+  testID?: string;
 }) {
   const tint = useThemeColor({}, 'tint');
   const cardElevated = useThemeColor({}, 'cardElevated');
@@ -258,7 +274,8 @@ function HistoryAction({
       hitSlop={8}
       accessibilityRole="button"
       accessibilityLabel={accessibilityLabel}
-      style={[styles.historyAction, { backgroundColor: cardElevated }]}>
+      style={[styles.historyAction, { backgroundColor: cardElevated }]}
+      testID={testID}>
       <IconSymbol name="clock.arrow.circlepath" size={13} color={tint} />
       <ThemedText style={[styles.historyActionText, { color: tint }]}>History</ThemedText>
     </Pressable>
@@ -290,7 +307,8 @@ function MeasurementsGrid({
               styles.measurementCell,
               !isRightColumn && { borderRightWidth: StyleSheet.hairlineWidth, borderRightColor: borderColor },
               !isLastRow && { borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: borderColor },
-            ]}>
+            ]}
+            testID={`measurement-cell-${key}`}>
             <ThemedText style={{ color: secondary }}>{label}</ThemedText>
             <View style={styles.measurementValueRow}>
               <ThemedText type="defaultSemiBold">

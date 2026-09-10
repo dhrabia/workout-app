@@ -101,11 +101,23 @@ export default function PlanExerciseFormScreen() {
         options={{
           title: isEditing ? 'Edit Exercise' : 'Add to Day',
           headerLeft: () => (
-            <HeaderIconButton name="xmark" size={22} color={tint} onPress={() => router.back()} />
+            <HeaderIconButton
+              name="xmark"
+              size={22}
+              color={tint}
+              onPress={() => router.back()}
+              testID="exercise-form-close-button"
+            />
           ),
           headerRight: () =>
             isEditing ? (
-              <HeaderIconButton name="trash" size={22} color={errorColor} onPress={handleDelete} />
+              <HeaderIconButton
+                name="trash"
+                size={22}
+                color={errorColor}
+                onPress={handleDelete}
+                testID="exercise-form-delete-button"
+              />
             ) : undefined,
         }}
       />
@@ -137,6 +149,7 @@ export default function PlanExerciseFormScreen() {
         min={1}
         placeholder="e.g. 4"
         error={setsError}
+        testID="exercise-form-sets"
       />
       <NumberStepper
         label="Reps"
@@ -148,6 +161,7 @@ export default function PlanExerciseFormScreen() {
         keyboardType="default"
         placeholder="e.g. 8-12"
         error={repsError}
+        testID="exercise-form-reps"
       />
       <NumberStepper
         label="Weight"
@@ -159,6 +173,7 @@ export default function PlanExerciseFormScreen() {
         decimals={1}
         suffix="kg"
         placeholder="Optional"
+        testID="exercise-form-weight"
       />
       <NumberStepper
         label="Rest"
@@ -169,10 +184,17 @@ export default function PlanExerciseFormScreen() {
         min={0}
         suffix="s"
         placeholder="Optional"
+        testID="exercise-form-rest"
       />
       <NotesCard value={notes} onChangeText={setNotes} />
 
-      <SubmitButton label="Save" pending={mutation.isPending} onPress={handleSubmit} size="large" />
+      <SubmitButton
+        label="Save"
+        pending={mutation.isPending}
+        onPress={handleSubmit}
+        size="large"
+        testID="exercise-form-save-button"
+      />
     </FormScreen>
   );
 }
@@ -191,6 +213,7 @@ function NotesCard({
     <FieldCard style={styles.notesCard}>
       <FieldCardLabel label="Notes" icon="doc.text.fill" />
       <TextInput
+        testID="exercise-form-notes-input"
         style={[styles.notesInput, { color: textColor }]}
         value={value}
         onChangeText={onChangeText}

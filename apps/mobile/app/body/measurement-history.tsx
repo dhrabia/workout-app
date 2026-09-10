@@ -116,6 +116,7 @@ export default function BodyMeasurementsHistoryScreen() {
             );
           }
         }}
+        testID={`measurement-history-modal-${selectedType}`}
       />
     </ThemedView>
   );
@@ -131,17 +132,25 @@ function MeasurementTypePills({
   return (
     <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.pillsRow}>
       {MEASUREMENT_FIELDS.map(({ key, label }) => (
-        <MeasurementTypePill key={key} label={label} active={key === selected} onPress={() => onSelect(key)} />
+        <MeasurementTypePill
+          key={key}
+          fieldKey={key}
+          label={label}
+          active={key === selected}
+          onPress={() => onSelect(key)}
+        />
       ))}
     </ScrollView>
   );
 }
 
 function MeasurementTypePill({
+  fieldKey,
   label,
   active,
   onPress,
 }: {
+  fieldKey: MeasurementFieldKey;
   label: string;
   active: boolean;
   onPress: () => void;
@@ -157,6 +166,7 @@ function MeasurementTypePill({
       onPress={onPress}
       accessibilityRole="button"
       accessibilityState={{ selected: active }}
+      testID={`measurement-pill-${fieldKey}`}
       style={[
         styles.pill,
         {
@@ -186,7 +196,8 @@ function CurrentValueHeader({
         onPress={onPress}
         style={styles.currentValueRow}
         accessibilityRole="button"
-        accessibilityLabel={`Log a new ${label.toLowerCase()} measurement`}>
+        accessibilityLabel={`Log a new ${label.toLowerCase()} measurement`}
+        testID="measurement-history-log-button">
         <ThemedText style={styles.currentValue}>{formatMeasurement(value)}</ThemedText>
         <IconSymbol name="chevron.right" size={18} color={secondary} />
       </Pressable>
@@ -225,7 +236,8 @@ function HistoryList({
           style={[
             styles.historyRow,
             index > 0 && { borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: borderColor },
-          ]}>
+          ]}
+          testID={`measurement-log-row-${log.id}`}>
           <ThemedText>{formatEntryDate(log.logged_at)}</ThemedText>
           <View style={styles.historyRowValue}>
             <ThemedText type="defaultSemiBold">{formatMeasurement(log.value_cm)}</ThemedText>
@@ -244,7 +256,12 @@ function EmptyMeasurementState({ label, onAdd }: { label: string; onAdd: () => v
     <View style={[styles.card, styles.emptyCard, { backgroundColor: cardBackground }]}>
       <ThemedText type="subtitle">{label}</ThemedText>
       <ThemedText style={[styles.emptyHint, { color: secondary }]}>No measurements yet</ThemedText>
-      <OutlineButton label="Add measurement" onPress={onAdd} style={styles.emptyButton} />
+      <OutlineButton
+        label="Add measurement"
+        onPress={onAdd}
+        style={styles.emptyButton}
+        testID="measurement-history-empty-add-button"
+      />
     </View>
   );
 }

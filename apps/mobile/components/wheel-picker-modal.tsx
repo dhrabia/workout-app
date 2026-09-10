@@ -20,6 +20,7 @@ export function WheelPickerModal({
   pending,
   onClose,
   onSave,
+  testID,
 }: {
   visible: boolean;
   title: string;
@@ -29,6 +30,7 @@ export function WheelPickerModal({
   pending?: boolean;
   onClose: () => void;
   onSave: (value: number) => void;
+  testID?: string;
 }) {
   const [selected, setSelected] = useState(value);
   const cardBackground = useThemeColor({}, 'cardBackground');
@@ -36,8 +38,13 @@ export function WheelPickerModal({
 
   return (
     <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose}>
-      <Pressable style={styles.backdrop} onPress={onClose} />
+      <Pressable
+        style={styles.backdrop}
+        onPress={onClose}
+        testID={testID ? `${testID}-backdrop` : undefined}
+      />
       <View
+        testID={testID}
         style={[
           styles.sheet,
           { backgroundColor: cardBackground, paddingBottom: insets.bottom + 16 },
@@ -46,7 +53,12 @@ export function WheelPickerModal({
           {title}
         </ThemedText>
         <WheelPicker values={values} value={selected} onChange={setSelected} suffix={suffix} />
-        <SubmitButton label="Save" pending={pending} onPress={() => onSave(selected)} />
+        <SubmitButton
+          label="Save"
+          pending={pending}
+          onPress={() => onSave(selected)}
+          testID={testID ? `${testID}-save` : undefined}
+        />
       </View>
     </Modal>
   );

@@ -53,6 +53,7 @@ export default function PlansScreen() {
               size={24}
               color={tint}
               onPress={() => router.push('/plans/form')}
+              testID="plans-create-button"
             />
           ),
         }}
@@ -104,7 +105,11 @@ function PlanCard({
   onEdit: () => void;
   onDelete: () => void;
 }) {
-  const { menuButtonRef, onLongPress, onMenuPress } = useDragContextMenu({ onEdit, onDelete });
+  const { menuButtonRef, onLongPress, onMenuPress } = useDragContextMenu({
+    onEdit,
+    onDelete,
+    testIDPrefix: `plan-${item.id}`,
+  });
 
   return (
     <ListCard
@@ -116,6 +121,8 @@ function PlanCard({
       onLongPress={onLongPress}
       onMenuPress={onMenuPress}
       menuButtonRef={menuButtonRef}
+      testID={`plan-card-${item.id}`}
+      menuTestID={`plan-menu-${item.id}`}
     />
   );
 }

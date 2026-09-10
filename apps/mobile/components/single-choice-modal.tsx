@@ -20,6 +20,7 @@ export function SingleChoiceModal<T extends string>({
   pending,
   onClose,
   onSave,
+  testID,
 }: {
   visible: boolean;
   title: string;
@@ -28,6 +29,7 @@ export function SingleChoiceModal<T extends string>({
   pending?: boolean;
   onClose: () => void;
   onSave: (value: T) => void;
+  testID?: string;
 }) {
   const [selected, setSelected] = useState(value);
   const cardBackground = useThemeColor({}, 'cardBackground');
@@ -38,8 +40,13 @@ export function SingleChoiceModal<T extends string>({
 
   return (
     <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose}>
-      <Pressable style={styles.backdrop} onPress={onClose} />
+      <Pressable
+        style={styles.backdrop}
+        onPress={onClose}
+        testID={testID ? `${testID}-backdrop` : undefined}
+      />
       <View
+        testID={testID}
         style={[
           styles.sheet,
           { backgroundColor: cardBackground, paddingBottom: insets.bottom + 16 },
@@ -59,7 +66,8 @@ export function SingleChoiceModal<T extends string>({
                   index > 0 && { borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: borderColor },
                 ]}
                 accessibilityRole="radio"
-                accessibilityState={{ checked: isSelected }}>
+                accessibilityState={{ checked: isSelected }}
+                testID={testID ? `${testID}-option-${option.value}` : undefined}>
                 <ThemedText>{option.label}</ThemedText>
                 <View style={[styles.radioOuter, { borderColor: isSelected ? tint : borderColor }]}>
                   {isSelected && <View style={[styles.radioInner, { backgroundColor: tint }]} />}
@@ -72,6 +80,7 @@ export function SingleChoiceModal<T extends string>({
           label="Save"
           pending={pending}
           onPress={() => selected != null && onSave(selected)}
+          testID={testID ? `${testID}-save` : undefined}
         />
       </View>
     </Modal>

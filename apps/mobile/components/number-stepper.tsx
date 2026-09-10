@@ -18,6 +18,10 @@ export type NumberStepperProps = {
   placeholder?: string;
   keyboardType?: 'number-pad' | 'decimal-pad' | 'default';
   error?: string;
+  // Prefix for this instance's controls, since a screen can render several
+  // steppers side by side (e.g. Sets/Reps/Weight/Rest) with identical
+  // internal structure — appended with `-value`/`-minus`/`-plus`.
+  testID?: string;
 };
 
 const REPEAT_DELAY_MS = 400;
@@ -44,6 +48,7 @@ export function NumberStepper({
   placeholder = '—',
   keyboardType = 'number-pad',
   error,
+  testID,
 }: NumberStepperProps) {
   const [isEditing, setIsEditing] = useState(false);
   const [draft, setDraft] = useState(value);
@@ -130,6 +135,7 @@ export function NumberStepper({
             <>
               <TextInput
                 ref={inputRef}
+                testID={testID ? `${testID}-value` : undefined}
                 style={[styles.valueInput, { color: textColor }]}
                 value={draft}
                 onChangeText={setDraft}
@@ -158,7 +164,11 @@ export function NumberStepper({
               )}
             </>
           ) : (
-            <Pressable onPress={startEditing} hitSlop={8} style={styles.valueDisplay}>
+            <Pressable
+              onPress={startEditing}
+              hitSlop={8}
+              style={styles.valueDisplay}
+              testID={testID ? `${testID}-value` : undefined}>
               <ThemedText style={[styles.valueText, { color: hasValue ? textColor : placeholderColor }]}>
                 {hasValue ? `${value}${suffix ? ` ${suffix}` : ''}` : placeholder}
               </ThemedText>
@@ -170,14 +180,16 @@ export function NumberStepper({
             onPressIn={() => startRepeating(-1)}
             onPressOut={stopRepeating}
             hitSlop={8}
-            style={[styles.circleButton, { backgroundColor: controlBackground, borderColor }]}>
+            style={[styles.circleButton, { backgroundColor: controlBackground, borderColor }]}
+            testID={testID ? `${testID}-minus` : undefined}>
             <IconSymbol name="minus" size={16} color={tint} />
           </Pressable>
           <Pressable
             onPressIn={() => startRepeating(1)}
             onPressOut={stopRepeating}
             hitSlop={8}
-            style={[styles.circleButton, { backgroundColor: controlBackground, borderColor }]}>
+            style={[styles.circleButton, { backgroundColor: controlBackground, borderColor }]}
+            testID={testID ? `${testID}-plus` : undefined}>
             <IconSymbol name="plus" size={16} color={tint} />
           </Pressable>
         </View>

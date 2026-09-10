@@ -22,7 +22,7 @@ import { useThemeColor } from '@/hooks/use-theme-color';
 import type { Gender } from '@/lib/types';
 import { getCurrentWeight, WEIGHT_DEFAULT, WEIGHT_MAX, WEIGHT_MIN } from '@/lib/weight';
 
-type InfoRow = { label: string; value: string; onPress?: () => void };
+type InfoRow = { key: string; label: string; value: string; onPress?: () => void };
 
 // Weight is derived from the latest weight log; every other field here maps
 // directly to a `profiles` column (see migrations).
@@ -77,18 +77,21 @@ export default function ProfileScreen() {
   const genderLabel = GENDER_OPTIONS.find((option) => option.value === profile?.gender)?.label ?? NOT_SET;
 
   const personalInfo: InfoRow[] = [
-    { label: 'Gender', value: genderLabel, onPress: () => setGenderModalOpen(true) },
+    { key: 'gender', label: 'Gender', value: genderLabel, onPress: () => setGenderModalOpen(true) },
     {
+      key: 'age',
       label: 'Age',
       value: profile?.age != null ? String(profile.age) : NOT_SET,
       onPress: () => setAgeModalOpen(true),
     },
     {
+      key: 'weight',
       label: 'Weight',
       value: currentWeight != null ? `${currentWeight} kg` : NOT_SET,
       onPress: () => setWeightModalOpen(true),
     },
     {
+      key: 'height',
       label: 'Height',
       value: profile?.height_cm != null ? `${profile.height_cm} cm` : NOT_SET,
       onPress: () => setHeightModalOpen(true),
@@ -96,6 +99,7 @@ export default function ProfileScreen() {
   ];
   const weightGoal: InfoRow[] = [
     {
+      key: 'target-weight',
       label: 'Target weight',
       value: profile?.target_weight_kg != null ? `${profile.target_weight_kg} kg` : NOT_SET,
       onPress: () => setTargetWeightModalOpen(true),
@@ -171,7 +175,8 @@ export default function ProfileScreen() {
             hitSlop={8}
             accessibilityRole="button"
             accessibilityLabel="Edit profile"
-            style={styles.editAction}>
+            style={styles.editAction}
+            testID="profile-edit-button">
             <IconSymbol name="pencil" size={13} color={tint} />
             <ThemedText style={[styles.editText, { color: tint }]}>Edit profile</ThemedText>
           </Pressable>
@@ -192,6 +197,7 @@ export default function ProfileScreen() {
         onSave={(gender) =>
           updateProfile.mutate({ gender }, { onSuccess: () => setGenderModalOpen(false) })
         }
+        testID="gender-modal"
       />
 
       <WheelPickerModal
@@ -205,6 +211,7 @@ export default function ProfileScreen() {
         onSave={(age) =>
           updateProfile.mutate({ age }, { onSuccess: () => setAgeModalOpen(false) })
         }
+        testID="age-modal"
       />
 
       <WheelPickerModal
@@ -219,6 +226,7 @@ export default function ProfileScreen() {
         onSave={(height_cm) =>
           updateProfile.mutate({ height_cm }, { onSuccess: () => setHeightModalOpen(false) })
         }
+        testID="height-modal"
       />
 
       <RulerPickerModal
@@ -234,6 +242,7 @@ export default function ProfileScreen() {
         onSave={(weightKg) =>
           logWeight.mutate(weightKg, { onSuccess: () => setWeightModalOpen(false) })
         }
+        testID="weight-modal"
       />
 
       <RulerPickerModal
@@ -254,6 +263,7 @@ export default function ProfileScreen() {
             { onSuccess: () => setTargetWeightModalOpen(false) }
           )
         }
+        testID="target-weight-modal"
       />
     </ThemedView>
   );
@@ -280,7 +290,8 @@ function Avatar({
       disabled={uploading}
       accessibilityRole="button"
       accessibilityLabel={uri ? 'Change profile photo' : 'Add profile photo'}
-      style={styles.avatarWrap}>
+      style={styles.avatarWrap}
+      testID="profile-avatar-button">
       {uri ? (
         <Image source={{ uri }} style={styles.avatar} contentFit="cover" />
       ) : (
@@ -325,7 +336,8 @@ function InfoCard({ rows }: { rows: InfoRow[] }) {
           style={[
             styles.row,
             index > 0 && { borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: borderColor },
-          ]}>
+          ]}
+          testID={`profile-row-${row.key}`}>
           <ThemedText>{row.label}</ThemedText>
           <View style={styles.rowValue}>
             <ThemedText style={{ color: secondaryColor }}>{row.value}</ThemedText>
