@@ -2,6 +2,7 @@ import { useCallback, useMemo, useRef } from 'react';
 import { View } from 'react-native';
 import { useReorderableDrag } from 'react-native-reorderable-list';
 
+import type { ContextMenuActionItem } from '@/components/context-menu';
 import { useOpenContextMenu } from '@/components/context-menu';
 
 // Wires up a row's "…" button to open a shared Edit/Delete context menu,
@@ -12,6 +13,7 @@ export function useDragContextMenu({
   onEdit,
   onDelete,
   testIDPrefix,
+  extraActions,
 }: {
   onEdit: () => void;
   onDelete: () => void;
@@ -19,6 +21,10 @@ export function useDragContextMenu({
   // (e.g. `${testIDPrefix}-edit`), since the menu itself is a single shared
   // overlay with no other way to tell which row opened it.
   testIDPrefix?: string;
+  // Extra actions specific to one screen's rows (e.g. the plans list's "Set
+  // as active"), inserted between Edit and Delete. Days/exercises rows omit
+  // this and just get the plain Edit/Delete menu.
+  extraActions?: ContextMenuActionItem[];
 }) {
   const openMenuAt = useOpenContextMenu();
   const menuButtonRef = useRef<View>(null);
@@ -32,6 +38,7 @@ export function useDragContextMenu({
         onPress: onEdit,
         testID: testIDPrefix ? `${testIDPrefix}-edit` : undefined,
       },
+      ...(extraActions ?? []),
       {
         label: 'Delete',
         icon: 'trash' as const,
@@ -40,7 +47,7 @@ export function useDragContextMenu({
         testID: testIDPrefix ? `${testIDPrefix}-delete` : undefined,
       },
     ],
-    [onEdit, onDelete, testIDPrefix]
+    [onEdit, onDelete, testIDPrefix, extraActions]
   );
 
   const handleMenuPress = useCallback(() => {

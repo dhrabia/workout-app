@@ -6,8 +6,15 @@ import { EmptyState } from '@/components/empty-state';
 import { HeaderIconButton } from '@/components/header-icon-button';
 import { ListCard } from '@/components/list-card';
 import { LoadingState } from '@/components/loading-state';
+import { Pill } from '@/components/pill';
 import { ThemedView } from '@/components/themed-view';
-import { useDeletePlan, usePlans, useReorderPlans } from '@/hooks/queries/use-plans';
+import {
+  activatePlanInList,
+  useDeletePlan,
+  usePlans,
+  useReorderPlans,
+  useSetActivePlan,
+} from '@/hooks/queries/use-plans';
 import { useDragContextMenu } from '@/hooks/use-drag-context-menu';
 import { useDragPanGesture } from '@/hooks/use-drag-pan-gesture';
 import { useThemeColor } from '@/hooks/use-theme-color';
@@ -33,6 +40,7 @@ export default function PlansScreen() {
   const plans = plansData ?? [];
   const reorderPlans = useReorderPlans();
   const deletePlan = useDeletePlan();
+  const setActivePlan = useSetActivePlan();
   const tint = useThemeColor({}, 'tint');
   const panGesture = useDragPanGesture();
 
@@ -84,6 +92,7 @@ export default function PlansScreen() {
               }
               onEdit={() => router.push({ pathname: '/plans/form', params: { planId: item.id } })}
               onDelete={() => handleDeletePlan(item.id)}
+              onSetActive={() => setActivePlan.mutate(activatePlanInList(plans, item.id))}
             />
           )}
         />
@@ -98,17 +107,31 @@ function PlanCard({
   onPress,
   onEdit,
   onDelete,
+  onSetActive,
 }: {
   item: Tables<'workout_plans'>;
   backgroundImage: number;
   onPress: () => void;
   onEdit: () => void;
   onDelete: () => void;
+  onSetActive: () => void;
 }) {
   const { menuButtonRef, onLongPress, onMenuPress } = useDragContextMenu({
     onEdit,
     onDelete,
     testIDPrefix: `plan-${item.id}`,
+    // Already-active plans have nothing to activate, so the action is only
+    // offered for the other plans.
+    extraActions: item.is_active
+      ? undefined
+      : [
+          {
+            label: 'Set as active',
+            icon: 'checkmark.circle',
+            onPress: onSetActive,
+            testID: `plan-${item.id}-set-active`,
+          },
+        ],
   });
 
   return (
@@ -117,6 +140,7 @@ function PlanCard({
       titleStyle={styles.title}
       style={styles.card}
       backgroundImage={backgroundImage}
+      badge={item.is_active ? <Pill label="Active" testID={`plan-${item.id}-active-pill`} /> : undefined}
       onPress={onPress}
       onLongPress={onLongPress}
       onMenuPress={onMenuPress}

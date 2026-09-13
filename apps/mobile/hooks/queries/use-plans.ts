@@ -1,4 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { reorderItems } from "react-native-reorderable-list";
 import type { Tables, TablesInsert, TablesUpdate } from "@workout-app/shared";
 
 import { useOptimisticReorder } from "@/hooks/queries/use-optimistic-reorder";
@@ -100,6 +101,30 @@ export function useReorderPlans() {
     const { error } = await supabase.rpc("reorder_plans", {
       p_plan_ids: reordered.map((plan) => plan.id),
     });
+    if (error) throw error;
+  });
+}
+
+// Marks a plan active (deactivating any previously active plan) and moves it
+// to the top of the manual order, matching what the `set_active_plan` RPC
+// does server-side — computed client-side so useSetActivePlan can hand it to
+// useOptimisticReorder like any other reordered list, jumping the card to the
+// top with its Active pill before the round trip finishes.
+export function activatePlanInList(plans: Tables<"workout_plans">[], planId: string) {
+  const fromIndex = plans.findIndex((plan) => plan.id === planId);
+  if (fromIndex === -1) return plans;
+
+  return reorderItems(plans, fromIndex, 0).map((plan) => {
+    if (plan.id === planId) return plan.is_active ? plan : { ...plan, is_active: true };
+    return plan.is_active ? { ...plan, is_active: false } : plan;
+  });
+}
+
+export function useSetActivePlan() {
+  return useOptimisticReorder<Tables<"workout_plans">>(queryKeys.plans.list(), async (reordered) => {
+    const activePlan = reordered.find((plan) => plan.is_active);
+    if (!activePlan) return;
+    const { error } = await supabase.rpc("set_active_plan", { p_plan_id: activePlan.id });
     if (error) throw error;
   });
 }

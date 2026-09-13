@@ -26,6 +26,7 @@ const MAPPING = {
   'person.fill': 'person',
   'chevron.right': 'chevron-right',
   'dumbbell.fill': 'fitness-center',
+  'checkmark.circle': 'check-circle',
   'clock.arrow.circlepath': 'history',
   'square.stack.fill': 'layers',
   'arrow.2.squarepath': 'repeat',

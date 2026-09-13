@@ -13,7 +13,7 @@ import { ThemedText } from '@/components/themed-text';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { useThemeColor } from '@/hooks/use-theme-color';
 
-type ContextMenuActionItem = {
+export type ContextMenuActionItem = {
   label: string;
   icon: ComponentProps<typeof IconSymbol>['name'];
   destructive?: boolean;

@@ -284,6 +284,7 @@ export type Database = {
           created_at: string
           description: string | null
           id: string
+          is_active: boolean
           name: string
           order_index: number
           updated_at: string
@@ -294,6 +295,7 @@ export type Database = {
           created_at?: string
           description?: string | null
           id?: string
+          is_active?: boolean
           name: string
           order_index?: number
           updated_at?: string
@@ -304,6 +306,7 @@ export type Database = {
           created_at?: string
           description?: string | null
           id?: string
+          is_active?: boolean
           name?: string
           order_index?: number
           updated_at?: string
@@ -333,6 +336,7 @@ export type Database = {
         Returns: undefined
       }
       reorder_plans: { Args: { p_plan_ids: string[] }; Returns: undefined }
+      set_active_plan: { Args: { p_plan_id: string }; Returns: undefined }
     }
     Enums: {
       gender: "male" | "female"

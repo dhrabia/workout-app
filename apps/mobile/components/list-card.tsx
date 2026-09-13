@@ -18,6 +18,9 @@ export type ListCardProps = {
   title: string;
   titleStyle?: StyleProp<TextStyle>;
   meta?: ReactNode;
+  // A small status badge (e.g. an "Active" Pill) pinned to the top-left
+  // corner, mirroring the "…" menu button's top-right anchor.
+  badge?: ReactNode;
   onPress: () => void;
   onLongPress?: () => void;
   onMenuPress?: () => void;
@@ -43,6 +46,7 @@ export function ListCard({
   title,
   titleStyle,
   meta,
+  badge,
   onPress,
   onLongPress,
   onMenuPress,
@@ -70,6 +74,11 @@ export function ListCard({
           <LinearGradient colors={['transparent', 'rgba(0,0,0,0.75)']} style={styles.gradient} />
         </>
       )}
+      {badge ? (
+        <View style={styles.badgeAnchor} pointerEvents="none">
+          {badge}
+        </View>
+      ) : null}
       <Pressable
         style={[
           styles.content,
@@ -117,5 +126,6 @@ const styles = StyleSheet.create({
   titleOnImage: { color: '#FFFFFF' },
   separator: { height: StyleSheet.hairlineWidth },
   menuButtonAnchor: { position: 'absolute', top: 6, right: 6 },
+  badgeAnchor: { position: 'absolute', top: 12, left: 12 },
   menuButton: { padding: 6 },
 });
