@@ -1,3 +1,4 @@
+import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { Icon, Label, NativeTabs, VectorIcon } from 'expo-router/unstable-native-tabs';
 
@@ -14,6 +15,10 @@ export default function TabsLayout() {
           sf="figure.strengthtraining.traditional"
           androidSrc={<VectorIcon family={MaterialIcons} name="fitness-center" />}
         />
+      </NativeTabs.Trigger>
+      <NativeTabs.Trigger name="workout">
+        <Label>Workout</Label>
+        <Icon sf="dumbbell.fill" androidSrc={<VectorIcon family={MaterialCommunityIcons} name="dumbbell" />} />
       </NativeTabs.Trigger>
       <NativeTabs.Trigger name="body">
         <Label>Body</Label>
