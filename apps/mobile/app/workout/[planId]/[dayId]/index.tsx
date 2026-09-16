@@ -1,6 +1,8 @@
+import { BlurView } from 'expo-blur';
 import { Image } from 'expo-image';
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { EmptyState } from '@/components/empty-state';
 import { LoadingState } from '@/components/loading-state';
@@ -9,12 +11,18 @@ import { StartWorkoutButton } from '@/components/start-workout-button';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { IconSymbol } from '@/components/ui/icon-symbol';
+import { useColorScheme } from '@/hooks/use-color-scheme';
 import { usePlanDay, usePlanDays } from '@/hooks/queries/use-plan-days';
 import { usePlanExercises } from '@/hooks/queries/use-plan-exercises';
 import { useCompletedExercises, useToggleExerciseCompleted } from '@/hooks/queries/use-workout-session';
 import { useThemeColor } from '@/hooks/use-theme-color';
 import { DAY_CARD_PHOTOS } from '@/lib/day-card-photos';
 import type { PlanExerciseWithExercise } from '@/lib/types';
+
+// Rough height of the fixed footer's own content (button + its top padding),
+// excluding the safe-area inset already added separately — just enough for
+// the scroll content to clear it without leaving a large empty gap.
+const FOOTER_HEIGHT = 90;
 
 // The workout-in-progress screen: reached by tapping "Start workout"/"Start
 // next exercise" anywhere in the Workout tab. Completion is tracked only in
@@ -29,6 +37,8 @@ export default function WorkoutSessionScreen() {
   const { data: daysData } = usePlanDays(planId);
   const dayNumber = (daysData ?? []).findIndex((d) => d.id === dayId) + 1;
   const secondaryColor = useThemeColor({}, 'icon');
+  const insets = useSafeAreaInsets();
+  const colorScheme = useColorScheme();
 
   const { data: exercisesData, isLoading } = usePlanExercises(dayId);
   const exercises = exercisesData ?? [];
@@ -82,7 +92,9 @@ export default function WorkoutSessionScreen() {
               {completedIds.size}/{exercises.length}
             </ThemedText>
           </View>
-          <ScrollView contentContainerStyle={styles.list}>
+          <ScrollView
+            style={styles.scroll}
+            contentContainerStyle={[styles.list, { paddingBottom: FOOTER_HEIGHT + insets.bottom }]}>
             {exercises.map((exercise, index) => (
               <ExerciseSessionRow
                 key={exercise.id}
@@ -93,12 +105,19 @@ export default function WorkoutSessionScreen() {
                 onToggle={() => toggleCompleted(exercise.id)}
               />
             ))}
+          </ScrollView>
+          <View style={[styles.footer, { paddingBottom: insets.bottom + 16 }]}>
+            <BlurView
+              intensity={40}
+              tint={colorScheme === 'dark' ? 'dark' : 'light'}
+              style={StyleSheet.absoluteFill}
+            />
             <StartWorkoutButton
               label="Start next exercise"
               onPress={startNextExercise}
               testID="start-next-exercise-button"
             />
-          </ScrollView>
+          </View>
         </>
       )}
     </ThemedView>
@@ -166,7 +185,17 @@ const styles = StyleSheet.create({
   progressTrack: { flex: 1 },
   progressLabel: { fontSize: 13, fontWeight: '600' },
 
+  scroll: { flex: 1 },
   list: { padding: 16, gap: 14 },
+  footer: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    bottom: 0,
+    paddingHorizontal: 16,
+    paddingTop: 16,
+    overflow: 'hidden',
+  },
   row: {
     flexDirection: 'row',
     alignItems: 'center',
