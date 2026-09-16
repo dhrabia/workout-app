@@ -1,3 +1,4 @@
+import { useQueryClient } from '@tanstack/react-query';
 import { Image } from 'expo-image';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
@@ -18,6 +19,7 @@ import { MINUTES_PER_EXERCISE } from '@/components/workout-day-card';
 import { usePlanDays } from '@/hooks/queries/use-plan-days';
 import { usePlans } from '@/hooks/queries/use-plans';
 import { useWorkoutSessions, WORKOUT_HISTORY_FILTERS, type WorkoutHistoryFilter } from '@/hooks/queries/use-workout-sessions';
+import { confirmStartOverOtherDay, hasSessionProgress, useCompletedExercises } from '@/hooks/queries/use-workout-session';
 import { useThemeColor } from '@/hooks/use-theme-color';
 import { DAY_CARD_PHOTOS, EMPTY_WORKOUT_DAY_PHOTO } from '@/lib/day-card-photos';
 import { planCardBackground } from '@/lib/plan-card-photos';
@@ -103,6 +105,7 @@ function TabSwitcherOption({
 
 function MyPlansTab() {
   const router = useRouter();
+  const queryClient = useQueryClient();
   const { data: plansData, isLoading: plansLoading } = usePlans();
   const plans = plansData ?? [];
   const activePlan = plans.find((plan) => plan.is_active);
@@ -112,6 +115,25 @@ function MyPlansTab() {
   // tab for that) — once a day can be marked complete, this should pick the
   // day after the last completed one instead, wrapping to the first.
   const nextDay = daysData?.[0];
+
+  const { data: completedList } = useCompletedExercises(nextDay?.id ?? '');
+  const started = completedList.length > 0;
+
+  function startWorkout() {
+    if (!activePlan || !nextDay) return;
+    const goToDay = () =>
+      router.push({
+        pathname: '/workout/[planId]/[dayId]',
+        params: { planId: activePlan.id, dayId: nextDay.id },
+      });
+
+    const otherStartedDay = started
+      ? undefined
+      : (daysData ?? []).find((day) => day.id !== nextDay.id && hasSessionProgress(queryClient, day.id));
+
+    if (otherStartedDay) confirmStartOverOtherDay(queryClient, otherStartedDay.id, goToDay);
+    else goToDay();
+  }
 
   return (
     <>
@@ -127,15 +149,7 @@ function MyPlansTab() {
       ) : !nextDay ? (
         <EmptyState title="No days yet" description={`Add a day to "${activePlan.name}" to start training.`} />
       ) : (
-        <NextWorkoutCard
-          day={nextDay}
-          onPress={() =>
-            router.push({
-              pathname: '/workout/[planId]/[dayId]',
-              params: { planId: activePlan.id, dayId: nextDay.id },
-            })
-          }
-        />
+        <NextWorkoutCard day={nextDay} started={started} onPress={startWorkout} />
       )}
 
       <View style={styles.section}>
@@ -315,7 +329,15 @@ function HistoryStat({ icon, label }: { icon: ComponentProps<typeof IconSymbol>[
   );
 }
 
-function NextWorkoutCard({ day, onPress }: { day: PlanDayWithExerciseCount; onPress: () => void }) {
+function NextWorkoutCard({
+  day,
+  started,
+  onPress,
+}: {
+  day: PlanDayWithExerciseCount;
+  started: boolean;
+  onPress: () => void;
+}) {
   const cardBackground = useThemeColor({}, 'cardBackground');
 
   const isEmpty = day.exerciseCount === 0;
@@ -358,7 +380,11 @@ function NextWorkoutCard({ day, onPress }: { day: PlanDayWithExerciseCount; onPr
       </Pressable>
 
       <View style={styles.heroButtonWrapper}>
-        <StartWorkoutButton onPress={onPress} testID="workout-start-button" />
+        <StartWorkoutButton
+          label={started ? 'Continue workout' : 'Start workout'}
+          onPress={onPress}
+          testID="workout-start-button"
+        />
       </View>
     </View>
   );

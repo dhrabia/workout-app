@@ -1,4 +1,5 @@
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQuery, useQueryClient, type QueryClient } from "@tanstack/react-query";
+import { Alert } from "react-native";
 
 import { queryKeys } from "@/lib/query-keys";
 
@@ -56,14 +57,44 @@ export function useToggleExerciseCompleted(dayId: string) {
   };
 }
 
+function clearSessionProgress(queryClient: QueryClient, dayId: string) {
+  queryClient.setQueryData(queryKeys.workoutSession.completedExercises(dayId), []);
+  queryClient.setQueryData(queryKeys.workoutSession.exerciseStats(dayId), {});
+}
+
 // Called once a workout is saved to history — clears this day's session
 // progress so reopening it (to train it again) starts from 0/N instead of
 // showing everything still checked off from last time.
 export function useResetWorkoutSession(dayId: string) {
   const queryClient = useQueryClient();
+  return () => clearSessionProgress(queryClient, dayId);
+}
 
-  return () => {
-    queryClient.setQueryData(queryKeys.workoutSession.completedExercises(dayId), []);
-    queryClient.setQueryData(queryKeys.workoutSession.exerciseStats(dayId), {});
-  };
+// Whether a day has any in-progress (unsaved) session state — used to decide
+// between "Start workout" and "Continue workout", and to detect a different
+// day being abandoned when the user starts a new one instead.
+export function hasSessionProgress(queryClient: QueryClient, dayId: string) {
+  const completed = queryClient.getQueryData<string[]>(queryKeys.workoutSession.completedExercises(dayId));
+  return (completed?.length ?? 0) > 0;
+}
+
+// Starting a different day while one is already in progress would silently
+// strand that progress (it's never saved until "Save workout"), so this
+// warns and lets the caller clear it before navigating to the new day.
+export function confirmStartOverOtherDay(queryClient: QueryClient, otherDayId: string, onConfirm: () => void) {
+  Alert.alert(
+    'Start a different workout?',
+    "Your in-progress workout will be interrupted and its progress won't be saved.",
+    [
+      { text: 'Cancel', style: 'cancel' },
+      {
+        text: 'Start workout',
+        style: 'destructive',
+        onPress: () => {
+          clearSessionProgress(queryClient, otherDayId);
+          onConfirm();
+        },
+      },
+    ]
+  );
 }
