@@ -235,6 +235,15 @@ function ExerciseSession({
       {
         onSuccess: () => {
           resetWorkoutSession();
+          // dismissAll (not dismissTo) — dismissTo only matches a route
+          // that was actually pushed, and the tabs root never was (it's
+          // the initial mount), so it fell back to replacing just the
+          // current screen and left the day/plan screens underneath,
+          // reachable via an edge swipe-back gesture even though "Save"
+          // is meant to close out the whole flow. setParams alone doesn't
+          // reliably target the screen dismissAll lands on, so navigate
+          // there explicitly with the tab param instead.
+          router.dismissAll();
           router.navigate({ pathname: '/(tabs)/workout', params: { tab: 'history' } });
         },
       }
