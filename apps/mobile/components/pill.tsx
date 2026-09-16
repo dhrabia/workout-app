@@ -1,16 +1,19 @@
-import { StyleSheet, View } from 'react-native';
+import { StyleSheet, View, type StyleProp, type ViewStyle } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
 import { useThemeColor } from '@/hooks/use-theme-color';
 
 // A small rounded status badge (e.g. "Active" on a plan card). Uses a dark
 // translucent fill rather than a theme surface color so it stays readable
-// sitting on top of an arbitrary photo, not just flat backgrounds.
-export function Pill({ label, testID }: { label: string; testID?: string }) {
+// sitting on top of an arbitrary photo, not just flat backgrounds. Defaults
+// to `alignSelf: 'flex-start'` for that badge-anchor use (so it hugs its own
+// content instead of stretching); pass `style` to override, e.g. centering
+// it in a screen that otherwise centers its children.
+export function Pill({ label, style, testID }: { label: string; style?: StyleProp<ViewStyle>; testID?: string }) {
   const tint = useThemeColor({}, 'tint');
 
   return (
-    <View style={[styles.pill, { borderColor: tint }]} testID={testID}>
+    <View style={[styles.pill, { borderColor: tint }, style]} testID={testID}>
       <ThemedText style={[styles.label, { color: tint }]}>{label}</ThemedText>
     </View>
   );

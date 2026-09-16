@@ -2,6 +2,7 @@ import { Stack, useRouter } from 'expo-router';
 import { useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 
+import { ProgressBar } from '@/components/progress-bar';
 import { RulerPickerModal } from '@/components/ruler-picker-modal';
 import { SectionLabel } from '@/components/section-label';
 import { ThemedText } from '@/components/themed-text';
@@ -141,7 +142,6 @@ function WeightHero({
 }) {
   const secondary = useThemeColor({}, 'icon');
   const tint = useThemeColor({}, 'tint');
-  const track = useThemeColor({}, 'cardElevated');
 
   if (currentWeight == null) {
     return (
@@ -172,14 +172,7 @@ function WeightHero({
           <ThemedText style={[styles.heroTarget, { color: secondary }]}>
             Target: {formatWeight(targetWeight)} kg
           </ThemedText>
-          {progress != null && (
-            <View
-              style={[styles.progressTrack, { backgroundColor: track }]}
-              accessibilityRole="progressbar"
-              accessibilityValue={{ min: 0, max: 100, now: Math.round(progress * 100) }}>
-              <View style={[styles.progressFill, { backgroundColor: tint, width: `${progress * 100}%` }]} />
-            </View>
-          )}
+          {progress != null && <ProgressBar progress={progress} style={styles.progressTrack} />}
           <ThemedText style={[styles.heroRemaining, { color: secondary }]}>
             {reached ? 'Goal reached' : `${formatWeight(remaining ?? 0)} kg to go`}
           </ThemedText>
@@ -340,14 +333,7 @@ const styles = StyleSheet.create({
   heroHint: { fontSize: 15, textAlign: 'center', marginTop: 4 },
   heroAction: { flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 12, padding: 4 },
   heroActionText: { fontSize: 15, fontWeight: '600' },
-  progressTrack: {
-    width: '100%',
-    height: 6,
-    borderRadius: 3,
-    marginTop: 12,
-    overflow: 'hidden',
-  },
-  progressFill: { height: '100%', borderRadius: 3 },
+  progressTrack: { width: '100%', marginTop: 12 },
 
   bmiCard: { padding: 16, alignItems: 'center', gap: 2 },
   bmiValue: { fontSize: 28, lineHeight: 34, fontWeight: '700' },

@@ -11,7 +11,9 @@ import type { PlanDayWithExerciseCount } from '@/lib/types';
 
 // A day with no exercises yet has no muscle group to pick a photo from, so
 // falls back to a dedicated "not configured yet" shot instead of a random one.
-const MINUTES_PER_EXERCISE = 10;
+// Exported so other screens estimating the same day's duration (e.g. the
+// Workout tab's next-workout card) use the same rough formula.
+export const MINUTES_PER_EXERCISE = 10;
 
 export function WorkoutDayCard({
   dayNumber,
@@ -20,6 +22,12 @@ export function WorkoutDayCard({
   onLongPress,
   onMenuPress,
   menuButtonRef,
+  // Highlights the card with a tinted border — used by the Workout tab's
+  // day-picker screen to show which day "Start workout" will open.
+  selected,
+  // The day-picker screen doesn't navigate anywhere on tap (it selects
+  // instead), so it hides this otherwise-implied "tap to view" affordance.
+  showChevron = true,
   testID,
   menuTestID,
 }: {
@@ -29,6 +37,8 @@ export function WorkoutDayCard({
   onLongPress?: () => void;
   onMenuPress?: () => void;
   menuButtonRef?: Ref<View>;
+  selected?: boolean;
+  showChevron?: boolean;
   testID?: string;
   menuTestID?: string;
 }) {
@@ -45,7 +55,12 @@ export function WorkoutDayCard({
   const durationMinutes = workoutDay.exerciseCount * MINUTES_PER_EXERCISE;
 
   return (
-    <View style={[styles.card, { backgroundColor: cardBackground, borderColor }]}>
+    <View
+      style={[
+        styles.card,
+        { backgroundColor: cardBackground, borderColor },
+        selected && { borderColor: tint, borderWidth: 2 },
+      ]}>
       <Pressable onPress={onPress} onLongPress={onLongPress} testID={testID}>
         <View style={styles.header}>
           <Image source={photo} style={StyleSheet.absoluteFillObject} contentFit="cover" />
@@ -99,7 +114,7 @@ export function WorkoutDayCard({
             </ThemedText>
           </View>
           <View style={styles.statSpacer} />
-          <IconSymbol name="chevron.right" size={16} color={secondaryColor} />
+          {showChevron ? <IconSymbol name="chevron.right" size={16} color={secondaryColor} /> : null}
         </View>
       </Pressable>
 

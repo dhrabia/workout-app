@@ -30,4 +30,10 @@ export const queryKeys = {
     all: ["bodyMeasurementLogs"] as const,
     list: (userId: string) => [...queryKeys.bodyMeasurementLogs.all, "list", userId] as const,
   },
+  workoutSession: {
+    all: ["workoutSession"] as const,
+    completedExercises: (dayId: string) =>
+      [...queryKeys.workoutSession.all, "completedExercises", dayId] as const,
+    exerciseStats: (dayId: string) => [...queryKeys.workoutSession.all, "exerciseStats", dayId] as const,
+  },
 };
