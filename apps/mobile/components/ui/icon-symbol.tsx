@@ -38,6 +38,11 @@ const MAPPING = {
   'arrow.2.squarepath': 'repeat',
   'doc.text.fill': 'notes',
   'list.bullet': 'subject',
+  'calendar': 'calendar-today',
+  'chevron.down': 'expand-more',
+  'slider.horizontal.3': 'tune',
+  'flame.fill': 'local-fire-department',
+  'scalemass.fill': 'monitor-weight',
 } as IconMapping;
 
 /**

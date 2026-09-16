@@ -322,6 +322,73 @@ export type Database = {
           },
         ]
       }
+      workout_sessions: {
+        Row: {
+          calories_estimate: number
+          completed_at: string
+          day_name: string
+          duration_minutes: number
+          exercise_count: number
+          id: string
+          plan_day_id: string | null
+          plan_id: string | null
+          plan_name: string
+          total_sets: number
+          total_volume_kg: number
+          user_id: string
+        }
+        Insert: {
+          calories_estimate: number
+          completed_at?: string
+          day_name: string
+          duration_minutes: number
+          exercise_count: number
+          id?: string
+          plan_day_id?: string | null
+          plan_id?: string | null
+          plan_name: string
+          total_sets: number
+          total_volume_kg: number
+          user_id?: string
+        }
+        Update: {
+          calories_estimate?: number
+          completed_at?: string
+          day_name?: string
+          duration_minutes?: number
+          exercise_count?: number
+          id?: string
+          plan_day_id?: string | null
+          plan_id?: string | null
+          plan_name?: string
+          total_sets?: number
+          total_volume_kg?: number
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "workout_sessions_plan_day_id_fkey"
+            columns: ["plan_day_id"]
+            isOneToOne: false
+            referencedRelation: "workout_plan_days"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "workout_sessions_plan_id_fkey"
+            columns: ["plan_id"]
+            isOneToOne: false
+            referencedRelation: "workout_plans"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "workout_sessions_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never

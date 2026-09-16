@@ -55,3 +55,15 @@ export function useToggleExerciseCompleted(dayId: string) {
     );
   };
 }
+
+// Called once a workout is saved to history — clears this day's session
+// progress so reopening it (to train it again) starts from 0/N instead of
+// showing everything still checked off from last time.
+export function useResetWorkoutSession(dayId: string) {
+  const queryClient = useQueryClient();
+
+  return () => {
+    queryClient.setQueryData(queryKeys.workoutSession.completedExercises(dayId), []);
+    queryClient.setQueryData(queryKeys.workoutSession.exerciseStats(dayId), {});
+  };
+}

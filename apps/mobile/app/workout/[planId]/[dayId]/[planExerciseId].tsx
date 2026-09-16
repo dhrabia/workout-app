@@ -14,14 +14,20 @@ import { IconSymbol } from '@/components/ui/icon-symbol';
 import { MINUTES_PER_EXERCISE } from '@/components/workout-day-card';
 import { usePlanDay } from '@/hooks/queries/use-plan-days';
 import { usePlanExercise, usePlanExercises } from '@/hooks/queries/use-plan-exercises';
+import { usePlan } from '@/hooks/queries/use-plans';
+import { useWeightLogs } from '@/hooks/queries/use-weight-logs';
 import {
   useCompletedExercises,
   useExerciseSessionStats,
   useMarkExerciseCompleted,
+  useResetWorkoutSession,
   type ExerciseSessionStats,
 } from '@/hooks/queries/use-workout-session';
+import { useSaveWorkoutSession } from '@/hooks/queries/use-workout-sessions';
 import { useThemeColor } from '@/hooks/use-theme-color';
+import { estimateCaloriesBurned } from '@/lib/calories';
 import type { PlanExerciseWithExercise } from '@/lib/types';
+import { getCurrentWeight, WEIGHT_DEFAULT } from '@/lib/weight';
 
 // How long the rest countdown runs after logging a set. Nothing in the data
 // model configures this per-exercise yet, so every rest uses the same
@@ -82,6 +88,7 @@ function ExerciseSession({
   planExercise: NonNullable<ReturnType<typeof usePlanExercise>['data']>;
 }) {
   const router = useRouter();
+  const { data: plan } = usePlan(planId);
   const { data: day } = usePlanDay(dayId);
   const { data: dayExercisesData } = usePlanExercises(dayId);
   const dayExercises = dayExercisesData ?? [];
@@ -90,6 +97,9 @@ function ExerciseSession({
   const markCompleted = useMarkExerciseCompleted(dayId);
   const { data: completedIds } = useCompletedExercises(dayId);
   const { data: exerciseStats } = useExerciseSessionStats(dayId);
+  const { data: weightLogs } = useWeightLogs();
+  const saveWorkoutSession = useSaveWorkoutSession();
+  const resetWorkoutSession = useResetWorkoutSession(dayId);
 
   const total = planExercise.target_sets;
   const [sets, setSets] = useState<SetEntry[]>(() =>
@@ -200,6 +210,36 @@ function ExerciseSession({
   const totalLoggedWeight = sets.reduce((sum, set) => sum + set.weight, 0);
   const totalSets = Object.values(exerciseStats).reduce((sum, s) => sum + s.totalSets, 0);
   const totalVolumeKg = Object.values(exerciseStats).reduce((sum, s) => sum + s.volumeKg, 0);
+  const workoutDurationMinutes = dayExercises.length * MINUTES_PER_EXERCISE;
+
+  // Persists the completed workout to history, then clears this day's
+  // session progress (see useResetWorkoutSession) so training it again
+  // later starts from 0/N instead of showing everything still checked off.
+  function saveWorkout() {
+    if (saveWorkoutSession.isPending) return;
+    saveWorkoutSession.mutate(
+      {
+        plan_id: planId,
+        plan_day_id: dayId,
+        plan_name: plan?.name ?? 'Workout',
+        day_name: day?.name ?? 'Workout',
+        exercise_count: dayExercises.length,
+        duration_minutes: workoutDurationMinutes,
+        total_sets: totalSets,
+        total_volume_kg: totalVolumeKg,
+        calories_estimate: estimateCaloriesBurned(
+          workoutDurationMinutes,
+          getCurrentWeight(weightLogs) ?? WEIGHT_DEFAULT
+        ),
+      },
+      {
+        onSuccess: () => {
+          resetWorkoutSession();
+          router.navigate({ pathname: '/(tabs)/workout', params: { tab: 'history' } });
+        },
+      }
+    );
+  }
 
   return (
     <ThemedView style={styles.container}>
@@ -232,10 +272,10 @@ function ExerciseSession({
         <WorkoutCompleteView
           dayName={day?.name ?? 'Workout'}
           exerciseCount={dayExercises.length}
-          durationMinutes={dayExercises.length * MINUTES_PER_EXERCISE}
+          durationMinutes={workoutDurationMinutes}
           totalSets={totalSets}
           totalVolumeKg={totalVolumeKg}
-          onSave={() => router.navigate('/(tabs)/workout')}
+          onSave={saveWorkout}
         />
       ) : phase === 'completed' ? (
         <ExerciseCompletedView

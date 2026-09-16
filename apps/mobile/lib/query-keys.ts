@@ -36,4 +36,8 @@ export const queryKeys = {
       [...queryKeys.workoutSession.all, "completedExercises", dayId] as const,
     exerciseStats: (dayId: string) => [...queryKeys.workoutSession.all, "exerciseStats", dayId] as const,
   },
+  workoutSessions: {
+    all: ["workoutSessions"] as const,
+    list: () => [...queryKeys.workoutSessions.all, "list"] as const,
+  },
 };
