@@ -1,6 +1,5 @@
 import { Image } from 'expo-image';
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
-import { useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 
 import { EmptyState } from '@/components/empty-state';
@@ -37,8 +36,6 @@ export default function WorkoutSessionScreen() {
   const { data: completedList } = useCompletedExercises(dayId);
   const completedIds = new Set(completedList);
   const toggleCompleted = useToggleExerciseCompleted(dayId);
-  const [activeId, setActiveId] = useState<string>();
-  const effectiveActiveId = activeId ?? exercises[0]?.id;
 
   function openExercise(planExerciseId: string) {
     router.push({ pathname: '/workout/[planId]/[dayId]/[planExerciseId]', params: { planId, dayId, planExerciseId } });
@@ -47,7 +44,6 @@ export default function WorkoutSessionScreen() {
   function startNextExercise() {
     const next = exercises.find((exercise) => !completedIds.has(exercise.id));
     if (!next) return;
-    setActiveId(next.id);
     openExercise(next.id);
   }
 
@@ -92,7 +88,6 @@ export default function WorkoutSessionScreen() {
                 key={exercise.id}
                 index={index}
                 item={exercise}
-                active={exercise.id === effectiveActiveId}
                 completed={completedIds.has(exercise.id)}
                 onOpen={() => openExercise(exercise.id)}
                 onToggle={() => toggleCompleted(exercise.id)}
@@ -113,14 +108,12 @@ export default function WorkoutSessionScreen() {
 function ExerciseSessionRow({
   index,
   item,
-  active,
   completed,
   onOpen,
   onToggle,
 }: {
   index: number;
   item: PlanExerciseWithExercise;
-  active: boolean;
   completed: boolean;
   onOpen: () => void;
   onToggle: () => void;
@@ -135,11 +128,7 @@ function ExerciseSessionRow({
   return (
     <Pressable
       onPress={onOpen}
-      style={[
-        styles.row,
-        { backgroundColor: cardBackground, borderColor },
-        active && { borderColor: tint, borderWidth: 2 },
-      ]}
+      style={[styles.row, { backgroundColor: cardBackground, borderColor }]}
       testID={`session-exercise-row-${item.id}`}>
       <View style={[styles.numberCircle, { borderColor: tint }]}>
         <ThemedText style={[styles.numberText, { color: tint }]}>{index + 1}</ThemedText>
