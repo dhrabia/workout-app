@@ -51,10 +51,17 @@ export default function WorkoutSessionScreen() {
     router.push({ pathname: '/workout/[planId]/[dayId]/[planExerciseId]', params: { planId, dayId, planExerciseId } });
   }
 
+  const allCompleted = exercises.length > 0 && completedIds.size === exercises.length;
+
   function startNextExercise() {
     const next = exercises.find((exercise) => !completedIds.has(exercise.id));
-    if (!next) return;
-    openExercise(next.id);
+    // Nothing left to start — every exercise is already checked off (perhaps
+    // by hand, via each row's own toggle, rather than actually logging
+    // sets), so jump into the last one straight at its "Workout complete!"
+    // summary instead of silently doing nothing.
+    const target = next ?? exercises.at(-1);
+    if (!target) return;
+    openExercise(target.id);
   }
 
   return (
@@ -102,22 +109,20 @@ export default function WorkoutSessionScreen() {
                 item={exercise}
                 completed={completedIds.has(exercise.id)}
                 onOpen={() => openExercise(exercise.id)}
-                onToggle={() => toggleCompleted(exercise.id)}
+                onToggle={() => toggleCompleted(exercise)}
               />
             ))}
           </ScrollView>
-          <View style={[styles.footer, { paddingBottom: insets.bottom + 16 }]}>
-            <BlurView
-              intensity={40}
-              tint={colorScheme === 'dark' ? 'dark' : 'light'}
-              style={StyleSheet.absoluteFill}
-            />
+          <BlurView
+            intensity={40}
+            tint={colorScheme === 'dark' ? 'dark' : 'light'}
+            style={[styles.footer, { paddingBottom: insets.bottom + 16 }]}>
             <StartWorkoutButton
-              label="Start next exercise"
+              label={allCompleted ? 'Finish workout' : 'Start next exercise'}
               onPress={startNextExercise}
               testID="start-next-exercise-button"
             />
-          </View>
+          </BlurView>
         </>
       )}
     </ThemedView>

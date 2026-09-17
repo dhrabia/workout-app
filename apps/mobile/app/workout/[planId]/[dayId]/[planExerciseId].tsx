@@ -26,6 +26,7 @@ import {
 import { useSaveWorkoutSession } from '@/hooks/queries/use-workout-sessions';
 import { useThemeColor } from '@/hooks/use-theme-color';
 import { estimateCaloriesBurned } from '@/lib/calories';
+import { parseTargetReps } from '@/lib/plan-exercise';
 import type { PlanExerciseWithExercise } from '@/lib/types';
 import { getCurrentWeight, WEIGHT_DEFAULT } from '@/lib/weight';
 
@@ -43,14 +44,6 @@ type Phase = 'active' | 'rest' | 'completed' | 'workoutComplete';
 // back into this same exercise's next set, or straight on to the next
 // exercise — set whenever something enters the 'rest' phase.
 type RestNextAction = 'nextSet' | 'nextExercise';
-
-// Guesses a sensible starting rep count from a target like "8-10" or "12" —
-// the upper end of a range, since that's what the set is nominally working
-// toward.
-function initialReps(targetReps: string) {
-  const numbers = targetReps.match(/\d+/g);
-  return numbers ? Number(numbers[numbers.length - 1]) : 0;
-}
 
 function formatExerciseMeta(planExercise: PlanExerciseWithExercise) {
   const parts = [`${planExercise.target_sets} sets × ${planExercise.target_reps} reps`];
@@ -104,13 +97,19 @@ function ExerciseSession({
   const total = planExercise.target_sets;
   const [sets, setSets] = useState<SetEntry[]>(() =>
     Array.from({ length: total }, () => ({
-      reps: initialReps(planExercise.target_reps),
+      reps: parseTargetReps(planExercise.target_reps),
       weight: planExercise.target_weight_kg ?? 0,
       completed: false,
     }))
   );
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [phase, setPhase] = useState<Phase>('active');
+  // Every exercise can already be checked off by hand (each row's own toggle
+  // on the day list, independent of actually logging sets) before this
+  // screen is ever opened — e.g. tapping "Finish workout" once nothing is
+  // left to start. Land straight on the summary instead of the first set.
+  const allExercisesCompleted =
+    dayExercises.length > 0 && dayExercises.every((exercise) => completedIds.includes(exercise.id));
+  const [phase, setPhase] = useState<Phase>(allExercisesCompleted ? 'workoutComplete' : 'active');
   const [restNextAction, setRestNextAction] = useState<RestNextAction>('nextSet');
   const [restRemaining, setRestRemaining] = useState(REST_SECONDS);
   const [restPaused, setRestPaused] = useState(false);

@@ -1,7 +1,11 @@
 import { useQuery, useQueryClient, type QueryClient } from "@tanstack/react-query";
 import { Alert } from "react-native";
 
+import { estimatePlanExerciseStats, type ExerciseSessionStats } from "@/lib/plan-exercise";
 import { queryKeys } from "@/lib/query-keys";
+import type { PlanExerciseWithExercise } from "@/lib/types";
+
+export type { ExerciseSessionStats };
 
 // Which exercises of a day have been fully logged this session. There's no
 // workout-history table yet (see the active-plan migration and the Workout
@@ -18,11 +22,6 @@ export function useCompletedExercises(dayId: string) {
     staleTime: Infinity,
   });
 }
-
-// A completed exercise's own totals (its `sets` state disappears once its
-// screen unmounts), kept just long enough for the day's "Workout complete"
-// summary to add them up across every exercise.
-export type ExerciseSessionStats = { totalSets: number; volumeKg: number };
 
 export function useExerciseSessionStats(dayId: string) {
   return useQuery({
@@ -47,12 +46,33 @@ export function useMarkExerciseCompleted(dayId: string) {
   };
 }
 
+// Checking a box here (rather than actually logging its sets) still needs to
+// feed the day's "Workout complete" totals, or finishing a day this way
+// would always summarize as 0 sets / 0 kg — so this also fills in an
+// estimate from the exercise's own targets, alongside the completion flag.
 export function useToggleExerciseCompleted(dayId: string) {
   const queryClient = useQueryClient();
 
-  return (planExerciseId: string) => {
+  return (planExercise: PlanExerciseWithExercise) => {
+    const planExerciseId = planExercise.id;
+    const completed = queryClient.getQueryData<string[]>(queryKeys.workoutSession.completedExercises(dayId)) ?? [];
+    const wasCompleted = completed.includes(planExerciseId);
+
     queryClient.setQueryData<string[]>(queryKeys.workoutSession.completedExercises(dayId), (prev = []) =>
-      prev.includes(planExerciseId) ? prev.filter((id) => id !== planExerciseId) : [...prev, planExerciseId]
+      wasCompleted ? prev.filter((id) => id !== planExerciseId) : [...prev, planExerciseId]
+    );
+    queryClient.setQueryData<Record<string, ExerciseSessionStats>>(
+      queryKeys.workoutSession.exerciseStats(dayId),
+      (prev = {}) => {
+        if (wasCompleted) {
+          const { [planExerciseId]: _removed, ...rest } = prev;
+          return rest;
+        }
+        // Already has real logged stats (checked, unchecked, then rechecked
+        // without ever reopening the exercise) — keep those over a guess.
+        if (prev[planExerciseId]) return prev;
+        return { ...prev, [planExerciseId]: estimatePlanExerciseStats(planExercise) };
+      }
     );
   };
 }
