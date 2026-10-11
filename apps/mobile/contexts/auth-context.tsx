@@ -5,10 +5,13 @@ import { supabase } from "@/lib/supabase";
 
 type AuthContextValue = {
   userId: string | null;
+  // False for the anonymous session the app bootstraps with; true once the
+  // user has created (or signed in to) a real account.
+  hasAccount: boolean;
   isLoading: boolean;
 };
 
-const AuthContext = createContext<AuthContextValue>({ userId: null, isLoading: true });
+const AuthContext = createContext<AuthContextValue>({ userId: null, hasAccount: false, isLoading: true });
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
@@ -42,7 +45,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   return (
-    <AuthContext.Provider value={{ userId: session?.user.id ?? null, isLoading }}>
+    <AuthContext.Provider
+      value={{
+        userId: session?.user.id ?? null,
+        hasAccount: !!session && !session.user.is_anonymous,
+        isLoading,
+      }}>
       {children}
     </AuthContext.Provider>
   );

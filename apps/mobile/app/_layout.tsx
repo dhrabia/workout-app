@@ -37,14 +37,7 @@ export default function RootLayout() {
           <AuthProvider>
             <ContextMenuHostProvider>
               <AuthGate>
-                <Stack>
-                  {/* title backs the header of whatever gets pushed on top (e.g. plan
-                      detail) even though this screen's own header is hidden. */}
-                  <Stack.Screen name="(tabs)" options={{ headerShown: false, title: 'Plans' }} />
-                  {MODAL_ROUTES.map((name) => (
-                    <Stack.Screen key={name} name={name} options={{ presentation: 'modal' }} />
-                  ))}
-                </Stack>
+                <RootNavigator />
               </AuthGate>
             </ContextMenuHostProvider>
           </AuthProvider>
@@ -52,6 +45,43 @@ export default function RootLayout() {
         </ThemeProvider>
       </QueryClientProvider>
     </GestureHandlerRootView>
+  );
+}
+
+// Routes not declared inside a Stack.Protected group stay open, so every app
+// route has to be listed here to be unreachable (e.g. by deep link) before an
+// account exists. Keep in sync when adding routes.
+const APP_ROUTES = [
+  'plans/[planId]/index',
+  'plans/[planId]/days/[dayId]/index',
+  'workout/[planId]/index',
+  'workout/[planId]/[dayId]/index',
+  'workout/[planId]/[dayId]/[planExerciseId]',
+  'body/weight-history',
+  'body/measurement-history',
+] as const;
+
+function RootNavigator() {
+  const { hasAccount } = useAuth();
+
+  return (
+    <Stack>
+      <Stack.Protected guard={hasAccount}>
+        <Stack.Screen name="index" options={{ headerShown: false }} />
+        {/* title backs the header of whatever gets pushed on top (e.g. plan
+            detail) even though this screen's own header is hidden. */}
+        <Stack.Screen name="(tabs)" options={{ headerShown: false, title: 'Plans' }} />
+        {MODAL_ROUTES.map((name) => (
+          <Stack.Screen key={name} name={name} options={{ presentation: 'modal' }} />
+        ))}
+        {APP_ROUTES.map((name) => (
+          <Stack.Screen key={name} name={name} />
+        ))}
+      </Stack.Protected>
+      <Stack.Protected guard={!hasAccount}>
+        <Stack.Screen name="onboarding" options={{ headerShown: false }} />
+      </Stack.Protected>
+    </Stack>
   );
 }
 

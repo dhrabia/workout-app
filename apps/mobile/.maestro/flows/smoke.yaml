@@ -1,25 +1,15 @@
 appId: ${APP_ID}
-name: Smoke - app launches and every tab loads
+name: Smoke - first launch shows the onboarding Welcome screen
 tags:
   - smoke
 ---
 - launchApp:
     clearState: true
 
-# First launch signs in anonymously, so a fresh user lands on an empty Plans tab.
+# First launch signs in anonymously and, with no account yet, lands on onboarding.
 - extendedWaitUntil:
-    visible: "No plans yet"
+    visible: "Your training."
     timeout: 30000
-
-- tapOn: "Workout"
-- assertVisible: "No active plan"
-
-- tapOn: "Body"
+- assertVisible: "Your progress."
 - assertVisible:
-    id: "body-log-weight-button"
-
-- tapOn: "Profile"
-- assertVisible: "Personal information"
-
-- tapOn: "Plans"
-- assertVisible: "No plans yet"
+    id: "welcome-get-started-button"

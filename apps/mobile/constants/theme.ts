@@ -51,6 +51,25 @@ export const Colors = {
   },
 };
 
+// The onboarding flow is always dark (it sits on full-bleed photography), so
+// it has its own fixed palette rather than following the system color scheme.
+// The teals and blue-greys are sampled from the design mockup, not derived
+// from the brand tokens above.
+export const OnboardingColors = {
+  background: '#02090B',
+  text: Colors.dark.text,
+  textMuted: '#8FA0C4',
+  accent: '#12D3CD',
+  primaryButton: '#00C2BE',
+  primaryButtonText: '#02090B',
+  secondaryButton: '#060F13',
+  secondaryButtonBorder: '#27384A',
+  secondaryButtonText: '#9FB0D0',
+  progressActive: '#00D8D6',
+  progressInactive: '#12222A',
+  progressLabel: '#6B7BA3',
+};
+
 // React Navigation's native-stack header reads its background/tint/text
 // colors from this theme (colors.card/primary/text), not from our own
 // Colors above, so without this the native header renders React
