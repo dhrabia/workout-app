@@ -5,6 +5,7 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { GoogleLogo } from '@/components/onboarding/google-logo';
+import { OnboardingBackButton } from '@/components/onboarding/onboarding-back-button';
 import { OnboardingPhoto } from '@/components/onboarding/onboarding-photo';
 import { OnboardingProviderButton } from '@/components/onboarding/onboarding-provider-button';
 import { OnboardingColors } from '@/constants/theme';
@@ -22,15 +23,7 @@ export default function CreateAccountScreen() {
         fadeStart={0.5}
       />
 
-      <Pressable
-        onPress={() => router.back()}
-        hitSlop={12}
-        accessibilityRole="button"
-        accessibilityLabel="Back"
-        testID="create-account-back-button"
-        style={[styles.back, { top: insets.top + 8 }]}>
-        <Ionicons name="chevron-back" size={28} color={OnboardingColors.text} />
-      </Pressable>
+      <OnboardingBackButton testID="create-account-back-button" style={[styles.back, { top: insets.top + 8 }]} />
 
       <View style={[styles.content, { paddingBottom: insets.bottom + 24 }]}>
         <View style={styles.copy}>
@@ -59,7 +52,7 @@ export default function CreateAccountScreen() {
           <OnboardingProviderButton
             label="Continue with email"
             icon={<Ionicons name="mail-outline" size={24} color={OnboardingColors.text} />}
-            onPress={() => {}}
+            onPress={() => router.push('/onboarding/email-sign-up')}
             testID="create-account-email-button"
           />
         </View>

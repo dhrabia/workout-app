@@ -71,6 +71,7 @@ export const OnboardingColors = {
   lightButton: '#FFFFFF',
   lightButtonText: '#0A0F12',
   divider: '#2D3B46',
+  error: Colors.dark.error,
 };
 
 // React Navigation's native-stack header reads its background/tint/text

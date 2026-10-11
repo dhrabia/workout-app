@@ -136,6 +136,7 @@ export type Database = {
           goal_start_weight_kg: number | null
           height_cm: number | null
           id: string
+          onboarding_completed: boolean
           target_weight_kg: number | null
           username: string | null
         }
@@ -147,6 +148,7 @@ export type Database = {
           goal_start_weight_kg?: number | null
           height_cm?: number | null
           id: string
+          onboarding_completed?: boolean
           target_weight_kg?: number | null
           username?: string | null
         }
@@ -158,6 +160,7 @@ export type Database = {
           goal_start_weight_kg?: number | null
           height_cm?: number | null
           id?: string
+          onboarding_completed?: boolean
           target_weight_kg?: number | null
           username?: string | null
         }
