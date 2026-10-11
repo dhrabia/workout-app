@@ -6,6 +6,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { GoogleLogo } from '@/components/onboarding/google-logo';
 import { OnboardingBackButton } from '@/components/onboarding/onboarding-back-button';
+import { OnboardingDivider } from '@/components/onboarding/onboarding-divider';
 import { OnboardingPhoto } from '@/components/onboarding/onboarding-photo';
 import { OnboardingProviderButton } from '@/components/onboarding/onboarding-provider-button';
 import { OnboardingColors } from '@/constants/theme';
@@ -57,15 +58,15 @@ export default function CreateAccountScreen() {
           />
         </View>
 
-        <View style={styles.divider}>
-          <View style={styles.line} />
-          <Text style={styles.dividerLabel}>or</Text>
-          <View style={styles.line} />
-        </View>
+        <OnboardingDivider label="or" style={styles.divider} />
 
         <View style={styles.login}>
           <Text style={styles.loginPrompt}>Already have an account?</Text>
-          <Pressable onPress={() => {}} hitSlop={8} accessibilityRole="button" testID="create-account-login-button">
+          <Pressable
+            onPress={() => router.push('/onboarding/log-in')}
+            hitSlop={8}
+            accessibilityRole="button"
+            testID="create-account-login-button">
             <Text style={styles.loginLink}>Log in</Text>
           </Pressable>
         </View>
@@ -83,9 +84,7 @@ const styles = StyleSheet.create({
   headlineAccent: { color: OnboardingColors.accent },
   subtitle: { marginTop: 12, fontSize: 16, lineHeight: 23, color: OnboardingColors.textMuted },
   providers: { gap: 13 },
-  divider: { flexDirection: 'row', alignItems: 'center', gap: 16, marginTop: 28 },
-  line: { flex: 1, height: StyleSheet.hairlineWidth, backgroundColor: OnboardingColors.divider },
-  dividerLabel: { fontSize: 14, color: OnboardingColors.textFaint },
+  divider: { marginTop: 28 },
   login: { flexDirection: 'row', justifyContent: 'center', gap: 6, marginTop: 24 },
   loginPrompt: { fontSize: 16, color: OnboardingColors.textMuted },
   loginLink: { fontSize: 16, fontWeight: '600', color: OnboardingColors.accent },
