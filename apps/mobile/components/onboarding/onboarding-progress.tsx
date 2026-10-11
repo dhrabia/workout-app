@@ -29,5 +29,5 @@ const styles = StyleSheet.create({
   row: { flexDirection: 'row', alignItems: 'center', gap: 10 },
   segments: { flexDirection: 'row', gap: 4 },
   segment: { width: 28, height: 6, borderRadius: 3 },
-  label: { fontSize: 13, color: OnboardingColors.progressLabel },
+  label: { fontSize: 13, color: OnboardingColors.textFaint },
 });

@@ -67,7 +67,10 @@ export const OnboardingColors = {
   secondaryButtonText: '#9FB0D0',
   progressActive: '#00D8D6',
   progressInactive: '#12222A',
-  progressLabel: '#6B7BA3',
+  textFaint: '#6B7BA3',
+  lightButton: '#FFFFFF',
+  lightButtonText: '#0A0F12',
+  divider: '#2D3B46',
 };
 
 // React Navigation's native-stack header reads its background/tint/text

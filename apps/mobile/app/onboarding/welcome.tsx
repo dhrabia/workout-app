@@ -1,29 +1,24 @@
-import { Image } from 'expo-image';
-import { LinearGradient } from 'expo-linear-gradient';
+import { useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { OnboardingButton } from '@/components/onboarding/onboarding-button';
+import { OnboardingPhoto } from '@/components/onboarding/onboarding-photo';
 import { OnboardingColors } from '@/constants/theme';
 
-const BACKGROUND_FADE: [string, string] = [`${OnboardingColors.background}00`, OnboardingColors.background];
-
 export default function WelcomeScreen() {
+  const router = useRouter();
   const insets = useSafeAreaInsets();
 
   return (
     <View style={styles.container}>
       <StatusBar style="light" />
-      <View style={styles.photo} pointerEvents="none">
-        <Image
-          source={require('@/assets/images/onboarding/welcome-bg.webp')}
-          style={StyleSheet.absoluteFill}
-          contentFit="cover"
-          contentPosition="bottom"
-        />
-        <LinearGradient colors={BACKGROUND_FADE} locations={[0.6, 1]} style={StyleSheet.absoluteFill} />
-      </View>
+      <OnboardingPhoto
+        source={require('@/assets/images/onboarding/welcome-bg.webp')}
+        height="80%"
+        contentPosition="bottom"
+      />
 
       <View style={[styles.content, { paddingBottom: insets.bottom + 16 }]}>
         <View style={styles.copy}>
@@ -34,7 +29,12 @@ export default function WelcomeScreen() {
           </Text>
         </View>
 
-        <OnboardingButton label="Get started" icon="play.fill" onPress={() => {}} testID="welcome-get-started-button" />
+        <OnboardingButton
+          label="Get started"
+          icon="play.fill"
+          onPress={() => router.push('/onboarding/create-account')}
+          testID="welcome-get-started-button"
+        />
       </View>
     </View>
   );
@@ -42,7 +42,6 @@ export default function WelcomeScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
-  photo: { position: 'absolute', top: 0, left: 0, right: 0, height: '80%' },
   content: { flex: 1, paddingHorizontal: 22 },
   copy: { marginTop: 'auto', marginBottom: 52 },
   headline: { fontSize: 38, lineHeight: 44, fontWeight: '700', color: OnboardingColors.text },
