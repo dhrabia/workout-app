@@ -1,12 +1,15 @@
 import { AuthApiError, AuthRetryableFetchError } from '@supabase/supabase-js';
 
-import { AuthFormError, isValidEmail, signInWithEmail, signUpWithEmail } from './auth';
+import { AuthFormError, isValidEmail, signInWithEmail, signOut, signUpWithEmail } from './auth';
 import { supabase } from './supabase';
 
-jest.mock('./supabase', () => ({ supabase: { auth: { signUp: jest.fn(), signInWithPassword: jest.fn() } } }));
+jest.mock('./supabase', () => ({
+  supabase: { auth: { signUp: jest.fn(), signInWithPassword: jest.fn(), signOut: jest.fn() } },
+}));
 
 const signUp = supabase.auth.signUp as jest.Mock;
 const signInWithPassword = supabase.auth.signInWithPassword as jest.Mock;
+const supabaseSignOut = supabase.auth.signOut as jest.Mock;
 const credentials = { email: 'tester@example.com', password: 'password1' };
 
 const GENERIC = 'Something went wrong. Please try again.';
@@ -102,5 +105,22 @@ describe('signInWithEmail errors', () => {
     signInWithPassword.mockResolvedValue({ data: { session: null, user: null }, error: null });
 
     await expect(signInWithEmail(credentials)).rejects.toThrow(GENERIC);
+  });
+});
+
+describe('signOut', () => {
+  beforeEach(() => supabaseSignOut.mockReset());
+
+  it('ends only the current device session', async () => {
+    supabaseSignOut.mockResolvedValue({ error: null });
+
+    await expect(signOut()).resolves.toBeUndefined();
+    expect(supabaseSignOut).toHaveBeenCalledWith({ scope: 'local' });
+  });
+
+  it('does not fail when the revoke request returns an error', async () => {
+    supabaseSignOut.mockResolvedValue({ error: new AuthRetryableFetchError('Failed to fetch', 0) });
+
+    await expect(signOut()).resolves.toBeUndefined();
   });
 });

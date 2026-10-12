@@ -19,6 +19,8 @@ import {
 } from '@/hooks/queries/use-profile';
 import { useLogWeight, useWeightLogs } from '@/hooks/queries/use-weight-logs';
 import { useThemeColor } from '@/hooks/use-theme-color';
+import { confirmDestructive } from '@/lib/alerts';
+import { signOut } from '@/lib/auth';
 import type { Gender } from '@/lib/types';
 import { getCurrentWeight, WEIGHT_DEFAULT, WEIGHT_MAX, WEIGHT_MIN } from '@/lib/weight';
 
@@ -184,6 +186,8 @@ export default function ProfileScreen() {
 
         <Section title="Personal information" rows={personalInfo} />
         <Section title="Weight goal" rows={weightGoal} />
+
+        <LogOutButton />
       </ScrollView>
 
       <SingleChoiceModal
@@ -311,6 +315,29 @@ function Avatar({
   );
 }
 
+function LogOutButton() {
+  const cardBackground = useThemeColor({}, 'cardBackground');
+  const errorColor = useThemeColor({}, 'error');
+
+  // Signing out flips `hasAccount`, which swaps the app routes for onboarding
+  // and lands the user back on the Welcome screen.
+  function confirmLogOut() {
+    confirmDestructive('Log out?', 'Are you sure you want to log out of your account?', 'Log out', () => {
+      signOut().catch(() => Alert.alert('Error', 'Could not log out. Please try again.'));
+    });
+  }
+
+  return (
+    <Pressable
+      onPress={confirmLogOut}
+      accessibilityRole="button"
+      style={[styles.logOut, { backgroundColor: cardBackground }]}
+      testID="profile-logout-button">
+      <ThemedText style={[styles.logOutText, { color: errorColor }]}>Log out</ThemedText>
+    </Pressable>
+  );
+}
+
 function Section({ title, rows }: { title: string; rows: InfoRow[] }) {
   return (
     <View style={styles.section}>
@@ -351,7 +378,7 @@ function InfoCard({ rows }: { rows: InfoRow[] }) {
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
-  content: { padding: 16, paddingBottom: 32, gap: 28 },
+  content: { flexGrow: 1, padding: 16, paddingBottom: 120, gap: 28 },
   header: { alignItems: 'center' },
   avatarWrap: { alignItems: 'center', justifyContent: 'center' },
   avatar: {
@@ -391,4 +418,6 @@ const styles = StyleSheet.create({
     paddingVertical: 14,
   },
   rowValue: { flexDirection: 'row', alignItems: 'center', gap: 2 },
+  logOut: { marginTop: 'auto', alignItems: 'center', borderRadius: 12, paddingVertical: 14 },
+  logOutText: { fontSize: 16, fontWeight: '600' },
 });

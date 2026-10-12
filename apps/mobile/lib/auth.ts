@@ -78,3 +78,10 @@ export async function signInWithEmail(credentials: Credentials) {
   const session = await requestSession(() => supabase.auth.signInWithPassword(credentials), SIGN_IN_ERRORS);
   if (!session) throw new AuthFormError(GENERIC_ERROR);
 }
+
+// "local" ends only this device's session (the default "global" would also
+// sign the user out everywhere else). supabase-js drops the stored session
+// even when the revoke request fails, so a returned error needs no handling.
+export async function signOut() {
+  await supabase.auth.signOut({ scope: "local" });
+}

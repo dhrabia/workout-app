@@ -1,6 +1,7 @@
 import { createContext, useContext, useEffect, useState } from "react";
 import type { Session } from "@supabase/supabase-js";
 
+import { queryClient } from "@/lib/query-client";
 import { supabase } from "@/lib/supabase";
 
 type AuthContextValue = {
@@ -43,6 +44,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       subscription.subscription.unsubscribe();
     };
   }, []);
+
+  // Cached queries aren't keyed by user, so drop them whenever the user changes
+  // (sign out, or signing in as someone else) to avoid showing stale data.
+  const userId = session?.user.id;
+  useEffect(() => () => queryClient.clear(), [userId]);
 
   return (
     <AuthContext.Provider
