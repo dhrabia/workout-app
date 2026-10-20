@@ -160,7 +160,7 @@ export default function ProfileScreen() {
   }
 
   return (
-    <ThemedView style={styles.container}>
+    <ThemedView style={styles.container} testID="profile-screen">
       <Stack.Screen options={{ title: 'Profile' }} />
       <ScrollView contentContainerStyle={styles.content}>
         <View style={styles.header}>
@@ -169,7 +169,7 @@ export default function ProfileScreen() {
             uploading={uploadAvatar.isPending || removeAvatar.isPending}
             onPress={handleAvatarPress}
           />
-          <ThemedText type="defaultSemiBold" style={styles.name}>
+          <ThemedText type="defaultSemiBold" style={styles.name} testID="profile-display-name">
             {displayName}
           </ThemedText>
           <Pressable
@@ -367,7 +367,7 @@ function InfoCard({ rows }: { rows: InfoRow[] }) {
           testID={`profile-row-${row.key}`}>
           <ThemedText>{row.label}</ThemedText>
           <View style={styles.rowValue}>
-            <ThemedText style={{ color: secondaryColor }}>{row.value}</ThemedText>
+            <ThemedText style={{ color: secondaryColor }} testID={`profile-row-${row.key}-value`}>{row.value}</ThemedText>
             {row.onPress && <IconSymbol name="chevron.right" size={16} color={secondaryColor} />}
           </View>
         </Pressable>

@@ -42,7 +42,7 @@ export default function EmailSignUpScreen() {
       title={'Create\nyour '}
       highlight="account"
       subtitle="Enter your email and create a password to get started."
-      backTestID="auth.signup.backButton">
+      backTestID="signup-back-button">
       <View style={styles.fields}>
         <OnboardingEmailField
           value={email}
@@ -51,8 +51,8 @@ export default function EmailSignUpScreen() {
             clearSubmitError();
           }}
           onSubmitEditing={() => passwordInput.current?.focus()}
-          testID="auth.signup.emailInput"
-          errorTestID="auth.signup.emailError"
+          testID="signup-email-input"
+          errorTestID="signup-email-error"
         />
 
         <View>
@@ -71,8 +71,8 @@ export default function EmailSignUpScreen() {
             returnKeyType="go"
             onSubmitEditing={submit}
             hasError={passwordTooShort}
-            testID="auth.signup.passwordInput"
-            toggleTestID="auth.signup.passwordVisibilityToggle"
+            testID="signup-password-input"
+            toggleTestID="signup-password-visibility-toggle"
           />
           <Text style={[styles.helper, passwordTooShort && styles.helperError]}>
             Must be at least {MIN_PASSWORD_LENGTH} characters.
@@ -80,7 +80,7 @@ export default function EmailSignUpScreen() {
         </View>
       </View>
 
-      <OnboardingErrorText message={signUp.error?.message} testID="auth.signup.errorMessage" />
+      <OnboardingErrorText message={signUp.error?.message} testID="signup-error-message" />
 
       <View style={styles.submit}>
         <OnboardingButton
@@ -89,7 +89,7 @@ export default function EmailSignUpScreen() {
           loading={signUp.isPending}
           disabled={!canSubmit}
           onPress={submit}
-          testID="auth.signup.submitButton"
+          testID="signup-submit-button"
         />
       </View>
     </OnboardingFormScreen>
