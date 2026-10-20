@@ -1,0 +1,17 @@
+appId: ${APP_ID}
+name: Log in with email and password lands on the app and shows the profile
+tags:
+  - smoke
+  - auth
+---
+# Needs the qa-onboarded account: run `pnpm --filter mobile qa:seed` first.
+- runFlow:
+    file: ../subflows/log-in.yaml
+    env:
+      EMAIL: qa-onboarded@example.com
+- tapOn: "Profile"
+- assertVisible:
+    id: "profile-screen"
+- assertVisible:
+    id: "profile-display-name"
+    text: "QA Onboarded"

@@ -2,11 +2,12 @@ appId: ${APP_ID}
 name: Smoke - first launch shows the onboarding Welcome screen
 tags:
   - smoke
+  - onboarding
 ---
 - launchApp:
     clearState: true
 
-# First launch signs in anonymously and, with no account yet, lands on onboarding.
+# With no stored session, first launch lands on onboarding.
 - extendedWaitUntil:
     visible: "Your training."
     timeout: 30000

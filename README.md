@@ -122,7 +122,7 @@ npx expo run:ios --configuration Release
 
 #### Running on a physical device
 
-`app.json` ships with the placeholder identifier `com.anonymous.mobile` for both platforms. Set your own unique `ios.bundleIdentifier` and `android.package`, choose a signing team in Xcode for iOS, then run, for example:
+The app id is `com.woapp.mobile` on both platforms (`ios.bundleIdentifier` and `android.package` in `app.json`). Choose a signing team in Xcode for iOS, then run, for example:
 
 ```bash
 npx expo run:ios --device --configuration Release
@@ -144,13 +144,21 @@ Flows live in `apps/mobile/.maestro` and run with the [Maestro](https://maestro.
 pnpm --filter mobile e2e:smoke
 ```
 
-Flows read the app id from `APP_ID` (default `com.anonymous.mobile`). If your build uses a different bundle identifier, pass it in:
+Flows read the app id from `APP_ID` (default `com.woapp.mobile`). If your build uses a different bundle identifier, pass it in:
 
 ```bash
 APP_ID=com.example.workout pnpm --filter mobile e2e:smoke
 ```
 
-Interactive elements carry stable `testID`s, so flows can target them on both platforms.
+Flows that log in use QA test accounts (`qa-*@example.com`). To create them, copy `apps/mobile/.env.local.example` to `apps/mobile/.env.local`, fill in your project's service role key and a password for the accounts, then run:
+
+```bash
+pnpm --filter mobile qa:seed            # create the accounts or restore their profiles
+pnpm --filter mobile qa:seed --reset    # recreate them with no data
+pnpm --filter mobile qa:seed --cleanup  # also delete accounts left behind by sign-up flows
+```
+
+Interactive elements carry stable kebab-case `testID`s (`login-email-input`), so flows can target them on both platforms. Flow tags, test accounts and the other QA conventions are described in [`.claude/skills/qa/SKILL.md`](.claude/skills/qa/SKILL.md).
 
 ## Database
 
