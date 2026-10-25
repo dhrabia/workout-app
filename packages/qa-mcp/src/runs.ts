@@ -33,6 +33,11 @@ export type LatestResult = Pick<FlowResult, 'name' | 'status' | 'failure'> & { r
 
 const LATEST_FILE = path.join(RESULTS_DIR, 'latest.json');
 const OUTPUT_TAIL = 4000;
+// Maestro writes flow env (QA_PASSWORD) into its debug output; these values are
+// replaced in every text artifact, since CI uploads them from a public repo.
+const SECRET_VARS = ['QA_PASSWORD', 'SUPABASE_SERVICE_ROLE_KEY'];
+const BINARY_ARTIFACT = /\.(png|jpe?g|mp4|mov)$/i;
+const REDACTED = '***';
 
 const execFileAsync = promisify(execFile);
 
@@ -81,6 +86,32 @@ async function parseReport(reportFile: string, debugDir: string, checkout: Check
       };
     })
   );
+}
+
+async function secretValues(checkout: Checkout): Promise<string[]> {
+  const envLocal = await readFile(path.join(checkout.mobileDir, '.env.local'), 'utf8').catch(() => '');
+  const values = SECRET_VARS.flatMap((name) => [
+    envLocal.match(new RegExp(`^${name}=(.*)$`, 'm'))?.[1]?.trim().replace(/^(["'])(.*)\1$/, '$2'),
+    process.env[name],
+  ]);
+  // Short values would redact unrelated text; Supabase requires 6+ character passwords anyway.
+  return [...new Set(values.filter((value): value is string => !!value && value.length >= 6))];
+}
+
+function redact(text: string, secrets: string[]) {
+  return secrets.reduce((result, secret) => result.split(secret).join(REDACTED), text);
+}
+
+async function redactArtifacts(dir: string, secrets: string[]) {
+  if (secrets.length === 0) return;
+  const entries = await readdir(dir, { withFileTypes: true, recursive: true });
+  for (const entry of entries) {
+    if (!entry.isFile() || BINARY_ARTIFACT.test(entry.name)) continue;
+    const file = path.join(entry.parentPath, entry.name);
+    const text = await readFile(file, 'utf8');
+    const redacted = redact(text, secrets);
+    if (redacted !== text) await writeFile(file, redacted);
+  }
 }
 
 export async function readLatestResults(): Promise<Record<string, LatestResult>> {
@@ -132,7 +163,8 @@ export async function runFlows(options: {
 
   const flows = await parseReport(reportFile, debugDir, checkout);
   const finishedAt = new Date().toISOString();
-  const summary: RunSummary = {
+  const secrets = await secretValues(checkout);
+  const unredacted: RunSummary = {
     runId,
     finishedAt,
     checkout: checkout.root,
@@ -143,6 +175,8 @@ export async function runFlows(options: {
     output: output.trim(),
     artifactsDir: relativeTo(REPO_ROOT, runDir),
   };
+  const summary: RunSummary = JSON.parse(redact(JSON.stringify(unredacted), secrets));
+  await redactArtifacts(runDir, secrets);
   await writeFile(path.join(runDir, 'summary.json'), JSON.stringify(summary, null, 2));
 
   // latest.json tracks the suite on this checkout; runs on a PR worktree don't overwrite it.

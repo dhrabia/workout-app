@@ -10,8 +10,8 @@ The mobile app (`apps/mobile`, Expo + Supabase) is tested end to end in two ways
 | | Changes in a pull request | Regression suite |
 | --- | --- | --- |
 | How | An agent drives the PR build on a simulator with [agent-device](https://github.com/callstack/agent-device), following a checklist made from the ticket and the diff | Deterministic Maestro flows in `apps/mobile/.maestro` |
-| When | QA starts it by hand when the ticket reaches Ready for QA (`/test-ticket SCRUM-12`); the PR is merged only after QA passes | Nightly (not scheduled yet; run it with `pnpm --filter mobile e2e:regression`) |
-| Output | Report with screenshots, Jira comment, draft bugs | Pass/fail per flow; failures go to triage |
+| When | QA starts it by hand when the ticket reaches Ready for QA (`/test-ticket SCRUM-12`); the PR is merged only after QA passes | Nightly in GitHub Actions (`.github/workflows/nightly-regression.yml`, iOS simulator); locally `pnpm --filter mobile e2e:regression` |
+| Output | Report with screenshots, Jira comment, draft bugs | `nightly-regression` artifact and an open `nightly-regression` issue while it fails; QA triages with `/triage-nightly` |
 
 Flows change only when a PR changes something worth guarding in the regression suite: then QA adds, updates or deletes flows in a **separate PR** stacked on the feature PR (`qa/SCRUM-12-regression`), merged after it. Most PRs need no flow changes.
 
@@ -119,7 +119,9 @@ Agents in `.claude/agents/`:
 | **qa-triager** | Failures → verdicts and draft bugs | Change files |
 | **qa-regression-curator** | Decides on regression changes; adds or updates flows in the QA worktree | Edit anything but flows and subflows (hook) |
 
-The `test-ticket` skill (`/test-ticket SCRUM-12`) runs them in order. It writes to Jira, pushes and opens the regression PR only after the user approves.
+The `test-ticket` skill (`/test-ticket SCRUM-12`) runs them in order for a ticket's PR, and `triage-nightly` (`/triage-nightly [run id]`) runs qa-triager and qa-regression-curator on a failed nightly run. Both write to Jira, push and open PRs only after the user approves.
+
+Run artifacts have `QA_PASSWORD` and `SUPABASE_SERVICE_ROLE_KEY` replaced with `***`; Maestro's debug output contains the flow env otherwise.
 
 ## Triage: what a failure means
 

@@ -13,6 +13,10 @@ Every tool takes an optional `checkout`: the path of a git worktree of this repo
 
 Run artifacts are always written to this checkout's `apps/mobile/.maestro/.results/`, which is git-ignored. The last result per flow (`latest.json`, used by `coverage_for_ticket`) only tracks runs on this checkout.
 
+Maestro writes the flow env, including `QA_PASSWORD`, into its debug output. Every run replaces the values of `QA_PASSWORD` and `SUPABASE_SERVICE_ROLE_KEY` (from the checkout's `apps/mobile/.env.local` or the environment) with `***` in all text artifacts, since CI uploads them from a public repo.
+
+[`src/nightly.ts`](src/nightly.ts) is the CLI the nightly workflow uses: `run` runs the regression suite with the same code as `run_flows`, and `report <summary.json>` prints the Markdown posted to the tracking issue.
+
 The package also pins [agent-device](https://github.com/callstack/agent-device) (`devDependencies`), which `.mcp.json` starts as the `agent-device` MCP server for testing PRs on a device.
 
 ```bash

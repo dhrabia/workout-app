@@ -160,6 +160,21 @@ pnpm --filter mobile qa:seed --cleanup  # also delete accounts left behind by si
 
 Interactive elements carry stable kebab-case `testID`s (`login-email-input`), so flows can target them on both platforms. Flow tags, test accounts and the other QA conventions are described in [`.claude/skills/qa/SKILL.md`](.claude/skills/qa/SKILL.md).
 
+### Nightly regression
+
+[`.github/workflows/nightly-regression.yml`](.github/workflows/nightly-regression.yml) runs the regression suite every night at 01:00 UTC on an iOS simulator (macOS runner): it builds `main` in Release, restores the QA accounts with `qa:seed`, runs every `regression` flow and uploads the results (with `QA_PASSWORD` and the service role key redacted) as the `nightly-regression` artifact. While it fails, it keeps one open issue labeled `nightly-regression` up to date; a passing night closes it. You can also start it from the Actions tab (**Run workflow**).
+
+It needs, under **Settings → Secrets and variables → Actions**:
+
+| Name | Kind | Value |
+| --- | --- | --- |
+| `QA_PASSWORD` | Secret | Same as in `apps/mobile/.env.local` |
+| `SUPABASE_SERVICE_ROLE_KEY` | Secret | Same as in `apps/mobile/.env.local` |
+| `EXPO_PUBLIC_SUPABASE_URL` | Variable | Same as in `apps/mobile/.env` |
+| `EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY` | Variable | Same as in `apps/mobile/.env` |
+
+When it fails, run `/triage-nightly` in Claude Code: it downloads the results, rebuilds the same commit locally, classifies each failure, and after you approve comments on the issue, files Jira bugs and opens a PR fixing outdated flows.
+
 ### Agentic QA
 
 When a ticket reaches Ready for QA, QA runs `/test-ticket SCRUM-12` in Claude Code. It finds the ticket's open PR, builds it on the iOS simulator in a separate worktree (`../workout-app-qa`), and has agents plan checks from the ticket and the diff, run them on the device with [agent-device](https://github.com/callstack/agent-device), and triage failures. If the PR changes something worth guarding nightly, an agent updates the Maestro regression suite. Only after you approve does it comment on the ticket, file `agent-reported` bugs and open a separate PR with the flow changes, stacked on the feature PR.
