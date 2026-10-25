@@ -1,7 +1,7 @@
 appId: ${APP_ID}
 name: Log in with email and password lands on the app and shows the profile
 tags:
-  - smoke
+  - regression
   - auth
 ---
 # Needs the qa-onboarded account: run `pnpm --filter mobile qa:seed` first.

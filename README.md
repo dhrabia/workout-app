@@ -138,16 +138,16 @@ pnpm --filter mobile exec tsc --noEmit     # type check
 
 ### End-to-end tests
 
-Flows live in `apps/mobile/.maestro` and run with the [Maestro](https://maestro.dev) CLI, which needs Java 17+. Start a simulator or emulator with a build of the app installed, then:
+The regression suite lives in `apps/mobile/.maestro` and runs with the [Maestro](https://maestro.dev) CLI, which needs Java 17+. Start a simulator or emulator with a build of the app installed, then:
 
 ```bash
-pnpm --filter mobile e2e:smoke
+pnpm --filter mobile e2e:regression
 ```
 
 Flows read the app id from `APP_ID` (default `com.woapp.mobile`). If your build uses a different bundle identifier, pass it in:
 
 ```bash
-APP_ID=com.example.workout pnpm --filter mobile e2e:smoke
+APP_ID=com.example.workout pnpm --filter mobile e2e:regression
 ```
 
 Flows that log in use QA test accounts (`qa-*@example.com`). To create them, copy `apps/mobile/.env.local.example` to `apps/mobile/.env.local`, fill in your project's service role key and a password for the accounts, then run:
@@ -159,6 +159,12 @@ pnpm --filter mobile qa:seed --cleanup  # also delete accounts left behind by si
 ```
 
 Interactive elements carry stable kebab-case `testID`s (`login-email-input`), so flows can target them on both platforms. Flow tags, test accounts and the other QA conventions are described in [`.claude/skills/qa/SKILL.md`](.claude/skills/qa/SKILL.md).
+
+### Agentic QA
+
+When a ticket reaches Ready for QA, QA runs `/test-ticket SCRUM-12` in Claude Code. It finds the ticket's open PR, builds it on the iOS simulator in a separate worktree (`../workout-app-qa`), and has agents plan checks from the ticket and the diff, run them on the device with [agent-device](https://github.com/callstack/agent-device), and triage failures. If the PR changes something worth guarding nightly, an agent updates the Maestro regression suite. Only after you approve does it comment on the ticket, file `agent-reported` bugs and open a separate PR with the flow changes, stacked on the feature PR.
+
+It uses the `agent-device` and `workout-qa` MCP servers (registered in `.mcp.json`; see [`packages/qa-mcp`](packages/qa-mcp/README.md)) and the QA agents in `.claude/agents/`.
 
 ## Database
 

@@ -1,0 +1,14 @@
+{
+  "mcpServers": {
+    "workout-qa": {
+      "type": "stdio",
+      "command": "node",
+      "args": ["${CLAUDE_PROJECT_DIR:-.}/packages/qa-mcp/src/index.ts"]
+    },
+    "agent-device": {
+      "type": "stdio",
+      "command": "node",
+      "args": ["${CLAUDE_PROJECT_DIR:-.}/packages/qa-mcp/node_modules/agent-device/bin/agent-device.mjs", "mcp"]
+    }
+  }
+}

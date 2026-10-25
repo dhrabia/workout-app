@@ -1,7 +1,7 @@
 appId: ${APP_ID}
-name: Smoke - first launch shows the onboarding Welcome screen
+name: First launch shows the onboarding Welcome screen
 tags:
-  - smoke
+  - regression
   - onboarding
 ---
 - launchApp:

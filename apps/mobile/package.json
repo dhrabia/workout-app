@@ -11,7 +11,7 @@
     "lint": "expo lint",
     "test": "jest",
     "e2e": "sh scripts/maestro.sh .maestro",
-    "e2e:smoke": "sh scripts/maestro.sh --include-tags smoke .maestro",
+    "e2e:regression": "sh scripts/maestro.sh --include-tags regression .maestro",
     "qa:seed": "node --env-file=.env --env-file-if-exists=.env.local scripts/qa-seed-users.mjs"
   },
   "dependencies": {
