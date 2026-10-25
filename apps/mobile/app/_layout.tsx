@@ -90,7 +90,7 @@ function AuthGate({ children }: { children: React.ReactNode }) {
 
   if (isLoading) {
     return (
-      <ThemedView style={styles.loading}>
+      <ThemedView style={styles.loading} testID="app-loading">
         <ActivityIndicator />
       </ThemedView>
     );

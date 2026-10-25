@@ -42,7 +42,7 @@ export default function LogInScreen() {
       title="Log "
       highlight="in"
       subtitle="Enter your email and password to access your account."
-      backTestID="auth.login.backButton">
+      backTestID="login-back-button">
       <View style={styles.fields}>
         <OnboardingEmailField
           value={email}
@@ -51,8 +51,8 @@ export default function LogInScreen() {
             clearSubmitError();
           }}
           onSubmitEditing={() => passwordInput.current?.focus()}
-          testID="auth.login.emailInput"
-          errorTestID="auth.login.emailError"
+          testID="login-email-input"
+          errorTestID="login-email-error"
         />
 
         <OnboardingPasswordField
@@ -67,12 +67,12 @@ export default function LogInScreen() {
           textContentType="password"
           returnKeyType="go"
           onSubmitEditing={submit}
-          testID="auth.login.passwordInput"
-          toggleTestID="auth.login.passwordVisibilityToggle"
+          testID="login-password-input"
+          toggleTestID="login-password-visibility-toggle"
         />
       </View>
 
-      <OnboardingErrorText message={signIn.error?.message} testID="auth.login.errorMessage" />
+      <OnboardingErrorText message={signIn.error?.message} testID="login-error-message" />
 
       <View style={styles.submit}>
         <OnboardingButton
@@ -81,7 +81,7 @@ export default function LogInScreen() {
           loading={signIn.isPending}
           disabled={!canSubmit}
           onPress={submit}
-          testID="auth.login.submitButton"
+          testID="login-submit-button"
         />
       </View>
 
@@ -92,7 +92,7 @@ export default function LogInScreen() {
           hitSlop={8}
           accessibilityRole="button"
           style={styles.signUpLink}
-          testID="auth.login.createAccountLink">
+          testID="login-create-account-link">
           <Text style={styles.signUpLabel}>Create account</Text>
         </Pressable>
       </View>

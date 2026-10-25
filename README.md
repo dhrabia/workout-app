@@ -122,7 +122,7 @@ npx expo run:ios --configuration Release
 
 #### Running on a physical device
 
-`app.json` ships with the placeholder identifier `com.anonymous.mobile` for both platforms. Set your own unique `ios.bundleIdentifier` and `android.package`, choose a signing team in Xcode for iOS, then run, for example:
+The app id is `com.woapp.mobile` on both platforms (`ios.bundleIdentifier` and `android.package` in `app.json`). Choose a signing team in Xcode for iOS, then run, for example:
 
 ```bash
 npx expo run:ios --device --configuration Release
@@ -138,19 +138,48 @@ pnpm --filter mobile exec tsc --noEmit     # type check
 
 ### End-to-end tests
 
-Flows live in `apps/mobile/.maestro` and run with the [Maestro](https://maestro.dev) CLI, which needs Java 17+. Start a simulator or emulator with a build of the app installed, then:
+The regression suite lives in `apps/mobile/.maestro` and runs with the [Maestro](https://maestro.dev) CLI, which needs Java 17+. Start a simulator or emulator with a build of the app installed, then:
 
 ```bash
-pnpm --filter mobile e2e:smoke
+pnpm --filter mobile e2e:regression
 ```
 
-Flows read the app id from `APP_ID` (default `com.anonymous.mobile`). If your build uses a different bundle identifier, pass it in:
+Flows read the app id from `APP_ID` (default `com.woapp.mobile`). If your build uses a different bundle identifier, pass it in:
 
 ```bash
-APP_ID=com.example.workout pnpm --filter mobile e2e:smoke
+APP_ID=com.example.workout pnpm --filter mobile e2e:regression
 ```
 
-Interactive elements carry stable `testID`s, so flows can target them on both platforms.
+Flows that log in use QA test accounts (`qa-*@example.com`). To create them, copy `apps/mobile/.env.local.example` to `apps/mobile/.env.local`, fill in your project's service role key and a password for the accounts, then run:
+
+```bash
+pnpm --filter mobile qa:seed            # create the accounts or restore their profiles
+pnpm --filter mobile qa:seed --reset    # recreate them with no data
+pnpm --filter mobile qa:seed --cleanup  # also delete accounts left behind by sign-up flows
+```
+
+Interactive elements carry stable kebab-case `testID`s (`login-email-input`), so flows can target them on both platforms. Flow tags, test accounts and the other QA conventions are described in [`.claude/skills/qa/SKILL.md`](.claude/skills/qa/SKILL.md).
+
+### Nightly regression
+
+[`.github/workflows/nightly-regression.yml`](.github/workflows/nightly-regression.yml) runs the regression suite every night at 01:00 UTC on an iOS simulator (macOS runner): it builds `main` in Release, restores the QA accounts with `qa:seed`, runs every `regression` flow and uploads the results (with `QA_PASSWORD` and the service role key redacted) as the `nightly-regression` artifact. While it fails, it keeps one open issue labeled `nightly-regression` up to date; a passing night closes it. You can also start it from the Actions tab (**Run workflow**).
+
+It needs, under **Settings → Secrets and variables → Actions**:
+
+| Name | Kind | Value |
+| --- | --- | --- |
+| `QA_PASSWORD` | Secret | Same as in `apps/mobile/.env.local` |
+| `SUPABASE_SERVICE_ROLE_KEY` | Secret | Same as in `apps/mobile/.env.local` |
+| `EXPO_PUBLIC_SUPABASE_URL` | Variable | Same as in `apps/mobile/.env` |
+| `EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY` | Variable | Same as in `apps/mobile/.env` |
+
+When it fails, run `/triage-nightly` in Claude Code: it downloads the results, rebuilds the same commit locally, classifies each failure, and after you approve comments on the issue, files Jira bugs and opens a PR fixing outdated flows.
+
+### Agentic QA
+
+When a ticket reaches Ready for QA, QA runs `/test-ticket SCRUM-12` in Claude Code. It finds the ticket's open PR, builds it on the iOS simulator in a separate worktree (`../workout-app-qa`), and has agents plan checks from the ticket and the diff, run them on the device with [agent-device](https://github.com/callstack/agent-device), and triage failures. If the PR changes something worth guarding nightly, an agent updates the Maestro regression suite. Only after you approve does it comment on the ticket, file `agent-reported` bugs and open a separate PR with the flow changes, stacked on the feature PR.
+
+It uses the `agent-device` and `workout-qa` MCP servers (registered in `.mcp.json`; see [`packages/qa-mcp`](packages/qa-mcp/README.md)) and the QA agents in `.claude/agents/`.
 
 ## Database
 
