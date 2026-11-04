@@ -5,13 +5,14 @@ import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { ProgressBar } from '@/components/progress-bar';
 import { RulerPickerModal } from '@/components/ruler-picker-modal';
 import { SectionLabel } from '@/components/section-label';
+import { TargetWeightPickerModal } from '@/components/target-weight-picker-modal';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { WeightProgressCard } from '@/components/weight-progress-card';
 import { WheelPickerModal } from '@/components/wheel-picker-modal';
 import { useBodyMeasurementLogs, useLogBodyMeasurement } from '@/hooks/queries/use-body-measurement-logs';
-import { useProfile, useUpdateProfile } from '@/hooks/queries/use-profile';
+import { useProfile } from '@/hooks/queries/use-profile';
 import { useLogWeight, useWeightLogs } from '@/hooks/queries/use-weight-logs';
 import { useThemeColor } from '@/hooks/use-theme-color';
 import { calculateBmi, getBmiCategory } from '@/lib/bmi';
@@ -39,7 +40,6 @@ export default function BodyScreen() {
   const { data: measurementLogs } = useBodyMeasurementLogs();
   const logWeight = useLogWeight();
   const logMeasurement = useLogBodyMeasurement();
-  const updateProfile = useUpdateProfile();
 
   const currentWeight = getCurrentWeight(weightLogs);
   // See computeWeightProgress in lib/weight.ts for what this baseline means.
@@ -107,25 +107,11 @@ export default function BodyScreen() {
         testID="weight-modal"
       />
 
-      <RulerPickerModal
-        key={targetWeightModalOpen ? 'target-weight-open' : 'target-weight-closed'}
+      <TargetWeightPickerModal
         visible={targetWeightModalOpen}
-        title="What is your target weight?"
-        min={WEIGHT_MIN}
-        max={WEIGHT_MAX}
-        suffix="kg"
-        value={profile?.target_weight_kg ?? WEIGHT_DEFAULT}
-        pending={updateProfile.isPending}
+        currentWeight={currentWeight}
+        targetWeight={profile?.target_weight_kg}
         onClose={() => setTargetWeightModalOpen(false)}
-        onSave={(target_weight_kg) =>
-          updateProfile.mutate(
-            // See computeWeightProgress in lib/weight.ts: a new target always
-            // starts a fresh progress cycle from the current weight.
-            { target_weight_kg, goal_start_weight_kg: currentWeight ?? null },
-            { onSuccess: () => setTargetWeightModalOpen(false) }
-          )
-        }
-        testID="target-weight-modal"
       />
 
       <WheelPickerModal
