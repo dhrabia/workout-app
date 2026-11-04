@@ -6,6 +6,7 @@ import { ActivityIndicator, Alert, Pressable, ScrollView, StyleSheet, View } fro
 
 import { SectionLabel } from '@/components/section-label';
 import { SingleChoiceModal, type SingleChoiceOption } from '@/components/single-choice-modal';
+import { TargetWeightPickerModal } from '@/components/target-weight-picker-modal';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { IconSymbol } from '@/components/ui/icon-symbol';
@@ -249,25 +250,11 @@ export default function ProfileScreen() {
         testID="weight-modal"
       />
 
-      <RulerPickerModal
-        key={targetWeightModalOpen ? 'target-weight-open' : 'target-weight-closed'}
+      <TargetWeightPickerModal
         visible={targetWeightModalOpen}
-        title="What is your target weight?"
-        min={WEIGHT_MIN}
-        max={WEIGHT_MAX}
-        suffix="kg"
-        value={profile?.target_weight_kg ?? WEIGHT_DEFAULT}
-        pending={updateProfile.isPending}
+        currentWeight={currentWeight}
+        targetWeight={profile?.target_weight_kg}
         onClose={() => setTargetWeightModalOpen(false)}
-        onSave={(target_weight_kg) =>
-          updateProfile.mutate(
-            // See computeWeightProgress in lib/weight.ts: a new target always
-            // starts a fresh progress cycle from the current weight.
-            { target_weight_kg, goal_start_weight_kg: currentWeight ?? null },
-            { onSuccess: () => setTargetWeightModalOpen(false) }
-          )
-        }
-        testID="target-weight-modal"
       />
     </ThemedView>
   );

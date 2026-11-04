@@ -5,6 +5,7 @@ import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { ProgressBar } from '@/components/progress-bar';
 import { RulerPickerModal } from '@/components/ruler-picker-modal';
 import { SectionLabel } from '@/components/section-label';
+import { TargetWeightPickerModal } from '@/components/target-weight-picker-modal';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { IconSymbol } from '@/components/ui/icon-symbol';
@@ -46,6 +47,7 @@ export default function BodyScreen() {
   const latestMeasurements = getLatestMeasurements(measurementLogs);
 
   const [weightModalOpen, setWeightModalOpen] = useState(false);
+  const [targetWeightModalOpen, setTargetWeightModalOpen] = useState(false);
   const [editingField, setEditingField] = useState<MeasurementFieldKey | null>(null);
   const editingFieldLabel = MEASUREMENT_FIELDS.find((field) => field.key === editingField)?.label;
 
@@ -58,7 +60,7 @@ export default function BodyScreen() {
           startWeight={startWeight}
           targetWeight={profile?.target_weight_kg}
           onLogWeight={() => setWeightModalOpen(true)}
-          onSetTarget={() => router.push('/profile/edit')}
+          onSetTarget={() => setTargetWeightModalOpen(true)}
         />
 
         <View style={styles.section}>
@@ -103,6 +105,13 @@ export default function BodyScreen() {
         onClose={() => setWeightModalOpen(false)}
         onSave={(weightKg) => logWeight.mutate(weightKg, { onSuccess: () => setWeightModalOpen(false) })}
         testID="weight-modal"
+      />
+
+      <TargetWeightPickerModal
+        visible={targetWeightModalOpen}
+        currentWeight={currentWeight}
+        targetWeight={profile?.target_weight_kg}
+        onClose={() => setTargetWeightModalOpen(false)}
       />
 
       <WheelPickerModal

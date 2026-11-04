@@ -20,10 +20,11 @@ export function getCurrentWeight(logs: Tables<'weight_logs'>[] | undefined) {
 // weight-loss goals (target < start) and weight-gain goals (target > start).
 //
 // `start` must be the weight recorded at the moment the *current* target was
-// set (persisted as profiles.goal_start_weight_kg — see profile/index.tsx
-// where it's written, and useLogWeight in use-weight-logs.ts where it's
-// seeded if a target was set before any weight was ever logged), not the
-// first-ever entry in weight_logs history. Otherwise changing the target
+// set (persisted as profiles.goal_start_weight_kg — see
+// components/target-weight-picker-modal.tsx where it's written, and
+// useLogWeight in use-weight-logs.ts where it's seeded if a target was set
+// before any weight was ever logged), not the first-ever entry in
+// weight_logs history. Otherwise changing the target
 // wouldn't start a new progress cycle.
 export function computeWeightProgress(start: number, current: number, target: number) {
   if (start === target) return 1;
