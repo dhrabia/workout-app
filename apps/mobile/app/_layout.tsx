@@ -2,14 +2,16 @@ import { ThemeProvider } from '@react-navigation/native';
 import { QueryClientProvider } from '@tanstack/react-query';
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import { ActivityIndicator, StyleSheet } from 'react-native';
+import { ActivityIndicator, Pressable, StyleSheet } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import 'react-native-reanimated';
 
 import { ContextMenuHostProvider } from '@/components/context-menu';
+import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { NavigationThemes } from '@/constants/theme';
 import { AuthProvider, useAuth } from '@/contexts/auth-context';
+import { useOnboardingCompleted, useProfile } from '@/hooks/queries/use-profile';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { queryClient } from '@/lib/query-client';
 
@@ -50,7 +52,8 @@ export default function RootLayout() {
 
 // Routes not declared inside a Stack.Protected group stay open, so every app
 // route has to be listed here to be unreachable (e.g. by deep link) before an
-// account exists. Keep in sync when adding routes.
+// account exists and its profile setup is finished. Keep in sync when adding
+// routes.
 const APP_ROUTES = [
   'plans/[planId]/index',
   'plans/[planId]/days/[dayId]/index',
@@ -63,10 +66,12 @@ const APP_ROUTES = [
 
 function RootNavigator() {
   const { hasAccount } = useAuth();
+  // AuthGate holds rendering until the profile has loaded for signed-in users.
+  const onboardingCompleted = useOnboardingCompleted();
 
   return (
     <Stack>
-      <Stack.Protected guard={hasAccount}>
+      <Stack.Protected guard={hasAccount && onboardingCompleted}>
         <Stack.Screen name="index" options={{ headerShown: false }} />
         {/* title backs the header of whatever gets pushed on top (e.g. plan
             detail) even though this screen's own header is hidden. */}
@@ -78,6 +83,9 @@ function RootNavigator() {
           <Stack.Screen key={name} name={name} />
         ))}
       </Stack.Protected>
+      <Stack.Protected guard={hasAccount && !onboardingCompleted}>
+        <Stack.Screen name="setup" options={{ headerShown: false, gestureEnabled: false }} />
+      </Stack.Protected>
       <Stack.Protected guard={!hasAccount}>
         <Stack.Screen name="onboarding" options={{ headerShown: false }} />
       </Stack.Protected>
@@ -85,13 +93,28 @@ function RootNavigator() {
   );
 }
 
+// Holds the navigator back until it's known where the user belongs: signed
+// out, mid profile setup, or in the app. Without waiting for the profile, a
+// finished user would briefly be sent to setup on every launch.
 function AuthGate({ children }: { children: React.ReactNode }) {
-  const { isLoading } = useAuth();
+  const { isLoading, hasAccount } = useAuth();
+  const profile = useProfile();
 
-  if (isLoading) {
+  if (isLoading || (hasAccount && profile.isPending && profile.fetchStatus !== 'idle')) {
     return (
       <ThemedView style={styles.loading} testID="app-loading">
         <ActivityIndicator />
+      </ThemedView>
+    );
+  }
+
+  if (hasAccount && profile.isError && !profile.data) {
+    return (
+      <ThemedView style={styles.loading}>
+        <ThemedText style={styles.errorText}>Couldn’t load your profile.</ThemedText>
+        <Pressable onPress={() => profile.refetch()} accessibilityRole="button" hitSlop={8} testID="auth-gate-retry">
+          <ThemedText type="link">Try again</ThemedText>
+        </Pressable>
       </ThemedView>
     );
   }
@@ -105,5 +128,7 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
+    gap: 12,
   },
+  errorText: { textAlign: 'center' },
 });

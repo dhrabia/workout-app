@@ -4,6 +4,7 @@ import type { Tables, TablesUpdate } from "@workout-app/shared";
 import { useAuth } from "@/contexts/auth-context";
 import { unwrap } from "@/lib/db";
 import { queryKeys } from "@/lib/query-keys";
+import type { Gender } from "@/lib/types";
 import { supabase } from "@/lib/supabase";
 
 export function useProfile() {
@@ -30,6 +31,95 @@ export function useUpdateProfile() {
       ),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.profile.detail(userId ?? "") });
+    },
+  });
+}
+
+export type ProfileSetupAnswers = {
+  gender: Gender;
+  age: number;
+  heightCm: number;
+  weightKg: number;
+  targetWeightKg: number;
+};
+
+// Writes the onboarding questionnaire's answers. Current weight is stored the
+// same way the Body/Profile screens store it — as a weight log — and also
+// becomes the baseline of the new weight goal (see computeWeightProgress in
+// lib/weight.ts).
+//
+// Safe to repeat (e.g. Back from All Set, then Continue again): users can't
+// log weight anywhere else before finishing onboarding, so an existing log can
+// only be this flow's own earlier one, and is corrected instead of duplicated.
+export function useSaveProfileSetup() {
+  const { userId } = useAuth();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (answers: ProfileSetupAnswers) => {
+      const existingLog = unwrap<{ id: string } | null>(
+        await supabase
+          .from("weight_logs")
+          .select("id")
+          .eq("user_id", userId!)
+          .order("logged_at", { ascending: false })
+          .limit(1)
+          .maybeSingle()
+      );
+
+      unwrap(
+        existingLog
+          ? await supabase.from("weight_logs").update({ weight_kg: answers.weightKg }).eq("id", existingLog.id)
+          : await supabase.from("weight_logs").insert({ user_id: userId!, weight_kg: answers.weightKg })
+      );
+
+      return unwrap<Tables<"profiles">>(
+        await supabase
+          .from("profiles")
+          .update({
+            gender: answers.gender,
+            height_cm: answers.heightCm,
+            target_weight_kg: answers.targetWeightKg,
+            goal_start_weight_kg: answers.weightKg,
+          })
+          .eq("id", userId!)
+          .select()
+          .single()
+      );
+    },
+    onSuccess: (profile) => {
+      queryClient.setQueryData(queryKeys.profile.detail(userId ?? ""), profile);
+      queryClient.invalidateQueries({ queryKey: queryKeys.weightLogs.list(userId ?? "") });
+    },
+  });
+}
+
+// Whether the signed-in user has finished profile setup. Finishing is
+// reflected right away (see useCompleteOnboarding) so the root navigator can
+// swap setup out for the app without waiting on a profile refetch.
+export function useOnboardingCompleted() {
+  const { userId } = useAuth();
+  const { data: profile } = useProfile();
+  const { data: completedThisSession } = useQuery({
+    queryKey: queryKeys.profile.onboardingCompleted(userId ?? ""),
+    queryFn: () => false,
+    staleTime: Infinity,
+    enabled: !!userId,
+  });
+
+  return (profile?.onboarding_completed ?? false) || (completedThisSession ?? false);
+}
+
+export function useCompleteOnboarding() {
+  const { userId } = useAuth();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async () => {
+      supabase.from("profiles").update({ onboarding_completed: true }).eq("id", userId!);
+    },
+    onSuccess: () => {
+      queryClient.setQueryData(queryKeys.profile.onboardingCompleted(userId ?? ""), true);
     },
   });
 }

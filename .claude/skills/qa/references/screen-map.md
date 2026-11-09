@@ -6,8 +6,8 @@ To check that a `testID` exists: `grep -rn 'testID="<id>"' apps/mobile/app apps/
 
 ## App start
 
-- No session → onboarding (`app/onboarding/*`). A session (after sign-up or log-in) → tabs, starting on **Plans**.
-- While the stored session loads, a spinner shows: `app-loading`.
+- No session → onboarding (`app/onboarding/*`). A session whose profile has `onboarding_completed = false` (right after sign-up, or `qa-new`) → profile setup (`app/setup/*`). Otherwise → tabs, starting on **Plans**.
+- While the stored session and the profile load, a spinner shows: `app-loading`. If the profile fails to load: "Couldn’t load your profile." with `auth-gate-retry`.
 - The tab bar is native (`NativeTabs`) and has no `testID`s: tap the labels **Plans**, **Workout**, **Body**, **Profile**.
 - On iOS, logging in shows the system "Save Password?" sheet (buttons "Not Now" / "Save"). It covers the app, so nothing underneath can be found until it is dismissed.
 
@@ -24,8 +24,31 @@ Behavior worth testing:
 - Submit buttons stay disabled until the email is valid and the password is filled in (sign-up: at least 6 characters, with the helper text "Must be at least 6 characters.").
 - `*-email-error` appears after leaving an invalid email field.
 - Server errors (wrong password, email taken) show in `*-error-message` and clear when either field is edited.
-- Success needs no extra step: the app swaps onboarding for the tabs.
-- Not built yet: the onboarding questionnaire (`profiles.onboarding_completed` is stored but unused), Apple/Google sign-in, password reset, email confirmation.
+- Success needs no extra step: the app swaps onboarding for profile setup (new account) or the tabs (finished profile).
+- Not built yet: Apple/Google sign-in, password reset, email confirmation.
+
+## Profile setup (`app/setup`)
+
+Shown to signed-in users until they finish it; the tabs and every other app route are unreachable meanwhile.
+
+| Screen | Route | Key testIDs |
+| --- | --- | --- |
+| Gender | `setup/gender` | `setup-gender-option-male`, `setup-gender-option-female`, `setup-gender-option-prefer_not_to_say`, `setup-gender-continue-button` |
+| Age | `setup/age` | `setup-age-picker` (wheel, scroll via `setup-age-picker-scroll`), `setup-age-back-button`, `setup-age-continue-button` |
+| Height | `setup/height` | `setup-height-picker`, `setup-height-back-button`, `setup-height-continue-button` |
+| Weight | `setup/weight` | `setup-weight-picker` (0.5 kg steps), `setup-weight-back-button`, `setup-weight-continue-button` |
+| Target weight | `setup/target-weight` | `setup-target-weight-picker`, `setup-target-weight-back-button`, `setup-target-weight-continue-button`, `setup-target-weight-error-message` |
+| All set | `setup/all-set` | `setup-all-set-title`, `setup-all-set-summary`, `setup-all-set-gender`, `setup-all-set-age`, `setup-all-set-height`, `setup-all-set-weight`, `setup-all-set-target-weight`, `setup-all-set-start-button`, `setup-all-set-error-message` |
+
+Every question screen shows `setup-progress` with the label "n/5". Gender has no back button (nothing to go back to).
+
+Behavior worth testing:
+- Order is Gender → Age → Height → Weight → Target Weight → All Set; the progress label and filled segments match the step.
+- Gender is single choice and Continue stays disabled until one is picked. Wheels default to 30 years, 170 cm, 70.0 kg; target weight starts at the chosen current weight.
+- Back keeps the answers already given.
+- Continue on Target weight saves gender, age, height and target weight to the profile and the current weight as a weight log (a repeat updates that log instead of adding another). All Set shows the saved values.
+- "Let’s get started" lands on **Plans**; afterwards Profile shows all five values, and they stay after a relaunch or a new log-in, which also no longer shows setup.
+- Quitting before "Let’s get started" brings setup back on next launch, prefilled with the saved answers.
 
 ## Plans tab (`app/(tabs)/plans`, `app/plans`)
 
