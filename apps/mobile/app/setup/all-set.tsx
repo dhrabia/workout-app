@@ -33,7 +33,6 @@ export default function AllSetScreen() {
   const answered =
     profile != null &&
     profile.gender != null &&
-    profile.age != null &&
     profile.height_cm != null &&
     profile.target_weight_kg != null &&
     profile.goal_start_weight_kg != null;
@@ -52,13 +51,13 @@ export default function AllSetScreen() {
       key: 'weight',
       icon: 'scale-outline',
       label: 'Current weight',
-      value: currentWeight != null ? `${formatWeight(currentWeight)} kg` : '—',
+      value: profile?.target_weight_kg != null ? `${formatWeight(profile.target_weight_kg)} kg` : '—',
     },
     {
       key: 'target-weight',
       icon: 'locate-outline',
       label: 'Target weight',
-      value: profile?.target_weight_kg != null ? `${formatWeight(profile.target_weight_kg)} kg` : '—',
+      value: currentWeight != null ? `${formatWeight(currentWeight)} kg` : '—',
     },
   ];
 

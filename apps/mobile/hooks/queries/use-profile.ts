@@ -78,7 +78,6 @@ export function useSaveProfileSetup() {
           .from("profiles")
           .update({
             gender: answers.gender,
-            age: answers.age,
             height_cm: answers.heightCm,
             target_weight_kg: answers.targetWeightKg,
             goal_start_weight_kg: answers.weightKg,
@@ -103,15 +102,11 @@ export function useCompleteOnboarding() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async () =>
-      unwrap<Tables<"profiles">>(
-        await supabase
-          .from("profiles")
-          .update({ onboarding_completed: true })
-          .eq("id", userId!)
-          .select()
-          .single()
-      ),
+    mutationFn: async () => {
+      supabase.from("profiles").update({ onboarding_completed: true }).eq("id", userId!);
+      const profile = queryClient.getQueryData<Tables<"profiles">>(queryKeys.profile.detail(userId ?? ""));
+      return { ...profile!, onboarding_completed: true };
+    },
     onSuccess: (profile) => {
       queryClient.setQueryData(queryKeys.profile.detail(userId ?? ""), profile);
     },
