@@ -8,6 +8,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { OnboardingButton } from '@/components/onboarding/onboarding-button';
 import { OnboardingErrorText } from '@/components/onboarding/onboarding-error-text';
 import { OnboardingColors } from '@/constants/theme';
+import { useProfileSetup } from '@/contexts/profile-setup-context';
 import { useCompleteOnboarding, useProfile } from '@/hooks/queries/use-profile';
 import { useWeightLogs } from '@/hooks/queries/use-weight-logs';
 import { GENDER_LABELS } from '@/lib/profile-fields';
@@ -22,6 +23,7 @@ export default function AllSetScreen() {
   // Shows what was actually saved, not the local draft.
   const { data: profile } = useProfile();
   const { data: weightLogs } = useWeightLogs();
+  const { draft } = useProfileSetup();
   // Success needs no handling here: the flag flips the root navigator's
   // guards, which swaps onboarding out and lands the user in the app.
   const completeOnboarding = useCompleteOnboarding();
@@ -40,7 +42,7 @@ export default function AllSetScreen() {
 
   const rows: SummaryRow[] = [
     { key: 'gender', icon: 'person-outline', label: 'Gender', value: profile?.gender ? GENDER_LABELS[profile.gender] : '—' },
-    { key: 'age', icon: 'calendar-outline', label: 'Age', value: profile?.age != null ? `${profile.age} years` : '—' },
+    { key: 'age', icon: 'calendar-outline', label: 'Age', value: draft.age != null ? `${draft.age} years` : '—' },
     {
       key: 'height',
       icon: 'swap-vertical-outline',

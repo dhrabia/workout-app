@@ -35,10 +35,12 @@ function GenderOptions() {
   const { draft, update } = useProfileSetup();
   const [selected, setSelected] = useState<Gender[]>(draft.gender ? [draft.gender] : []);
 
-  function select(gender: Gender) {
-    if (selected.includes(gender)) return;
-    setSelected((current) => [...current, gender]);
-    if (draft.gender == null) update({ gender });
+  function toggle(gender: Gender) {
+    const next = selected.includes(gender)
+      ? selected.filter((value) => value !== gender)
+      : [...selected, gender];
+    setSelected(next);
+    update({ gender: next[0] ?? null });
   }
 
   return (
@@ -48,7 +50,7 @@ function GenderOptions() {
         return (
           <Pressable
             key={option.value}
-            onPress={() => select(option.value)}
+            onPress={() => toggle(option.value)}
             accessibilityRole="radio"
             accessibilityState={{ checked: isSelected }}
             accessibilityLabel={option.label}

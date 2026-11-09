@@ -21,6 +21,8 @@ export const queryKeys = {
   profile: {
     all: ["profile"] as const,
     detail: (userId: string) => [...queryKeys.profile.all, "detail", userId] as const,
+    onboardingCompleted: (userId: string) =>
+      [...queryKeys.profile.all, "onboardingCompleted", userId] as const,
   },
   weightLogs: {
     all: ["weightLogs"] as const,

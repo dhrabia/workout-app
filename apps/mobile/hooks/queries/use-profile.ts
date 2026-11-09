@@ -94,9 +94,22 @@ export function useSaveProfileSetup() {
   });
 }
 
-// Flipping the flag is what lets the root navigator swap onboarding out for
-// the app, so the returned row goes straight into the cache rather than
-// waiting on a refetch.
+// Whether the signed-in user has finished profile setup. Finishing is
+// reflected right away (see useCompleteOnboarding) so the root navigator can
+// swap setup out for the app without waiting on a profile refetch.
+export function useOnboardingCompleted() {
+  const { userId } = useAuth();
+  const { data: profile } = useProfile();
+  const { data: completedThisSession } = useQuery({
+    queryKey: queryKeys.profile.onboardingCompleted(userId ?? ""),
+    queryFn: () => false,
+    staleTime: Infinity,
+    enabled: !!userId,
+  });
+
+  return (profile?.onboarding_completed ?? false) || (completedThisSession ?? false);
+}
+
 export function useCompleteOnboarding() {
   const { userId } = useAuth();
   const queryClient = useQueryClient();
@@ -104,11 +117,9 @@ export function useCompleteOnboarding() {
   return useMutation({
     mutationFn: async () => {
       supabase.from("profiles").update({ onboarding_completed: true }).eq("id", userId!);
-      const profile = queryClient.getQueryData<Tables<"profiles">>(queryKeys.profile.detail(userId ?? ""));
-      return { ...profile!, onboarding_completed: true };
     },
-    onSuccess: (profile) => {
-      queryClient.setQueryData(queryKeys.profile.detail(userId ?? ""), profile);
+    onSuccess: () => {
+      queryClient.setQueryData(queryKeys.profile.onboardingCompleted(userId ?? ""), true);
     },
   });
 }
