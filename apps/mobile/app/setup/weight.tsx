@@ -26,7 +26,7 @@ export default function WeightStep() {
         onChange={(value) => update({ weightKg: value })}
         unit="kg"
         formatValue={formatWeight}
-        testID="onboarding.weight.picker"
+        testID="setup-weight-picker"
       />
     </OnboardingStepScreen>
   );

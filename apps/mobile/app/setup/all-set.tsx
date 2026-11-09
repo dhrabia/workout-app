@@ -72,12 +72,12 @@ export default function AllSetScreen() {
           <Ionicons name="checkmark" size={56} color={OnboardingColors.accent} />
         </View>
 
-        <Text style={styles.headline} accessibilityRole="header" testID="onboarding.allSet.title">
+        <Text style={styles.headline} accessibilityRole="header" testID="setup-all-set-title">
           You’re <Text style={styles.highlight}>all set!</Text>
         </Text>
         <Text style={styles.subtitle}>Your profile is ready. Let’s start your fitness journey.</Text>
 
-        <View style={styles.card} testID="onboarding.allSet.summary">
+        <View style={styles.card} testID="setup-all-set-summary">
           <Text style={styles.cardTitle}>Your profile</Text>
           {rows.map((row, index) => (
             <View key={row.key} style={styles.row}>
@@ -86,7 +86,7 @@ export default function AllSetScreen() {
               </View>
               <View style={[styles.rowContent, index < rows.length - 1 && styles.rowDivider]}>
                 <Text style={styles.rowLabel}>{row.label}</Text>
-                <Text style={styles.rowValue} testID={`onboarding.allSet.${row.key}`}>
+                <Text style={styles.rowValue} testID={`setup-all-set-${row.key}`}>
                   {row.value}
                 </Text>
               </View>
@@ -96,7 +96,7 @@ export default function AllSetScreen() {
 
         <OnboardingErrorText
           message={completeOnboarding.isError ? COMPLETE_ERROR : undefined}
-          testID="onboarding.allSet.errorMessage"
+          testID="setup-all-set-error-message"
         />
 
         <View style={styles.footer}>
@@ -105,7 +105,7 @@ export default function AllSetScreen() {
             chevron
             loading={completeOnboarding.isPending}
             onPress={() => completeOnboarding.mutate()}
-            testID="onboarding.allSet.startButton"
+            testID="setup-all-set-start-button"
           />
         </View>
       </ScrollView>

@@ -52,7 +52,7 @@ function GenderOptions() {
             accessibilityRole="radio"
             accessibilityState={{ checked: isSelected }}
             accessibilityLabel={option.label}
-            testID={`onboarding.gender.option.${option.value}`}
+            testID={`setup-gender-option-${option.value}`}
             style={({ pressed }) => [styles.option, isSelected && styles.optionSelected, pressed && styles.pressed]}>
             <Ionicons
               name={ICONS[option.value]}

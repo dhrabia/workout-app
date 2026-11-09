@@ -49,7 +49,7 @@ export function OnboardingStepScreen({
           {/* The first question has nothing to go back to: the account
               screens are gone once signed in. */}
           {router.canGoBack() ? (
-            <OnboardingBackButton testID={`onboarding.${step}.backButton`} onPress={reset} />
+            <OnboardingBackButton testID={`setup-${step}-back-button`} onPress={reset} />
           ) : (
             <View style={styles.backPlaceholder} />
           )}
@@ -66,7 +66,7 @@ export function OnboardingStepScreen({
           {children}
         </View>
 
-        <OnboardingErrorText message={error} testID={`onboarding.${step}.errorMessage`} />
+        <OnboardingErrorText message={error} testID={`setup-${step}-error-message`} />
 
         <View style={styles.footer}>
           <OnboardingButton
@@ -75,7 +75,7 @@ export function OnboardingStepScreen({
             disabled={!canContinue}
             loading={loading}
             onPress={onContinue}
-            testID={`onboarding.${step}.continueButton`}
+            testID={`setup-${step}-continue-button`}
           />
         </View>
       </ScrollView>

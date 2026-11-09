@@ -12,7 +12,7 @@ export function OnboardingProgress({ step, total }: { step: number; total: numbe
       accessibilityRole="progressbar"
       accessibilityLabel={`Step ${step} of ${total}`}
       accessibilityValue={{ min: 0, max: total, now: step }}
-      testID="onboarding.progress">
+      testID="setup-progress">
       <View style={styles.segments}>
         {Array.from({ length: total }, (_, index) => (
           <View

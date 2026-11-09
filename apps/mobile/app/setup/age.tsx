@@ -25,7 +25,7 @@ export default function AgeStep() {
         value={age}
         onChange={(value) => update({ age: value })}
         unit="years"
-        testID="onboarding.age.picker"
+        testID="setup-age-picker"
       />
     </OnboardingStepScreen>
   );

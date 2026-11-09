@@ -24,7 +24,7 @@ export default function HeightStep() {
         value={heightCm}
         onChange={(value) => update({ heightCm: value })}
         unit="cm"
-        testID="onboarding.height.picker"
+        testID="setup-height-picker"
       />
     </OnboardingStepScreen>
   );

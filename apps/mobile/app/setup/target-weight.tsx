@@ -50,7 +50,7 @@ export default function TargetWeightStep() {
         }}
         unit="kg"
         formatValue={formatWeight}
-        testID="onboarding.targetWeight.picker"
+        testID="setup-target-weight-picker"
       />
     </OnboardingStepScreen>
   );
