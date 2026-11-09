@@ -1,0 +1,33 @@
+# Logs in from a clean install. Expects EMAIL; QA_PASSWORD comes from scripts/maestro.sh.
+#   - runFlow:
+#       file: ../subflows/log-in.yaml
+#       env:
+#         EMAIL: qa-onboarded@example.com
+appId: ${APP_ID}
+---
+- launchApp:
+    clearState: true
+- extendedWaitUntil:
+    visible:
+      id: "welcome-get-started-button"
+    timeout: 30000
+- tapOn:
+    id: "welcome-get-started-button"
+- tapOn:
+    id: "create-account-login-button"
+- tapOn:
+    id: "login-email-input"
+- inputText: ${EMAIL}
+- tapOn:
+    id: "login-password-input"
+- inputText: ${QA_PASSWORD}
+- tapOn:
+    id: "login-submit-button"
+- extendedWaitUntil:
+    notVisible:
+      id: "login-submit-button"
+    timeout: 15000
+# iOS offers to save the password in a system sheet that covers the app.
+- tapOn:
+    text: "Not Now"
+    optional: true

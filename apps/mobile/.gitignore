@@ -41,3 +41,6 @@ app-example
 # generated native folders
 /ios
 /android
+
+# Maestro run artifacts written by the QA MCP server
+.maestro/.results/

@@ -103,7 +103,7 @@ function AuthGate({ children }: { children: React.ReactNode }) {
 
   if (isLoading || (hasAccount && profile.isPending && profile.fetchStatus !== 'idle')) {
     return (
-      <ThemedView style={styles.loading}>
+      <ThemedView style={styles.loading} testID="app-loading">
         <ActivityIndicator />
       </ThemedView>
     );

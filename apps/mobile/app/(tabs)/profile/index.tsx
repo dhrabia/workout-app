@@ -6,6 +6,7 @@ import { ActivityIndicator, Alert, Pressable, ScrollView, StyleSheet, View } fro
 
 import { SectionLabel } from '@/components/section-label';
 import { SingleChoiceModal } from '@/components/single-choice-modal';
+import { TargetWeightPickerModal } from '@/components/target-weight-picker-modal';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { IconSymbol } from '@/components/ui/icon-symbol';
@@ -152,7 +153,7 @@ export default function ProfileScreen() {
   }
 
   return (
-    <ThemedView style={styles.container}>
+    <ThemedView style={styles.container} testID="profile-screen">
       <Stack.Screen options={{ title: 'Profile' }} />
       <ScrollView contentContainerStyle={styles.content}>
         <View style={styles.header}>
@@ -161,7 +162,7 @@ export default function ProfileScreen() {
             uploading={uploadAvatar.isPending || removeAvatar.isPending}
             onPress={handleAvatarPress}
           />
-          <ThemedText type="defaultSemiBold" style={styles.name}>
+          <ThemedText type="defaultSemiBold" style={styles.name} testID="profile-display-name">
             {displayName}
           </ThemedText>
           <Pressable
@@ -241,25 +242,11 @@ export default function ProfileScreen() {
         testID="weight-modal"
       />
 
-      <RulerPickerModal
-        key={targetWeightModalOpen ? 'target-weight-open' : 'target-weight-closed'}
+      <TargetWeightPickerModal
         visible={targetWeightModalOpen}
-        title="What is your target weight?"
-        min={WEIGHT_MIN}
-        max={WEIGHT_MAX}
-        suffix="kg"
-        value={profile?.target_weight_kg ?? WEIGHT_DEFAULT}
-        pending={updateProfile.isPending}
+        currentWeight={currentWeight}
+        targetWeight={profile?.target_weight_kg}
         onClose={() => setTargetWeightModalOpen(false)}
-        onSave={(target_weight_kg) =>
-          updateProfile.mutate(
-            // See computeWeightProgress in lib/weight.ts: a new target always
-            // starts a fresh progress cycle from the current weight.
-            { target_weight_kg, goal_start_weight_kg: currentWeight ?? null },
-            { onSuccess: () => setTargetWeightModalOpen(false) }
-          )
-        }
-        testID="target-weight-modal"
       />
     </ThemedView>
   );
@@ -359,7 +346,7 @@ function InfoCard({ rows }: { rows: InfoRow[] }) {
           testID={`profile-row-${row.key}`}>
           <ThemedText>{row.label}</ThemedText>
           <View style={styles.rowValue}>
-            <ThemedText style={{ color: secondaryColor }}>{row.value}</ThemedText>
+            <ThemedText style={{ color: secondaryColor }} testID={`profile-row-${row.key}-value`}>{row.value}</ThemedText>
             {row.onPress && <IconSymbol name="chevron.right" size={16} color={secondaryColor} />}
           </View>
         </Pressable>

@@ -1,0 +1,149 @@
+# Nightly Maestro regression suite on an iOS simulator.
+# Builds main, restores the QA accounts, runs every flow tagged `regression`, uploads the
+# results and keeps one open "Nightly regression failing" issue while it fails.
+# Failures are triaged locally with /triage-nightly <run id>.
+#
+# Needs repository secrets QA_PASSWORD and SUPABASE_SERVICE_ROLE_KEY, and variables
+# EXPO_PUBLIC_SUPABASE_URL and EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY (see README).
+name: Nightly regression
+
+on:
+  schedule:
+    - cron: '0 1 * * *' # 01:00 UTC
+  workflow_dispatch:
+
+concurrency:
+  group: nightly-regression
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  regression:
+    runs-on: macos-26
+    timeout-minutes: 90
+    env:
+      APP_ID: com.woapp.mobile
+      # CocoaPods fails without a UTF-8 locale.
+      LANG: en_US.UTF-8
+      LC_ALL: en_US.UTF-8
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 11.20.0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+
+      - name: Install Maestro
+        env:
+          MAESTRO_VERSION: 2.11.0
+        run: |
+          curl -fsSL https://get.maestro.mobile.dev | bash
+          echo "$HOME/.maestro/bin" >> "$GITHUB_PATH"
+
+      - run: pnpm install --frozen-lockfile
+
+      - name: Write env files
+        working-directory: apps/mobile
+        env:
+          SUPABASE_URL: ${{ vars.EXPO_PUBLIC_SUPABASE_URL }}
+          SUPABASE_PUBLISHABLE_KEY: ${{ vars.EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          QA_PASSWORD: ${{ secrets.QA_PASSWORD }}
+        run: |
+          for name in SUPABASE_URL SUPABASE_PUBLISHABLE_KEY SUPABASE_SERVICE_ROLE_KEY QA_PASSWORD; do
+            if [ -z "$(printenv "$name")" ]; then echo "::error::$name is not set (see the README's Nightly regression section)"; exit 1; fi
+          done
+          printf 'EXPO_PUBLIC_SUPABASE_URL=%s\nEXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY=%s\n' "$SUPABASE_URL" "$SUPABASE_PUBLISHABLE_KEY" > .env
+          printf 'SUPABASE_SERVICE_ROLE_KEY=%s\nQA_PASSWORD=%s\n' "$SUPABASE_SERVICE_ROLE_KEY" "$QA_PASSWORD" > .env.local
+
+      - name: Restore the QA accounts
+        run: pnpm --filter mobile qa:seed
+
+      - name: Generate the iOS project
+        working-directory: apps/mobile
+        run: npx expo prebuild --platform ios --no-install
+
+      - uses: actions/cache@v4
+        with:
+          path: apps/mobile/ios/Pods
+          key: pods-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml', 'apps/mobile/app.json') }}
+
+      - name: Install pods
+        working-directory: apps/mobile/ios
+        run: pod install
+
+      - name: Build the app (Release, simulator)
+        working-directory: apps/mobile/ios
+        run: >-
+          xcodebuild -quiet
+          -workspace mobile.xcworkspace -scheme mobile -configuration Release
+          -sdk iphonesimulator -destination 'generic/platform=iOS Simulator'
+          -derivedDataPath build CODE_SIGNING_ALLOWED=NO
+
+      - name: Boot a simulator
+        id: simulator
+        run: |
+          udid=$(xcrun simctl list devices available -j | jq -r '
+            .devices | to_entries | map(select(.key | test("SimRuntime.iOS-"))) | sort_by(.key) | last
+            | .value | map(select(.name | startswith("iPhone"))) | .[0].udid')
+          xcrun simctl boot "$udid"
+          xcrun simctl bootstatus "$udid" -b
+          xcrun simctl install "$udid" apps/mobile/ios/build/Build/Products/Release-iphonesimulator/mobile.app
+          echo "udid=$udid" >> "$GITHUB_OUTPUT"
+
+      - name: Run the regression suite
+        id: run
+        run: node packages/qa-mcp/src/nightly.ts run --device "${{ steps.simulator.outputs.udid }}"
+
+      - name: Upload results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: nightly-regression
+          path: |
+            apps/mobile/.maestro/.results/
+            !apps/mobile/.maestro/.results/latest.json
+          retention-days: 14
+          if-no-files-found: ignore
+
+      - name: Update the tracking issue
+        # Not on cancel: a cancelled run says nothing about the suite.
+        if: ${{ !cancelled() }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+          SUMMARY: ${{ steps.run.outputs.summary }}
+          OUTCOME: ${{ steps.run.outcome }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          if [ -n "$SUMMARY" ]; then
+            node packages/qa-mcp/src/nightly.ts report "$SUMMARY" > report.md
+          else
+            printf '## Nightly regression: ⚠️ did not run\n\nThe workflow failed before the suite ran (setup or build). See the [workflow run](%s).\n' "$RUN_URL" > report.md
+          fi
+          cat report.md >> "$GITHUB_STEP_SUMMARY"
+
+          gh label create nightly-regression --color B60205 --description "Nightly Maestro regression run" 2>/dev/null || true
+          issue=$(gh issue list --label nightly-regression --state open --json number --jq '.[0].number // empty')
+          if [ "$OUTCOME" = success ]; then
+            if [ -n "$issue" ]; then
+              gh issue comment "$issue" --body-file report.md
+              gh issue close "$issue" --reason completed
+            fi
+          elif [ -n "$issue" ]; then
+            gh issue comment "$issue" --body-file report.md
+          else
+            gh issue create --title "Nightly regression failing" --label nightly-regression --body-file report.md
+          fi
