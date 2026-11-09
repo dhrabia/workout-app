@@ -2,13 +2,17 @@ import { StyleSheet, Text, View } from 'react-native';
 
 import { OnboardingColors } from '@/constants/theme';
 
-export const ONBOARDING_STEP_COUNT = 7;
-
-export function OnboardingProgress({ step }: { step: number }) {
+// Segmented "step n of total" bar for the profile setup questionnaire.
+export function OnboardingProgress({ step, total }: { step: number; total: number }) {
   return (
-    <View style={styles.row}>
+    <View
+      style={styles.row}
+      accessibilityRole="progressbar"
+      accessibilityLabel={`Step ${step} of ${total}`}
+      accessibilityValue={{ min: 0, max: total, now: step }}
+      testID="onboarding.progress">
       <View style={styles.segments}>
-        {Array.from({ length: ONBOARDING_STEP_COUNT }, (_, index) => (
+        {Array.from({ length: total }, (_, index) => (
           <View
             key={index}
             style={[
@@ -19,15 +23,15 @@ export function OnboardingProgress({ step }: { step: number }) {
         ))}
       </View>
       <Text style={styles.label}>
-        {step}/{ONBOARDING_STEP_COUNT}
+        {step}/{total}
       </Text>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  row: { flexDirection: 'row', alignItems: 'center', gap: 10 },
-  segments: { flexDirection: 'row', gap: 4 },
-  segment: { width: 28, height: 6, borderRadius: 3 },
-  label: { fontSize: 13, color: OnboardingColors.textFaint },
+  row: { flex: 1, flexDirection: 'row', alignItems: 'center', gap: 12 },
+  segments: { flex: 1, flexDirection: 'row', gap: 4 },
+  segment: { flex: 1, height: 6, borderRadius: 3 },
+  label: { fontSize: 15, fontWeight: '500', color: OnboardingColors.textMuted },
 });

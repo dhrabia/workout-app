@@ -5,7 +5,7 @@ import { useState } from 'react';
 import { ActivityIndicator, Alert, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 
 import { SectionLabel } from '@/components/section-label';
-import { SingleChoiceModal, type SingleChoiceOption } from '@/components/single-choice-modal';
+import { SingleChoiceModal } from '@/components/single-choice-modal';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { IconSymbol } from '@/components/ui/icon-symbol';
@@ -21,7 +21,14 @@ import { useLogWeight, useWeightLogs } from '@/hooks/queries/use-weight-logs';
 import { useThemeColor } from '@/hooks/use-theme-color';
 import { confirmDestructive } from '@/lib/alerts';
 import { signOut } from '@/lib/auth';
-import type { Gender } from '@/lib/types';
+import {
+  AGE_DEFAULT,
+  AGE_VALUES,
+  GENDER_LABELS,
+  GENDER_OPTIONS,
+  HEIGHT_DEFAULT,
+  HEIGHT_VALUES,
+} from '@/lib/profile-fields';
 import { getCurrentWeight, WEIGHT_DEFAULT, WEIGHT_MAX, WEIGHT_MIN } from '@/lib/weight';
 
 type InfoRow = { key: string; label: string; value: string; onPress?: () => void };
@@ -29,21 +36,6 @@ type InfoRow = { key: string; label: string; value: string; onPress?: () => void
 // Weight is derived from the latest weight log; every other field here maps
 // directly to a `profiles` column (see migrations).
 const NOT_SET = 'Not set';
-
-const GENDER_OPTIONS: SingleChoiceOption<Gender>[] = [
-  { value: 'male', label: 'Male' },
-  { value: 'female', label: 'Female' },
-];
-
-const AGE_MIN = 13;
-const AGE_MAX = 100;
-const AGE_DEFAULT = 30;
-const AGE_VALUES = Array.from({ length: AGE_MAX - AGE_MIN + 1 }, (_, i) => AGE_MIN + i);
-
-const HEIGHT_MIN = 100;
-const HEIGHT_MAX = 230;
-const HEIGHT_DEFAULT = 170;
-const HEIGHT_VALUES = Array.from({ length: HEIGHT_MAX - HEIGHT_MIN + 1 }, (_, i) => HEIGHT_MIN + i);
 
 const AVATAR_SOURCES = {
   camera: {
@@ -76,7 +68,7 @@ export default function ProfileScreen() {
   const [weightModalOpen, setWeightModalOpen] = useState(false);
   const [targetWeightModalOpen, setTargetWeightModalOpen] = useState(false);
 
-  const genderLabel = GENDER_OPTIONS.find((option) => option.value === profile?.gender)?.label ?? NOT_SET;
+  const genderLabel = profile?.gender ? GENDER_LABELS[profile.gender] : NOT_SET;
 
   const personalInfo: InfoRow[] = [
     { key: 'gender', label: 'Gender', value: genderLabel, onPress: () => setGenderModalOpen(true) },
