@@ -64,7 +64,7 @@ export default function BodyMeasurementsHistoryScreen() {
 
   return (
     <ThemedView style={styles.container}>
-      <Stack.Screen options={{ title: 'Body Measurements' }} />
+      <Stack.Screen options={{ title: 'Body Measurements', headerBackTitle: 'Body' }} />
       <ScrollView contentContainerStyle={styles.content}>
         <MeasurementTypePills selected={selectedType} onSelect={setSelectedType} />
 

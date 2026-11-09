@@ -45,7 +45,7 @@ export default function WeightHistoryScreen() {
 
   return (
     <ThemedView style={styles.container}>
-      <Stack.Screen options={{ title: 'Weight' }} />
+      <Stack.Screen options={{ title: 'Weight', headerBackTitle: 'Body' }} />
       <ScrollView contentContainerStyle={styles.content}>
         {!weightLogs || weightLogs.length === 0 ? (
           <EmptyWeightState onAdd={() => setPickerTarget({ mode: 'add' })} />
