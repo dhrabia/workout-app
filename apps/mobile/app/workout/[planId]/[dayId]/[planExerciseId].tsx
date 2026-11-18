@@ -4,6 +4,7 @@ import { Animated, Pressable, ScrollView, StyleSheet, View } from 'react-native'
 import Svg, { Circle } from 'react-native-svg';
 
 import { LoadingState } from '@/components/loading-state';
+import { NavArrow } from '@/components/nav-arrow';
 import { OutlineButton } from '@/components/outline-button';
 import { Pill } from '@/components/pill';
 import { StartWorkoutButton } from '@/components/start-workout-button';
@@ -27,6 +28,7 @@ import { useSaveWorkoutSession } from '@/hooks/queries/use-workout-sessions';
 import { useThemeColor } from '@/hooks/use-theme-color';
 import { estimateCaloriesBurned } from '@/lib/calories';
 import { parseTargetReps } from '@/lib/plan-exercise';
+import type { SavedWorkoutExercise } from '@/lib/workout-summary';
 import type { PlanExerciseWithExercise } from '@/lib/types';
 import { getCurrentWeight, WEIGHT_DEFAULT } from '@/lib/weight';
 
@@ -178,6 +180,7 @@ function ExerciseSession({
         const stats: ExerciseSessionStats = {
           totalSets: total,
           volumeKg: sets.reduce((sum, set) => sum + set.reps * set.weight, 0),
+          sets: sets.map((set) => ({ weight_kg: set.weight, reps: set.reps })),
         };
         markCompleted(planExercise.id, stats);
         // Exercises can be done in any order, so "last set of this exercise"
@@ -216,8 +219,23 @@ function ExerciseSession({
   // later starts from 0/N instead of showing everything still checked off.
   function saveWorkout() {
     if (saveWorkoutSession.isPending) return;
+    // Exercises in the day's own order, only those actually completed —
+    // the same set that totalSets/totalVolumeKg above are summed from.
+    const exercises: SavedWorkoutExercise[] = dayExercises.flatMap((exercise) => {
+      const stats = exerciseStats[exercise.id];
+      if (!stats) return [];
+      return [
+        {
+          exercise_id: exercise.exercise_id,
+          exercise_name: exercise.exercise.name_en,
+          muscle_group: exercise.exercise.muscle_group,
+          sets: stats.sets ?? [],
+        },
+      ];
+    });
     saveWorkoutSession.mutate(
       {
+        exercises,
         plan_id: planId,
         plan_day_id: dayId,
         plan_name: plan?.name ?? 'Workout',
@@ -300,7 +318,12 @@ function ExerciseSession({
         <View style={styles.content}>
           <FieldCard style={styles.setCard}>
             <View style={styles.setNavRow}>
-              <NavArrow direction="left" disabled={currentIndex === 0} onPress={() => goToSet(currentIndex - 1)} />
+              <NavArrow
+                direction="left"
+                disabled={currentIndex === 0}
+                onPress={() => goToSet(currentIndex - 1)}
+                testID="exercise-session-set-left"
+              />
               <View style={styles.setLabelRow}>
                 <ThemedText type="defaultSemiBold" style={styles.setLabel}>
                   Set {currentIndex + 1} / {total}
@@ -311,6 +334,7 @@ function ExerciseSession({
                 direction="right"
                 disabled={currentIndex === total - 1}
                 onPress={() => goToSet(currentIndex + 1)}
+                testID="exercise-session-set-right"
               />
             </View>
 
@@ -683,35 +707,6 @@ function CircularCountdown({ remaining, total }: { remaining: number; total: num
   );
 }
 
-function NavArrow({
-  direction,
-  disabled,
-  onPress,
-}: {
-  direction: 'left' | 'right';
-  disabled: boolean;
-  onPress: () => void;
-}) {
-  const tint = useThemeColor({}, 'tint');
-  const textDisabled = useThemeColor({}, 'textDisabled');
-  const controlBackground = useThemeColor({}, 'cardElevated');
-
-  return (
-    <Pressable
-      onPress={onPress}
-      disabled={disabled}
-      hitSlop={8}
-      style={[styles.navArrow, { backgroundColor: controlBackground }]}
-      testID={`exercise-session-set-${direction}`}>
-      <IconSymbol
-        name={direction === 'left' ? 'chevron.left' : 'chevron.right'}
-        size={18}
-        color={disabled ? textDisabled : tint}
-      />
-    </Pressable>
-  );
-}
-
 function ValueStepper({
   label,
   value,
@@ -825,8 +820,6 @@ const styles = StyleSheet.create({
   setNavRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
   setLabelRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   setLabel: { fontSize: 17 },
-  navArrow: { width: 36, height: 36, borderRadius: 18, alignItems: 'center', justifyContent: 'center' },
-
   valuesRow: { flexDirection: 'row' },
   valuesDivider: { width: StyleSheet.hairlineWidth, backgroundColor: 'rgba(128,128,128,0.3)', marginHorizontal: 8 },
   stepper: { flex: 1, alignItems: 'center', gap: 6 },
