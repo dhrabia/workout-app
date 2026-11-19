@@ -4,23 +4,12 @@ import { Pressable, type StyleProp, type ViewStyle } from 'react-native';
 
 import { OnboardingColors } from '@/constants/theme';
 
-export function OnboardingBackButton({
-  style,
-  testID,
-  onPress,
-}: {
-  style?: StyleProp<ViewStyle>;
-  testID?: string;
-  onPress?: () => void;
-}) {
+export function OnboardingBackButton({ style, testID }: { style?: StyleProp<ViewStyle>; testID?: string }) {
   const router = useRouter();
 
   return (
     <Pressable
-      onPress={() => {
-        onPress?.();
-        router.back();
-      }}
+      onPress={() => router.back()}
       hitSlop={12}
       accessibilityRole="button"
       accessibilityLabel="Back"

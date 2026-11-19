@@ -4,8 +4,6 @@ import { OnboardingColors } from '@/constants/theme';
 
 // Segmented "step n of total" bar for the profile setup questionnaire.
 export function OnboardingProgress({ step, total }: { step: number; total: number }) {
-  const displayStep = Math.max(1, step - Math.floor(step / 3));
-
   return (
     <View
       style={styles.row}
@@ -25,7 +23,7 @@ export function OnboardingProgress({ step, total }: { step: number; total: numbe
         ))}
       </View>
       <Text style={styles.label}>
-        {displayStep}/{total}
+        {step}/{total}
       </Text>
     </View>
   );

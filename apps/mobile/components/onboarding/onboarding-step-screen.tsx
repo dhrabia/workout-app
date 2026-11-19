@@ -9,7 +9,7 @@ import { OnboardingButton } from '@/components/onboarding/onboarding-button';
 import { OnboardingErrorText } from '@/components/onboarding/onboarding-error-text';
 import { OnboardingProgress } from '@/components/onboarding/onboarding-progress';
 import { OnboardingColors } from '@/constants/theme';
-import { PROFILE_SETUP_STEPS, useProfileSetup, type ProfileSetupStep } from '@/contexts/profile-setup-context';
+import { PROFILE_SETUP_STEPS, type ProfileSetupStep } from '@/contexts/profile-setup-context';
 
 const SUBTITLE = 'This helps us personalize your experience and recommendations.';
 
@@ -35,7 +35,6 @@ export function OnboardingStepScreen({
 }>) {
   const router = useRouter();
   const insets = useSafeAreaInsets();
-  const { resetKey, reset } = useProfileSetup();
   const stepNumber = PROFILE_SETUP_STEPS.indexOf(step) + 1;
 
   return (
@@ -49,7 +48,7 @@ export function OnboardingStepScreen({
           {/* The first question has nothing to go back to: the account
               screens are gone once signed in. */}
           {router.canGoBack() ? (
-            <OnboardingBackButton testID={`setup-${step}-back-button`} onPress={reset} />
+            <OnboardingBackButton testID={`setup-${step}-back-button`} />
           ) : (
             <View style={styles.backPlaceholder} />
           )}
@@ -62,9 +61,7 @@ export function OnboardingStepScreen({
         </Text>
         <Text style={styles.subtitle}>{SUBTITLE}</Text>
 
-        <View key={resetKey} style={styles.body}>
-          {children}
-        </View>
+        <View style={styles.body}>{children}</View>
 
         <OnboardingErrorText message={error} testID={`setup-${step}-error-message`} />
 

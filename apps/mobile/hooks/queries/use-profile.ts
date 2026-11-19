@@ -78,6 +78,7 @@ export function useSaveProfileSetup() {
           .from("profiles")
           .update({
             gender: answers.gender,
+            age: answers.age,
             height_cm: answers.heightCm,
             target_weight_kg: answers.targetWeightKg,
             goal_start_weight_kg: answers.weightKg,
@@ -94,32 +95,25 @@ export function useSaveProfileSetup() {
   });
 }
 
-// Whether the signed-in user has finished profile setup. Finishing is
-// reflected right away (see useCompleteOnboarding) so the root navigator can
-// swap setup out for the app without waiting on a profile refetch.
-export function useOnboardingCompleted() {
-  const { userId } = useAuth();
-  const { data: profile } = useProfile();
-  const { data: completedThisSession } = useQuery({
-    queryKey: queryKeys.profile.onboardingCompleted(userId ?? ""),
-    queryFn: () => false,
-    staleTime: Infinity,
-    enabled: !!userId,
-  });
-
-  return (profile?.onboarding_completed ?? false) || (completedThisSession ?? false);
-}
-
+// Flipping the flag is what lets the root navigator swap onboarding out for
+// the app, so the returned row goes straight into the cache rather than
+// waiting on a refetch.
 export function useCompleteOnboarding() {
   const { userId } = useAuth();
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async () => {
-      supabase.from("profiles").update({ onboarding_completed: true }).eq("id", userId!);
-    },
-    onSuccess: () => {
-      queryClient.setQueryData(queryKeys.profile.onboardingCompleted(userId ?? ""), true);
+    mutationFn: async () =>
+      unwrap<Tables<"profiles">>(
+        await supabase
+          .from("profiles")
+          .update({ onboarding_completed: true })
+          .eq("id", userId!)
+          .select()
+          .single()
+      ),
+    onSuccess: (profile) => {
+      queryClient.setQueryData(queryKeys.profile.detail(userId ?? ""), profile);
     },
   });
 }

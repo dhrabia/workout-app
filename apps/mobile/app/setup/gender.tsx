@@ -1,6 +1,6 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { useRouter } from 'expo-router';
-import { useState, type ComponentProps } from 'react';
+import type { ComponentProps } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { OnboardingStepScreen } from '@/components/onboarding/onboarding-step-screen';
@@ -17,7 +17,7 @@ const ICONS: Record<Gender, ComponentProps<typeof Ionicons>['name']> = {
 
 export default function GenderStep() {
   const router = useRouter();
-  const { draft } = useProfileSetup();
+  const { draft, update } = useProfileSetup();
 
   return (
     <OnboardingStepScreen
@@ -26,50 +26,33 @@ export default function GenderStep() {
       highlight="gender?"
       canContinue={draft.gender != null}
       onContinue={() => router.push('/setup/age')}>
-      <GenderOptions />
+      <View style={styles.options} accessibilityRole="radiogroup">
+        {GENDER_OPTIONS.map((option) => {
+          const selected = option.value === draft.gender;
+          return (
+            <Pressable
+              key={option.value}
+              onPress={() => update({ gender: option.value })}
+              accessibilityRole="radio"
+              accessibilityState={{ checked: selected }}
+              accessibilityLabel={option.label}
+              testID={`setup-gender-option-${option.value}`}
+              style={({ pressed }) => [styles.option, selected && styles.optionSelected, pressed && styles.pressed]}>
+              <Ionicons
+                name={ICONS[option.value]}
+                size={32}
+                color={selected ? OnboardingColors.accent : OnboardingColors.secondaryButtonText}
+                style={styles.icon}
+              />
+              <Text style={styles.label}>{option.label}</Text>
+              <View style={[styles.radio, selected && styles.radioSelected]}>
+                {selected ? <Ionicons name="checkmark" size={20} color={OnboardingColors.primaryButtonText} /> : null}
+              </View>
+            </Pressable>
+          );
+        })}
+      </View>
     </OnboardingStepScreen>
-  );
-}
-
-function GenderOptions() {
-  const { draft, update } = useProfileSetup();
-  const [selected, setSelected] = useState<Gender[]>(draft.gender ? [draft.gender] : []);
-
-  function toggle(gender: Gender) {
-    const next = selected.includes(gender)
-      ? selected.filter((value) => value !== gender)
-      : [...selected, gender];
-    setSelected(next);
-    update({ gender: next[0] ?? null });
-  }
-
-  return (
-    <View style={styles.options} accessibilityRole="radiogroup">
-      {GENDER_OPTIONS.map((option) => {
-        const isSelected = selected.includes(option.value);
-        return (
-          <Pressable
-            key={option.value}
-            onPress={() => toggle(option.value)}
-            accessibilityRole="radio"
-            accessibilityState={{ checked: isSelected }}
-            accessibilityLabel={option.label}
-            testID={`setup-gender-option-${option.value}`}
-            style={({ pressed }) => [styles.option, isSelected && styles.optionSelected, pressed && styles.pressed]}>
-            <Ionicons
-              name={ICONS[option.value]}
-              size={32}
-              color={isSelected ? OnboardingColors.accent : OnboardingColors.secondaryButtonText}
-              style={styles.icon}
-            />
-            <Text style={styles.label}>{option.label}</Text>
-            <View style={[styles.radio, isSelected && styles.radioSelected]}>
-              {isSelected ? <Ionicons name="checkmark" size={20} color={OnboardingColors.primaryButtonText} /> : null}
-            </View>
-          </Pressable>
-        );
-      })}
-    </View>
   );
 }
 

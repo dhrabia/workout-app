@@ -11,7 +11,7 @@ import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { NavigationThemes } from '@/constants/theme';
 import { AuthProvider, useAuth } from '@/contexts/auth-context';
-import { useOnboardingCompleted, useProfile } from '@/hooks/queries/use-profile';
+import { useProfile } from '@/hooks/queries/use-profile';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { queryClient } from '@/lib/query-client';
 
@@ -66,8 +66,9 @@ const APP_ROUTES = [
 
 function RootNavigator() {
   const { hasAccount } = useAuth();
+  const { data: profile } = useProfile();
   // AuthGate holds rendering until the profile has loaded for signed-in users.
-  const onboardingCompleted = useOnboardingCompleted();
+  const onboardingCompleted = profile?.onboarding_completed ?? false;
 
   return (
     <Stack>

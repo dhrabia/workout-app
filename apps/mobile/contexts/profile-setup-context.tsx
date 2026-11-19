@@ -23,17 +23,6 @@ export type ProfileSetupDraft = {
 type ProfileSetupContextValue = {
   draft: ProfileSetupDraft;
   update: (changes: Partial<ProfileSetupDraft>) => void;
-  // Bumped by reset(), so inputs keyed on it remount with fresh values.
-  resetKey: number;
-  reset: () => void;
-};
-
-const EMPTY_DRAFT: ProfileSetupDraft = {
-  gender: null,
-  age: null,
-  heightCm: null,
-  weightKg: null,
-  targetWeightKg: null,
 };
 
 const ProfileSetupContext = createContext<ProfileSetupContextValue | null>(null);
@@ -52,20 +41,11 @@ export function ProfileSetupProvider({ children }: { children: React.ReactNode }
     targetWeightKg: profile?.target_weight_kg != null ? snapToWeightWheel(profile.target_weight_kg) : null,
   }));
 
-  const [resetKey, setResetKey] = useState(0);
-
   function update(changes: Partial<ProfileSetupDraft>) {
     setDraft((current) => ({ ...current, ...changes }));
   }
 
-  function reset() {
-    setDraft(EMPTY_DRAFT);
-    setResetKey((key) => key + 1);
-  }
-
-  return (
-    <ProfileSetupContext.Provider value={{ draft, update, resetKey, reset }}>{children}</ProfileSetupContext.Provider>
-  );
+  return <ProfileSetupContext.Provider value={{ draft, update }}>{children}</ProfileSetupContext.Provider>;
 }
 
 export function useProfileSetup() {
