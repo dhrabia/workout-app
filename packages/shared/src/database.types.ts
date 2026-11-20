@@ -409,7 +409,7 @@ export type Database = {
       set_active_plan: { Args: { p_plan_id: string }; Returns: undefined }
     }
     Enums: {
-      gender: "male" | "female"
+      gender: "male" | "female" | "prefer_not_to_say"
       measurement_type: "chest" | "waist" | "hips" | "arm" | "thigh" | "neck"
       muscle_group:
         | "chest"
@@ -552,7 +552,7 @@ export const Constants = {
   },
   public: {
     Enums: {
-      gender: ["male", "female"],
+      gender: ["male", "female", "prefer_not_to_say"],
       measurement_type: ["chest", "waist", "hips", "arm", "thigh", "neck"],
       muscle_group: [
         "chest",

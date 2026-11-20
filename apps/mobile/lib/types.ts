@@ -28,6 +28,6 @@ export const MUSCLE_GROUPS = [
 
 export type MuscleGroup = (typeof MUSCLE_GROUPS)[number];
 
-export const GENDERS = ["male", "female"] as const;
+export const GENDERS = ["male", "female", "prefer_not_to_say"] as const;
 
 export type Gender = (typeof GENDERS)[number];
