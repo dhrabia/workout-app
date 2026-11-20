@@ -325,6 +325,51 @@ export type Database = {
           },
         ]
       }
+      workout_session_exercises: {
+        Row: {
+          exercise_id: string | null
+          exercise_name: string
+          id: string
+          muscle_group: Database["public"]["Enums"]["muscle_group"]
+          order_index: number
+          session_id: string
+          sets: Json
+        }
+        Insert: {
+          exercise_id?: string | null
+          exercise_name: string
+          id?: string
+          muscle_group: Database["public"]["Enums"]["muscle_group"]
+          order_index: number
+          session_id: string
+          sets?: Json
+        }
+        Update: {
+          exercise_id?: string | null
+          exercise_name?: string
+          id?: string
+          muscle_group?: Database["public"]["Enums"]["muscle_group"]
+          order_index?: number
+          session_id?: string
+          sets?: Json
+        }
+        Relationships: [
+          {
+            foreignKeyName: "workout_session_exercises_exercise_id_fkey"
+            columns: ["exercise_id"]
+            isOneToOne: false
+            referencedRelation: "exercises"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "workout_session_exercises_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "workout_sessions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       workout_sessions: {
         Row: {
           calories_estimate: number
@@ -406,6 +451,29 @@ export type Database = {
         Returns: undefined
       }
       reorder_plans: { Args: { p_plan_ids: string[] }; Returns: undefined }
+      save_workout_session: {
+        Args: { p_exercises: Json; p_session: Json }
+        Returns: {
+          calories_estimate: number
+          completed_at: string
+          day_name: string
+          duration_minutes: number
+          exercise_count: number
+          id: string
+          plan_day_id: string | null
+          plan_id: string | null
+          plan_name: string
+          total_sets: number
+          total_volume_kg: number
+          user_id: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "workout_sessions"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       set_active_plan: { Args: { p_plan_id: string }; Returns: undefined }
     }
     Enums: {

@@ -60,6 +60,7 @@ const APP_ROUTES = [
   'workout/[planId]/index',
   'workout/[planId]/[dayId]/index',
   'workout/[planId]/[dayId]/[planExerciseId]',
+  'workout/history/[sessionId]',
   'body/weight-history',
   'body/measurement-history',
 ] as const;

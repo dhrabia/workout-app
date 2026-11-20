@@ -291,13 +291,20 @@ function pseudoRandomBackgroundIndex(seed: string) {
   return (parseInt(seed.slice(-2), 16) % 5) + 1;
 }
 
+// Opens that workout's Workout Summary on the root stack, on top of the tabs
+// — this screen stays mounted underneath, so its tab, filter and scroll
+// position are all still there on the way back.
 function WorkoutHistoryRow({ session }: { session: Tables<'workout_sessions'> }) {
+  const router = useRouter();
   const cardBackground = useThemeColor({}, 'cardBackground');
   const secondaryColor = useThemeColor({}, 'icon');
   const photo = planCardBackground(pseudoRandomBackgroundIndex(session.id));
 
   return (
-    <View style={[styles.historyRow, { backgroundColor: cardBackground }]} testID={`workout-history-row-${session.id}`}>
+    <Pressable
+      onPress={() => router.push({ pathname: '/workout/history/[sessionId]', params: { sessionId: session.id } })}
+      style={[styles.historyRow, { backgroundColor: cardBackground }]}
+      testID={`workout-history-row-${session.id}`}>
       <Image source={photo} style={styles.historyRowImage} contentFit="cover" />
       <View style={styles.historyRowText}>
         <ThemedText type="defaultSemiBold" numberOfLines={1}>
@@ -314,7 +321,7 @@ function WorkoutHistoryRow({ session }: { session: Tables<'workout_sessions'> })
         </View>
       </View>
       <IconSymbol name="chevron.right" size={16} color={secondaryColor} />
-    </View>
+    </Pressable>
   );
 }
 
