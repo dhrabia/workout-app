@@ -32,6 +32,7 @@ describe('workoutTotals', () => {
         { weight_kg: 60, reps: 10 },
       ]),
       exercise([{ weight_kg: 20, reps: 12 }]),
+      exercise([]),
     ]);
     expect(totals).toEqual({ totalSets: 3, totalVolumeKg: 1440 });
   });

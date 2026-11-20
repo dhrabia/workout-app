@@ -48,9 +48,10 @@ export function setsVolumeKg(sets: LoggedSet[]): number {
 }
 
 export function workoutTotals(exercises: WorkoutSummaryExercise[]) {
+  const counted = exercises.slice(0, -1);
   return {
-    totalSets: exercises.reduce((sum, exercise) => sum + exercise.sets.length, 0),
-    totalVolumeKg: setsVolumeKg(exercises.flatMap((exercise) => exercise.sets)),
+    totalSets: counted.reduce((sum, exercise) => sum + exercise.sets.length, 0),
+    totalVolumeKg: setsVolumeKg(counted.flatMap((exercise) => exercise.sets)),
   };
 }
 

@@ -5,6 +5,7 @@ import { useRef, useState, type ComponentProps } from 'react';
 import {
   Alert,
   FlatList,
+  Platform,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -150,7 +151,7 @@ function useRepeatWorkout(session: WorkoutSessionDetail) {
       return;
     }
 
-    const goToDay = () => router.push({ pathname: '/workout/[planId]/[dayId]', params: { planId, dayId } });
+    const goToDay = () => router.navigate({ pathname: '/(tabs)/workout', params: { tab: 'plans' } });
     const dayInProgress = (daysData ?? []).find((entry) => hasSessionProgress(queryClient, entry.id));
     if (dayInProgress) confirmStartOverOtherDay(queryClient, dayInProgress.id, goToDay);
     else goToDay();
@@ -282,6 +283,9 @@ function ExerciseCarousel({ exercises }: { exercises: WorkoutSummaryExercise[] }
         keyExtractor={(exercise) => exercise.id}
         horizontal
         nestedScrollEnabled
+        // On Android the parent vertical ScrollView fights the horizontal pan
+        // and diagonal swipes jitter, so the arrows and dots drive it there.
+        scrollEnabled={Platform.OS !== 'android'}
         showsHorizontalScrollIndicator={false}
         snapToInterval={interval}
         snapToAlignment="start"
