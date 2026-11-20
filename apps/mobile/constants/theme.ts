@@ -72,6 +72,9 @@ export const OnboardingColors = {
   lightButtonText: '#0A0F12',
   divider: '#2D3B46',
   error: Colors.dark.error,
+  // Fill behind a selected option / the wheel's selected row.
+  selectedBackground: 'rgba(18, 211, 205, 0.08)',
+  iconTile: '#152029',
 };
 
 // React Navigation's native-stack header reads its background/tint/text
